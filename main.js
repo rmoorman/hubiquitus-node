@@ -18,8 +18,26 @@
  */
 
 var socketioConnector = require('./lib/socketio_connector.js');
+var boshConnector    = require('node-xmpp-bosh');
+var createOptions = require('./lib/options.js').socketio_Options;
 
-socketioConnector.startSocketIOConnector({
-    'debugLevel': 'ALL',
-    'port': 8080
-});
+/**
+ * Starts the gateway instatiating its modules
+ * @param options - see options.js to see possibilities
+ */
+function main(options){
+    options = options || {};
+    options= createOptions(options);
+
+
+
+    socketioConnector.startSocketIOConnector(options);
+
+    var boshServer = boshConnector.start_bosh({
+        logging: options['global.loglevel'],
+        port: options['bosh.port'],
+        pidgin_compatible: options['bosh.pidgin_compatible']
+    });
+}
+
+main();
