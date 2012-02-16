@@ -1,0 +1,21 @@
+{
+  "author": "Novedia Group",
+  "name": "hubiquitus-node",
+  "description": "Component bridging clients that want to do pubsub and a XMPP Server. Offers as alternatives to use BOSH connections or SocketIO",
+  "version": "0.1.0",
+  "homepage": "www.hubiquitus.com",
+  "repository": {
+    "type": "git",
+    "url": "<fillmein>"
+  },
+  "main": "main.js",
+  "engines": {
+    "node": "~0.4.9"
+  },
+  "dependencies": {
+      "log4js" : "=0.4.1",
+      "socket.io" : "=0.8.7",
+      "node-xmpp" : "=0.3.1"
+  },
+  "devDependencies": {}
+}
