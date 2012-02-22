@@ -1,16 +1,19 @@
 {
-  "author": "Novedia Group",
+  "author": "Federico Wasserman",
   "name": "hubiquitus-node",
-  "description": "Component bridging clients that want to do pubsub and a XMPP Server. Offers as alternatives to use BOSH connections or SocketIO",
+  "description": "Component bridging clients that want to do pubsub and a XMPP Server. Can use as transports BOSH or SocketIO",
   "version": "0.1.0",
   "homepage": "www.hubiquitus.com",
   "repository": {
     "type": "git",
-    "url": "<fillmein>"
+    "url": "https://github.com/hubiquitus/hubiquitus-node"
   },
+  "maintainers": [{"name": "Federico Wasserman"
+		 ,"email":"wasserx@hotmail.com"
+		 }],
   "main": "main.js",
   "engines": {
-    "node": "~0.4.9"
+    "node": ">0.4.0"
   },
   "dependencies": {
       "log4js" : "=0.4.1",
