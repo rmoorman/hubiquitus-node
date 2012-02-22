@@ -21,14 +21,13 @@ To use this application, you need Node.JS and NPM.
 
 As of right now the project is not published in NPM, so you need to clone
 it from github.
-	```
+
 	$ git clone git://github.com/hubiquitus/hubiquitus-node.git
 	$ cd hubiquitus-node
 	$ npm install log4js
 	$ npm install socket.io
 	$ npm install node-xmpp
 	$ npm install node-xmpp-bosh
-	```
 
 ## How to use
 
