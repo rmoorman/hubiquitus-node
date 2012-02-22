@@ -1,1 +1,0 @@
-Component bridging clients that want to do pubsub and a XMPP Server. Offers as alternatives to use BOSH connections or SocketIO
