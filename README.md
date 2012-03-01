@@ -12,63 +12,73 @@ used by XMPP by only requiring the essential information to perform each action.
 * Clients can connect using WebSockets or BOSH, allowing to use the best 
 transport for the client type.
 
-* By using `hubiquitusjs` you can simplify the messages the client sends
-and let `hubiquitus-node` take care of the rest.
+* By using **HubiquitusJS** you can simplify the messages the client sends
+and let **Hubiquitus-Node** take care of the rest.
+
+* Several ports can be used for each transport, each running as a different
+process increasing scalability!
 
 ## How to Install
 
-To use this application, you need Node.JS and NPM.
+To use **Hubiquitus-Node**, you need Node.JS and NPM.
 
-As of right now the project is not published in NPM, so you need to clone
-it from github.
-
-	$ git clone git://github.com/hubiquitus/hubiquitus-node.git
-	$ cd hubiquitus-node
-	$ npm install log4js
-	$ npm install socket.io
-	$ npm install node-xmpp
-	$ npm install node-xmpp-bosh
+```
+$ npm install git://github.com/hubiquitus/hubiquitus-node.git	
+```
 
 ## How to use
 
-Once the correct dependencies have been installed, all you need to do
-is run `main.js`:
-	```	
-	$ node main.js
-	```
-Once it's running, the server is waiting for requests using all available
-transports. To configure the application, look at main.js for the options.
+Once installed, all you need to do is run `gateway.js`:
 
-As of right now, to take full advantage of hubiquitus-node you need to use 
-`hubiquitusjs`, its browser-client counterpart. Read it's doc to see how to
-connect to the server.
+```	
+$ node gateway.js
+```
 
-If you just want to use BOSH as a transport method and run hubiquitus-node
-as a bridge, you can use any client that speaks XMPP and uses BOSH, putting
-the correct parameters in the client.
+When launched, the server waits for requests by all available transports
+in all defined ports.
 
-### How to use with Hubiquitusjs
+If you just want to use it as a BOSH endpoint, the only thing missing is
+configuring your preferred client to connect to **Hubiquitus-Node**.
 
-Install `hubiquitus-node` in the server that will serve as a bridge.
-Download `hubiquitusjs` and add it to your website. In the webpage that
-you want to use the connection, add this to the header:
+For using SocketIO, doing load-balancing and more, you need 
+[hubiquitusjs](https://github.com/hubiquitus/hubiquitusjs), it's browser-client
+counterpart, or node's client-side version 
+[hubiquitus-node-client](https://github.com/hubiquitus/hubiquitus-node-client).
+
+### Configuring
+
+There are two ways to configure **Hubiquitus-Node**, you can pass command-line
+arguments when running it or use a config file. The options, their format, 
+their default values and their explanation can all be found in *lib/options.js*.
+
+* Command-line arguments are always in the format `--option value`.
+
+* Config files are comprised of key-values pairs in the format `key = value`.
+
+```
+Note: Blank lines or lines starting with *#* are ignored. 
+Keys accepting arrays are specified by passing *value1*,*value2*,*value3*
+```
+
+### How to use with HubiquitusJS
+
+1. Install **Hubiquitus-Node** in the server that will serve as a gateway.
+
+2. Download **HubiquitusJS** and add it to your website. Assuming the `scripts`
+folder of *hubiquitusjs* is in the root directory:
 
 ```html
 <script src='scripts/socket.io.js'></script>
 <script data-main="scripts/main" src='scripts/require.js'></script>
 ```
 
-For this to work, the `scripts` folder of hubiquitusjs must be in
-the website root.
-
-The client needs to be configured to match the configuration of the server.
-In `main.js` of hubiquitusjs change the values to those that are in the file
-`options.js` of hubiquitus-node (Assuming you used the default values) and
-add the XMPP Server values too.
+In `main.js` of *hubiquitusjs* change the options to match those of 
+*hubiquitus-node* and add the XMPP Server values too.
 
 Now it's ready to be used! try to connect from your client to the XMPP server!
 
-Don't fear the options.js file! try to change it to fit your needs.
+For more information about how to use **HubiquitusJS**, go to the 
+[repository](https://github.com/hubiquitus/hubiquitusjs)
 
 ## License 
 
