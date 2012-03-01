@@ -12,8 +12,8 @@ used by XMPP by only requiring the essential information to perform each action.
 * Clients can connect using WebSockets or BOSH, allowing to use the best 
 transport for the client type.
 
-* By using **HubiquitusJS** you can simplify the messages the client sends
-and let **Hubiquitus-Node** take care of the rest.
+* By using **HubiquitusJS**  or **Hubiquitus-Node-Client** you can simplify the
+messages the client sends and let **Hubiquitus-Node** take care of the rest.
 
 * Several ports can be used for each transport, each running as a different
 process increasing scalability!
@@ -28,7 +28,7 @@ $ npm install git://github.com/hubiquitus/hubiquitus-node.git
 
 ## How to use
 
-Once installed, all you need to do is run `gateway.js`:
+Once installed, all you need to do is run *gateway.js*:
 
 ```	
 $ node gateway.js
@@ -40,7 +40,7 @@ in all defined ports.
 If you just want to use it as a BOSH endpoint, the only thing missing is
 configuring your preferred client to connect to **Hubiquitus-Node**.
 
-For using SocketIO, doing load-balancing and more, you need 
+To take advantage of SocketIO, load-balancing and more, you need 
 [hubiquitusjs](https://github.com/hubiquitus/hubiquitusjs), it's browser-client
 counterpart, or node's client-side version 
 [hubiquitus-node-client](https://github.com/hubiquitus/hubiquitus-node-client).
@@ -56,16 +56,16 @@ their default values and their explanation can all be found in *lib/options.js*.
 * Config files are comprised of key-values pairs in the format `key = value`.
 
 ```
-Note: Blank lines or lines starting with *#* are ignored. 
-Keys accepting arrays are specified by passing *value1*,*value2*,*value3*
+Note: Blank lines or lines starting with '#' are ignored. 
+Keys accepting arrays are specified by passing value1,value2,value3
 ```
 
 ### How to use with HubiquitusJS
 
 1. Install **Hubiquitus-Node** in the server that will serve as a gateway.
 
-2. Download **HubiquitusJS** and add it to your website. Assuming the `scripts`
-folder of *hubiquitusjs* is in the root directory:
+2. Download **HubiquitusJS** and add it to your website. Assuming the *scripts*
+folder of *hubiquitusjs* is at the root directory:
 
 ```html
 <script src='scripts/socket.io.js'></script>
@@ -78,7 +78,7 @@ In `main.js` of *hubiquitusjs* change the options to match those of
 Now it's ready to be used! try to connect from your client to the XMPP server!
 
 For more information about how to use **HubiquitusJS**, go to the 
-[repository](https://github.com/hubiquitus/hubiquitusjs)
+[repository](https://github.com/hubiquitus/hubiquitusjs).
 
 ## License 
 

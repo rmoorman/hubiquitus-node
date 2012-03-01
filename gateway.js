@@ -21,50 +21,83 @@ var socketioConnector = require('./lib/socketio_connector.js');
 var boshConnector    = require('node-xmpp-bosh');
 var parseOptions = require('./lib/options.js').parse_options;
 var fs = require('fs');
+var fork = require('child_process').fork;
 
 /**
  * Starts the gateway instatiating its modules
  */
 function main(){
+    var child = process.argv[2] == 'child' ? true : false;
 
-    //Options are read synchronously
-    try {
-        var args = process.argv.splice(2);
-        var i = 0;
+    if(child){
+        var options = parseOptions(process.argv.splice(5));
 
-        //See if a config file is specified
-        while(i < args.length && !args[i].match(/--conf/))
-            i++;
-
-        //If specified read it and add it to the list of args with correct formatting
-        if(i < args.length-1 && args[i].match(/--conf/)){
-            var file =  fs.readFileSync(args[i+1], 'utf8');
-            file = file.split('\n');
-            args = args.splice(i+2);
-            for(i = 0; i < file.length; i++){
-                if(!file[i].match(/ *#.*/) && !file[i].match(/^ *$/))
-                    args = (args.concat(file[i].split(/ *= */)));
-            }
+        //Start an instance of the socketio server in the port from argv
+        if(process.argv[3] == 'socketio'){
+            options['socket.io.port'] = parseInt(process.argv[4]);
+            socketioConnector.startSocketIOConnector(options);
         }
-        for(i = 0; i < args.length; i++)
-            args[i] = args[i].toLowerCase(); //Normalize inputs
 
-        var options = parseOptions(args);
+        //Start an instance of the bosh server in the port from argv
+        else {
+            options['bosh.port'] = parseInt(process.argv[4]);
+            boshConnector.start_bosh({
+                logging: options['global.loglevel'],
+                port: options['bosh.port'],
+                pidgin_compatible: options['bosh.pidgin_compatible']
+            });
+        }
     }
-    catch (err) {
-        console.error("Error parsing options. Exiting");
-        console.log(err);
-        process.exit(1);
+
+    else{
+        //Options are read synchronously
+        try {
+            var args = process.argv.splice(2);
+            var i = 0;
+
+            //See if a config file is specified
+            while(i < args.length && !args[i].match(/--conf/))
+                i++;
+
+            //If specified read it and add it to the list of args with correct formatting
+            if(i < args.length-1 && args[i].match(/--conf/)){
+                var file =  fs.readFileSync(args[i+1], 'utf8');
+                file = file.split('\n');
+                args = args.splice(i+2);
+                for(i = 0; i < file.length; i++){
+                    if(!file[i].match(/ *#.*/) && !file[i].match(/^ *$/))
+                        args = (args.concat(file[i].split(/ *= */)));
+                }
+            }
+
+            var options = parseOptions(args);
+        }
+        catch (err) {
+            console.error("Error parsing options. Exiting");
+            console.log(err);
+            process.exit(1);
+        }
+
+        var children = {
+            bosh : [],
+            socketio : []
+        };
+
+        //Fork processes for socketio
+        var ports = options['socket.io.ports'];
+        for(var i in ports){
+            children.socketio.push(fork(__dirname + '/gateway.js',
+                [ 'child', 'socketio', ports[i] ].concat(args)));
+        }
+
+        //Fork processes for Bosh
+        ports = options['bosh.ports'];
+        for(var i in ports){
+            children.bosh.push(fork(__dirname + '/gateway.js',
+                [ 'child', 'bosh', ports[i] ].concat(args)));
+        }
+
     }
-
-    socketioConnector.startSocketIOConnector(options);
-
-    var boshServer = boshConnector.start_bosh({
-        logging: options['global.loglevel'],
-        port: options['bosh.port'],
-        pidgin_compatible: options['bosh.pidgin_compatible']
-    });
-
 }
 
 main();
