@@ -2,7 +2,7 @@
   "author": "Federico Wasserman",
   "name": "hubiquitus-node",
   "description": "Component bridging clients that want to do pubsub and a XMPP Server. Can use as transports BOSH or SocketIO",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "www.hubiquitus.com",
   "repository": {
     "type": "git",
