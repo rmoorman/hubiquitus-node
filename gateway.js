@@ -23,6 +23,11 @@ var parseOptions = require('./lib/options.js').parse_options;
 var fs = require('fs');
 var fork = require('child_process').fork;
 
+//For logging
+var path = require('path');
+var filename = "[" + path.basename(path.normalize(__filename)) + "]";
+var log = require('log4js').getLogger(filename); //Use Case: log.info("Info to be logged");
+
 /**
  * Starts the gateway instatiating its modules
  */
@@ -33,7 +38,7 @@ function main(){
         var options = parseOptions(process.argv.splice(5));
 
         //Start an instance of the socketio server in the port from argv
-        if(process.argv[3] == 'socketio'){
+        if(process.argv[3] == 'socket.io'){
             options['socket.io.port'] = parseInt(process.argv[4]);
             socketioConnector.startSocketIOConnector(options);
         }
@@ -78,24 +83,39 @@ function main(){
             process.exit(1);
         }
 
-        var children = {
-            bosh : [],
-            socketio : []
-        };
+        var children = [];
+        function forkChild(type, port){
+            var child = fork(__dirname + '/gateway.js',
+                [ 'child', type, port ].concat(args));
+            children.push(child);
 
-        //Fork processes for socketio
-        var ports = options['socket.io.ports'];
-        for(var i in ports){
-            children.socketio.push(fork(__dirname + '/gateway.js',
-                [ 'child', 'socketio', ports[i] ].concat(args)));
+            //If there is an error, restart the server. never stop it.
+            child.on('exit', function(code, signal){
+                if(signal == 'SIGKILL') return;
+                var idx = children.indexOf(child);
+                if(idx!=-1) children.splice(idx, 1);
+                log.warn(type + ' server on port ' + port + ' stopped working. Restarting')
+                forkChild(type,port);
+            })
         }
 
-        //Fork processes for Bosh
-        ports = options['bosh.ports'];
-        for(var i in ports){
-            children.bosh.push(fork(__dirname + '/gateway.js',
-                [ 'child', 'bosh', ports[i] ].concat(args)));
+        //Fork Processes for each port
+        var servers = ['socket.io', 'bosh'];
+        for(var i in servers){
+            var ports = options[servers[i] + '.ports'];
+            for(var j in ports)
+                forkChild(servers[i], ports[j]);
         }
+
+        function exitFunction(){
+            log.info('Stopping Server');
+            for(var i in children)
+                children[i].kill('SIGKILL');
+        }
+
+        //Always clean up in the end
+        process.on('exit', exitFunction);
+        process.on('SIGINT', exitFunction);
 
     }
 }
