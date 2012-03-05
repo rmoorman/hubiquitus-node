@@ -31,8 +31,12 @@ $ npm install git://github.com/hubiquitus/hubiquitus-node.git
 Once installed, all you need to do is run *gateway.js*:
 
 ```	
-$ node gateway.js
+$ ./gateway.js
 ```
+
+If you installed it globally (using 
+`npm install -g git://github.com/hubiquitus/hubiquitus-node.git`)
+you can run it with `$ hubiquitus-node`
 
 When launched, the server waits for requests by all available transports
 in all defined ports.

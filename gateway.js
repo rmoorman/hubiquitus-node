@@ -1,3 +1,4 @@
+#!/usr/bin/env /usr/local/bin/node
 /*
  * Copyright (c) Novedia Group 2012.
  *
