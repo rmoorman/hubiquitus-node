@@ -27,7 +27,7 @@ var fork = require('child_process').fork;
 //For logging
 var path = require('path');
 var filename = "[" + path.basename(path.normalize(__filename)) + "]";
-var log = require('log4js').getLogger(filename); //Use Case: log.info("Info to be logged");
+global.log = require('log4js').getLogger(filename); //Use Case: log.info("Info to be logged");
 
 /**
  * Starts the gateway instatiating its modules
