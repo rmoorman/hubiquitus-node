@@ -12,8 +12,8 @@ used by XMPP by only requiring the essential information to perform each action.
 * Clients can connect using WebSockets or BOSH, allowing to use the best 
 transport for the client type.
 
-* By using **HubiquitusJS**  or **Hubiquitus-Node-Client** you can simplify the
-messages the client sends and let **Hubiquitus-Node** take care of the rest.
+* By using **HubiquitusJS** you can simplify the treatment of messages sent
+and let **Hubiquitus-Node** take care of the rest.
 
 * Several ports can be used for each transport, each running as a different
 process increasing scalability!
@@ -46,8 +46,7 @@ configuring your preferred client to connect to **Hubiquitus-Node**.
 
 To take advantage of SocketIO, load-balancing and more, you need 
 [hubiquitusjs](https://github.com/hubiquitus/hubiquitusjs), it's browser-client
-counterpart, or node's client-side version 
-[hubiquitus-node-client](https://github.com/hubiquitus/hubiquitus-node-client).
+counterpart.
 
 ### Configuring
 
@@ -63,26 +62,6 @@ their default values and their explanation can all be found in *lib/options.js*.
 Note: Blank lines or lines starting with '#' are ignored. 
 Keys accepting arrays are specified by passing value1,value2,value3
 ```
-
-### How to use with HubiquitusJS
-
-1. Install **Hubiquitus-Node** in the server that will serve as a gateway.
-
-2. Download **HubiquitusJS** and add it to your website. Assuming the *scripts*
-folder of *hubiquitusjs* is at the root directory:
-
-```html
-<script src='scripts/socket.io.js'></script>
-<script data-main="scripts/main" src='scripts/require.js'></script>
-```
-
-In `main.js` of *hubiquitusjs* change the options to match those of 
-*hubiquitus-node* and add the XMPP Server values too.
-
-Now it's ready to be used! try to connect from your client to the XMPP server!
-
-For more information about how to use **HubiquitusJS**, go to the 
-[repository](https://github.com/hubiquitus/hubiquitusjs).
 
 ## License 
 
