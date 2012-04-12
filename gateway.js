@@ -18,7 +18,7 @@
  *     along with Hubiquitus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var socketioConnector = require('./lib/socketio_connector.js');
+var socketioConnector = require('./lib/client_connectors/socketio_connector.js');
 var boshConnector    = require('node-xmpp-bosh');
 var parseOptions = require('./lib/options.js').parse_options;
 var fs = require('fs');
