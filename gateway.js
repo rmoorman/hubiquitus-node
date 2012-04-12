@@ -34,9 +34,10 @@ global.log = require('log4js').getLogger(filename); //Use Case: log.info("Info t
  */
 function main(){
     var child = process.argv[2] == 'child' ? true : false;
+    var options;
 
     if(child){
-        var options = parseOptions(process.argv.splice(5));
+        options = parseOptions(process.argv.splice(5));
 
         //Start an instance of the socketio server in the port from argv
         if(process.argv[3] == 'socket.io'){
@@ -76,7 +77,7 @@ function main(){
                 }
             }
 
-            var options = parseOptions(args);
+            options = parseOptions(args);
         }
         catch (err) {
             console.error("Error parsing options. Exiting");
@@ -95,22 +96,22 @@ function main(){
                 if(signal == 'SIGKILL') return;
                 var idx = children.indexOf(child);
                 if(idx!=-1) children.splice(idx, 1);
-                log.warn(type + ' server on port ' + port + ' stopped working. Restarting')
+                log.warn(type + ' server on port ' + port + ' stopped working. Restarting');
                 forkChild(type,port);
             })
         }
 
         //Fork Processes for each port
         var servers = ['socket.io', 'bosh'];
-        for(var i in servers){
+        for(var i = 0; i < servers.length; i++){
             var ports = options[servers[i] + '.ports'];
-            for(var j in ports)
+            for(var j = 0; j < ports.length; j++)
                 forkChild(servers[i], ports[j]);
         }
 
         function exitFunction(){
             log.info('Stopping Server');
-            for(var i in children)
+            for(var i = 0; i < children.length; i++)
                 children[i].kill('SIGKILL');
         }
 
