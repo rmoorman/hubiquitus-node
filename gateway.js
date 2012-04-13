@@ -41,8 +41,14 @@ function main(){
 
         //Start an instance of the socketio server in the port from argv
         if(process.argv[3] == 'socket.io'){
-            options['socket.io.port'] = parseInt(process.argv[4]);
-            socketioConnector.startSocketIOConnector(options);
+            var args = {
+                logLevel : options['global.loglevel'],
+                port : parseInt(process.argv[4]),
+                namespace : options['socket.io.namespace'],
+                discTimeout : options['socket.io.disctimeout'],
+                ridWindow : options['socket.io.ridwindow']
+            };
+            socketioConnector.run(args);
         }
 
         //Start an instance of the bosh server in the port from argv
