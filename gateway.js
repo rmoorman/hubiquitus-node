@@ -19,7 +19,7 @@
  */
 
 var socketioConnector = require('./lib/client_connectors/socketio_connector.js');
-var boshConnector    = require('node-xmpp-bosh');
+var boshConnector = require('./lib/client_connectors/bosh_connector.js');
 var parseOptions = require('./lib/options.js').parse_options;
 var fs = require('fs');
 var fork = require('child_process').fork;
@@ -47,12 +47,7 @@ function main(){
 
         //Start an instance of the bosh server in the port from argv
         else {
-            options['bosh.port'] = parseInt(process.argv[4]);
-            boshConnector.start_bosh({
-                logging: options['global.loglevel'],
-                port: options['bosh.port'],
-                pidgin_compatible: options['bosh.pidgin_compatible']
-            });
+            boshConnector.run(options);
         }
     }
 
