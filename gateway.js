@@ -18,8 +18,7 @@
  *     along with Hubiquitus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var parseOptions = require('./lib/options.js').parse_options;
-var fs = require('fs');
+var createOptions = require('./lib/options.js').createOptions;
 var fork = require('child_process').fork;
 
 //For logging
@@ -31,35 +30,9 @@ global.log = require('log4js').getLogger(filename); //Use Case: log.info("Info t
  * Starts the gateway instatiating its modules
  */
 function main(){
-    var options;
-    var args = process.argv.splice(2);
+    var options = createOptions();
     var sioModule = __dirname + '/lib/client_connectors/socketio_connector.js';
     var boshModule = __dirname + '/lib/client_connectors/bosh_connector.js';
-
-    try {
-        var argsIt = 0;
-
-        //See if a config file is specified
-        while(argsIt < args.length && !args[argsIt].match(/--conf/))
-            argsIt++;
-
-        //If specified read it and add it to the list of args with correct formatting
-        if(argsIt < args.length-1 && args[argsIt].match(/--conf/)){
-            var file =  fs.readFileSync(args[argsIt+1], 'utf8');
-            file = file.split('\n');
-            args = args.splice(argsIt+2);
-            for(argsIt = 0; argsIt < file.length; argsIt++){
-                if(!file[argsIt].match(/ *#.*/) && !file[argsIt].match(/^ *$/))
-                    args = (args.concat(file[argsIt].split(/ *= */)));
-            }
-        }
-
-        options = parseOptions(args);
-    }catch (err) {
-        console.error("Error parsing options. Exiting");
-        console.log(err);
-        process.exit(1);
-    }
 
     var children = [];
     var child;
