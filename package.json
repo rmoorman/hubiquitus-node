@@ -11,8 +11,8 @@
     "maintainers": [{"name": "Federico Wasserman"
         ,"email":"wasserx@hotmail.com"
     }],
-    "bin": "./gateway.js",
-    "main": "gateway.js",
+    "bin": "./hnode.js",
+    "main": "hnode.js",
     "engines": {
         "node": ">0.4.0"
     },
