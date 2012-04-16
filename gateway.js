@@ -19,6 +19,8 @@
  */
 
 var createOptions = require('./lib/options.js').createOptions;
+var xmppComponent = require('./lib/server_connectors/xmpp_component.js').Component;
+
 var fork = require('child_process').fork;
 
 //For logging
@@ -67,6 +69,21 @@ function main(){
             for(var j = 0; j < children.length; j++)
                 children[j].kill();
         });
+
+    //Launch the XMPP component
+    var hNodeComponentArgs = {
+        jid : options['hnode.jid'],
+        password : options['hnode.password'],
+        host : options['hnode.host'],
+        port : options['hnode.port']
+    };
+
+    var hNodeComponent = new xmppComponent(hNodeComponentArgs);
+    hNodeComponent.on('error', function(err){
+        log.error('Error in hNodeComponent', err);
+        process.exit(1);
+    });
+    hNodeComponent.connect();
 }
 
 main();
