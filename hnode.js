@@ -75,7 +75,9 @@ function main(){
         jid : options['hnode.jid'],
         password : options['hnode.password'],
         host : options['hnode.host'],
-        port : options['hnode.port']
+        port : options['hnode.port'],
+        modulePath : options['hcommands.path'],
+        timeout : options['hcommands.timeout']
     };
 
     var hNodeComponent = new xmppComponent(hNodeComponentArgs);

@@ -17,38 +17,18 @@
  *     along with Hubiquitus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-exports.errors = {
-    JID_MALFORMAT: 1,
-    CONN_TIMEOUT: 2,
-    AUTH_FAILED: 3,
-    ATTACH_FAILED: 4,
-    ALREADY_CONNECTED: 5,
-    TECH_ERROR : 6,
-    NOT_CONNECTED : 7,
-    ALREADY_SUBSCRIBED: 1,
-    GET_SUBS_FAILED: 2
+//Events
+var util = require('util');
+var events = require('events').EventEmitter;
+
+var Nothing = function(){
+    events.call(this);
 };
 
-exports.statuses = {
-    CONNECTING : 1,
-    CONNECTED : 2,
-    REATTACHING: 3,
-    REATTACHED: 4,
-    DISCONNECTING: 5,
-    DISCONNECTED: 6,
-    ERROR: 7
+util.inherits(Nothing, events);
+
+Nothing.prototype.exec = function(hCommand){
 };
 
-exports.hResultStatus = {
-    OK : 0,
-    TECH_ERROR : 1,
-    CHAN_INACTIVE : 2,
-    NOT_CONNECTED : 3,
-    CHAN_INVALID : 4,
-    NOT_AUTHORIZED : 5,
-    MISSING_ATTR : 6,
-    INVALID_ATTR : 7,
-    ADMIN_REQUIRED : 8,
-    NOT_AVAILABLE : 9,
-    EXEC_TIMEOUT : 10
-};
+var nothing = new Nothing();
+exports.Command = nothing;
