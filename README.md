@@ -28,10 +28,10 @@ $ npm install git://github.com/hubiquitus/hubiquitus-node.git
 
 ## How to use
 
-Once installed, all you need to do is run *gateway.js*:
+Once installed, all you need to do is run *hnode.js*:
 
 ```	
-$ ./gateway.js
+$ ./hnode.js
 ```
 
 If you installed it globally (using 
@@ -41,12 +41,8 @@ you can run it with `$ hubiquitus-node`
 When launched, the server waits for requests by all available transports
 in all defined ports.
 
-If you just want to use it as a BOSH endpoint, the only thing missing is
-configuring your preferred client to connect to **Hubiquitus-Node**.
-
-To take advantage of SocketIO, load-balancing and more, you need 
-[hubiquitusjs](https://github.com/hubiquitus/hubiquitusjs), it's browser-client
-counterpart.
+This server needs a hAPI counterpart (ported to different languages),
+for example [hubiquitusjs](https://github.com/hubiquitus/hubiquitusjs).
 
 ### Configuring
 
