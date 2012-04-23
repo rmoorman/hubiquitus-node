@@ -63,6 +63,8 @@ arguments when running it or use a config file. The options, their format,
 their default values and their explanation can all be found in 
 [Options](https://github.com/hubiquitus/hubiquitus-node/wiki/Options).
 
+To use a config file you need only to pass one argument: `--config <path>`
+
 * Command-line arguments are always in the format `--option value`.
 
 * Config files are comprised of key-values pairs in the format `key = value`.
