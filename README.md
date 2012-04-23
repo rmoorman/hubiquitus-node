@@ -19,8 +19,19 @@ and let **Hubiquitus-Node** take care of the rest.
 process increasing scalability!
 
 ## How to Install
+### Dependencies
 
-To use **Hubiquitus-Node**, you need Node.JS and NPM.
+To use **Hubiquitus-Node**, you need Node.JS, NPM and an XMPP Server.
+
+To make it function correctly, the XMPP Server needs to have a `Component connection`
+configured.
+
+```
+Note: Because hnode works as a bosh endpoint using the default port,
+you will need to change the bosh port in the XMPP Server configuration.
+``` 
+
+###Installation
 
 ```
 $ npm install git://github.com/hubiquitus/hubiquitus-node.git	
@@ -28,15 +39,16 @@ $ npm install git://github.com/hubiquitus/hubiquitus-node.git
 
 ## How to use
 
-Once installed, all you need to do is run *hnode.js*:
+Once installed, all you need to do is run *hnode.js* with the `component-jid`
+and `secret` as options:
 
 ```	
-$ ./hnode.js
+$ ./hnode.js --hnode.jid <jid> --hnode.password <secret>
 ```
 
 If you installed it globally (using 
 `npm install -g git://github.com/hubiquitus/hubiquitus-node.git`)
-you can run it with `$ hubiquitus-node`
+you can run it with `$ hubiquitus-node --hnode.jid <jid> --hnode.password <secret>`
 
 When launched, the server waits for requests by all available transports
 in all defined ports.
@@ -48,7 +60,8 @@ for example [hubiquitusjs](https://github.com/hubiquitus/hubiquitusjs).
 
 There are two ways to configure **Hubiquitus-Node**, you can pass command-line
 arguments when running it or use a config file. The options, their format, 
-their default values and their explanation can all be found in *lib/options.js*.
+their default values and their explanation can all be found in 
+[Options](https://github.com/hubiquitus/hubiquitus-node/wiki/Options).
 
 * Command-line arguments are always in the format `--option value`.
 
