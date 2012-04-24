@@ -45,15 +45,16 @@ describe('hCommand', function(){
         done();
     })
     describe('#Process an hCommand', function(){
-        it('should emit hResult when command finishes', function(done){
+
+        /**
+         * Assumes hEcho is implemented
+         */
+        it('should call module when module exists', function(done){
             hCommandController.on('hResult', function(res){
                 should.exist(res);
                 res.should.have.property('hResult');
                 var hResult = res.hResult;
-                hResult.should.have.property('cmd', echoCmd.cmd);
-                hResult.should.have.property('reqid', echoCmd.reqid);
                 hResult.should.have.property('status', status.OK);
-                hResult.should.have.property('result').and.eql(echoCmd.params);
                 done();
             });
             hCommandController.emit('hCommand', {from: echoCmd.sender, hCommand: echoCmd});
