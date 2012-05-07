@@ -18,44 +18,93 @@
  */
 
 var should = require('should');
-var Mongo = require('../lib/mongo.js');
+var Mongo = require('../lib/mongo.js').db;
+var codes = require('../lib/codes.js');
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
 describe('Mongo', function(){
 
     var uri = 'mongodb://localhost/test';
+    var db;
 
     beforeEach(function(done){
+        db = new Mongo();
         done();
     })
 
-    describe('#dbInit', function(){
-
-        it('should return object with list of models names', function(done){
-            var obj = Mongo.dbInit(uri);
-            should.exist(obj);
-            obj.should.have.property('models');
+    afterEach(function(done){
+        //Clean up connection
+        if(db.connection)
+            db.connection.close(done);
+        else
             done();
-        })
-
-        it('should return object with attrs equal to models names', function(done){
-            var obj = Mongo.dbInit(uri);
-            for(var i = 0; i < obj.models.length; i++)
-                obj.should.have.property(obj.models[i]);
-            done();
-        })
-
-        it('should return object with hChannel attr', function(done){
-            var obj = Mongo.dbInit(uri);
-            obj.should.have.property('hChannel');
-            done();
-        })
-
-        it('should return object with model list including hChannel', function(done){
-            var obj = Mongo.dbInit(uri);
-            obj.models.should.include('hChannel');
-            done();
-        })
     })
+
+    describe('#connect', function(){
+
+        it('should return context object', function(done){
+            var context = db.connect(uri);
+            should.exist(context);
+
+            context.should.have.property('models');
+            context.should.have.property('connection');
+            done();
+        })
+
+        it('should return object with models', function(done){
+            var context = db.connect(uri);
+
+            context.models.should.have.property('hChannel');
+            done();
+        })
+
+        it('should return object with models containing hChannel', function(done){
+            var context = db.connect(uri);
+
+            context.models.should.have.property('hChannel');
+            done();
+        })
+
+        it('should emit connect when connected', function(done){
+            db.on('connect', done);
+            db.connect(uri);
+        })
+
+        it('should emit error when a second connection is attempted', function(done){
+            db.on('error', function(obj){
+                should.exist(obj);
+                obj.should.have.property('code', codes.errors.ALREADY_CONNECTED);
+                done();
+            });
+
+            db.connect(uri);
+            db.connect(uri);
+        })
+
+        it('should emit error when invalid address', function(done){
+            db.on('error', function(obj){
+                should.exist(obj);
+                obj.should.have.property('code', codes.errors.TECH_ERROR);
+                done();
+            });
+
+            var fakeUri = 'invalidUri';
+            db.connect(fakeUri);
+        })
+
+        it('should emit error when timeout', function(done){
+            this.timeout(5000);
+            db.on('error', function(obj){
+                should.exist(obj);
+                obj.should.have.property('code', codes.errors.CONN_TIMEOUT);
+                done();
+            });
+
+            var nonExistentAddress = 'mongodb://a';
+            db.connect(nonExistentAddress);
+        })
+
+    })
+
 })
