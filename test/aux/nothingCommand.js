@@ -27,7 +27,7 @@ var Nothing = function(){
 
 util.inherits(Nothing, events);
 
-Nothing.prototype.exec = function(hCommand){
+Nothing.prototype.exec = function(hCommand, context){
 };
 
 var nothing = new Nothing();

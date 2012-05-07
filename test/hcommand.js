@@ -27,12 +27,13 @@ describe('hCommand', function(){
 
     var hCommandController;
     var echoCmd;
+    var params = {
+        modulePath : 'lib/hcommands',
+        timeout : 5000,
+        'mongo.URI' : 'mongodb://localhost/test'
+    };
 
     beforeEach(function(done){
-        var params = {
-            modulePath : 'lib/hcommands',
-            timeout : 5000
-        };
         hCommandController = new Controller(params);
         echoCmd = {
             reqid  : 'hCommandTest123',
@@ -112,10 +113,9 @@ describe('hCommand', function(){
         })
 
         it('should emit hResult when command timesout', function(done){
-            var params = {
-                modulePath : 'test/aux',
-                timeout : 1000
-            };
+            params.modulePath = 'test/aux';
+            params.timeout = 1000;
+
             hCommandController = new Controller(params);
             var nothingCommand = echoCmd;
             nothingCommand.cmd = 'nothingCommand'; //Does nothing, forces timeout

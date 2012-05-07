@@ -77,7 +77,8 @@ function main(){
         host : options['hnode.host'],
         port : options['hnode.port'],
         modulePath : options['hcommands.path'],
-        timeout : options['hcommands.timeout']
+        timeout : options['hcommands.timeout'],
+        'mongo.URI' : options['mongo.URI']
     };
 
     var hNodeComponent = new xmppComponent(hNodeComponentArgs);

@@ -23,7 +23,7 @@ var status = require('../lib/codes.js').hResultStatus;
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
-describe('hCommand', function(){
+describe('hEcho', function(){
 
     var hCommandController;
     var echoCmd;
@@ -31,7 +31,8 @@ describe('hCommand', function(){
     beforeEach(function(done){
         var params = {
             modulePath : 'lib/hcommands',
-            timeout : 5000
+            timeout : 5000,
+            'mongo.URI' : 'mongodb://localhost/test'
         };
         hCommandController = new Controller(params);
         echoCmd = {

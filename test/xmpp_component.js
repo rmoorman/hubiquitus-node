@@ -32,7 +32,8 @@ describe('XMPP Component', function(){
         params ={
             jid: 'hnode',
             password: 'password',
-            host: 'host',
+            host: 'localhost',
+            'mongo.URI' : 'mongodb://localhost/test',
             port: 5276,
             modulePath : 'lib/hcommands',
             timeout : 5000
