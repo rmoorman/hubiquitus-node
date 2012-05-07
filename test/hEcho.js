@@ -18,23 +18,16 @@
  */
 
 var should = require('should');
-var Controller = require('../lib/hcommand_controller.js').Controller;
 var status = require('../lib/codes.js').hResultStatus;
+var hEcho = require('../lib/hcommands/hEcho.js').Command;
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
 describe('hEcho', function(){
 
-    var hCommandController;
     var echoCmd;
 
     beforeEach(function(done){
-        var params = {
-            modulePath : 'lib/hcommands',
-            timeout : 5000,
-            'mongo.URI' : 'mongodb://localhost/test'
-        };
-        hCommandController = new Controller(params);
         echoCmd = {
             reqid  : 'hCommandTest123',
             sender : 'fake jid',
@@ -47,18 +40,15 @@ describe('hEcho', function(){
     })
 
     describe('#Execute hEcho', function(){
-        it('should emit hResult echoing input', function(done){
-            hCommandController.on('hResult', function(res){
+        it('should emit result echoing input', function(done){
+            hEcho.on('result', function(res){
                 should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('cmd', echoCmd.cmd);
-                hResult.should.have.property('reqid', echoCmd.reqid);
-                hResult.should.have.property('status', status.OK);
-                hResult.should.have.property('result').and.eql(echoCmd.params);
+                res.should.have.property('hCommand');
+                res.should.have.property('status', status.OK);
+                res.should.have.property('result', echoCmd.params);
                 done();
             });
-            hCommandController.emit('hCommand', {from: echoCmd.sender, hCommand: echoCmd});
+            hEcho.exec(echoCmd, null);
         })
     })
 })
