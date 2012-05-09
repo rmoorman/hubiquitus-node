@@ -33,10 +33,7 @@ describe('XMPP Component', function(){
             jid: 'hnode',
             password: 'password',
             host: 'localhost',
-            'mongo.URI' : 'mongodb://localhost/test',
-            port: 5276,
-            modulePath : 'lib/hcommands',
-            timeout : 5000
+            port: 5276
         };
         done();
 

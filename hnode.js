@@ -19,7 +19,7 @@
  */
 
 var createOptions = require('./lib/options.js').createOptions;
-var xmppComponent = require('./lib/server_connectors/xmpp_component.js').Component;
+var Controller = require('./lib/hcommand_controller.js').Controller;
 
 var fork = require('child_process').fork;
 
@@ -71,7 +71,7 @@ function main(){
         });
 
     //Launch the XMPP component
-    var hNodeComponentArgs = {
+    var controllerArgs = {
         jid : options['hnode.jid'],
         password : options['hnode.password'],
         host : options['hnode.host'],
@@ -81,12 +81,7 @@ function main(){
         'mongo.URI' : options['mongo.URI']
     };
 
-    var hNodeComponent = new xmppComponent(hNodeComponentArgs);
-    hNodeComponent.on('error', function(err){
-        log.error('Error in hNodeComponent', err);
-        process.exit(1);
-    });
-    hNodeComponent.connect();
+    new Controller(controllerArgs);
 }
 
 main();

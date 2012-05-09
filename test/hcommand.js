@@ -21,16 +21,20 @@ var should = require('should');
 var Controller = require('../lib/hcommand_controller.js').Controller;
 var status = require('../lib/codes.js').hResultStatus;
 
-global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
+global.log = {debug: console.log,info: console.log,warn: console.log,error: console.log};
 
 describe('hCommand', function(){
 
     var hCommandController;
     var echoCmd;
     var params = {
+        jid: 'hnode',
+        password: 'password',
+        host: 'localhost',
+        'mongo.URI' : 'mongodb://localhost/test',
+        port: 5276,
         modulePath : 'lib/hcommands',
-        timeout : 5000,
-        'mongo.URI' : 'mongodb://localhost/test'
+        timeout : 5000
     };
 
     beforeEach(function(done){
