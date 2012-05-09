@@ -21,7 +21,7 @@ var should = require('should');
 var Controller = require('../lib/hcommand_controller.js').Controller;
 var status = require('../lib/codes.js').hResultStatus;
 
-global.log = {debug: console.log,info: console.log,warn: console.log,error: console.log};
+global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
 describe('hCommand', function(){
 
