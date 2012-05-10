@@ -32,8 +32,8 @@ describe('hCommand', function(){
     var existingID = 'Existing ID';
     var mongoURI = 'mongodb://localhost/test';
 
-    describe('#hCreateChannel', function(){
-        beforeEach(function(done){
+    describe('#hCreateUpdateChannel', function(){
+        beforeEach(function(){
             var params = {
                 jid: 'hnode',
                 password: 'password',
@@ -48,7 +48,7 @@ describe('hCommand', function(){
             defaultParams = {
                 chid : new Date() + Math.floor(Math.random()*1000000000000000000001),
                 active : 'Y',
-                host : 'a',
+                host : '' + new Date(),
                 owner : 'p',
                 participants : ['']
             };
@@ -57,10 +57,9 @@ describe('hCommand', function(){
                 sender : 'fake jid',
                 sid : 'fake sid',
                 sent : new Date(),
-                cmd : 'hCreateChannel',
+                cmd : 'hCreateUpdateChannel',
                 params : defaultParams
             };
-            done();
         })
 
         afterEach(function(done){
@@ -127,15 +126,14 @@ describe('hCommand', function(){
             hCommandController.emit('hCommand', {hCommand: createCmd});
         })
 
-        it('should emit hResult error if chid exists', function(done){
+        it('should emit hResult ok if chid exists updating', function(done){
             hCommandController.once('hResult', function(val){
                 should.exist(val);
                 val.should.have.property('hResult');
                 var hResult = val.hResult;
                 hResult.should.have.property('cmd', createCmd.cmd);
                 hResult.should.have.property('reqid', createCmd.reqid);
-                hResult.should.have.property('status', status.INVALID_ATTR);
-                hResult.should.have.property('result').and.be.a('string').and.match(/chid/i);
+                hResult.should.have.property('status', status.OK);
                 done();
             });
             createCmd.params.chid = existingID;
