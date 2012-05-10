@@ -33,7 +33,7 @@ describe('hCommand', function(){
         host: 'localhost',
         'mongo.URI' : 'mongodb://localhost/test',
         port: 5276,
-        modulePath : 'lib/hcommands',
+        modulePath : 'test/aux',
         timeout : 5000
     };
 
@@ -44,16 +44,12 @@ describe('hCommand', function(){
             sender : 'fake jid',
             sid : 'fake sid',
             sent : new Date(),
-            cmd : 'hEcho',
-            params : {hello : 'world'}
+            cmd : 'dummyCommand'
         };
         done();
     })
     describe('#Process an hCommand', function(){
 
-        /**
-         * Assumes hEcho is implemented
-         */
         it('should call module when module exists', function(done){
             hCommandController.on('hResult', function(res){
                 should.exist(res);
@@ -78,49 +74,7 @@ describe('hCommand', function(){
             hCommandController.emit('hCommand', {hCommand: echoCmd});
         })
 
-            //BECAUSE  OF NEW STRUCTURE THIS IS NOT VALID ANYMORE, MAYBE CREATE AN INTEGRATION
-            //TEST BETWEEN CONTROLLER-XMPP?
-
-//        it('should emit hResult when invalid credentials', function(done){
-//            hCommandController.on('hResult', function(res){
-//                should.exist(res);
-//                res.should.have.property('hResult');
-//                var hResult = res.hResult;
-//                hResult.should.have.property('status', status.INVALID_ATTR);
-//                done();
-//            });
-//
-//            hCommandController.emit('hCommand', {from: 'another jid', hCommand: echoCmd});
-//        })
-//
-//        it('should emit hResult not accepting bare jid from and full jid sender', function(done){
-//            hCommandController.on('hResult', function(res){
-//                should.exist(res);
-//                res.should.have.property('hResult');
-//                var hResult = res.hResult;
-//                hResult.should.have.property('status', status.INVALID_ATTR);
-//                done();
-//            });
-//            echoCmd.sender = 'a@b/asd';
-//
-//            hCommandController.emit('hCommand', {from: 'a@b', hCommand: echoCmd});
-//        })
-//
-//        it('should emit hResult accepting full jid from and bare jid sender', function(done){
-//            hCommandController.on('hResult', function(res){
-//                should.exist(res);
-//                res.should.have.property('hResult');
-//                var hResult = res.hResult;
-//                hResult.should.have.property('status', status.OK);
-//                done();
-//            });
-//            echoCmd.sender = 'a@b';
-//
-//            hCommandController.emit('hCommand', {from: echoCmd.sender + '/asd', hCommand: echoCmd});
-//        })
-
         it('should emit hResult when command timesout', function(done){
-            params.modulePath = 'test/aux';
             params.timeout = 1000;
 
             hCommandController = new Controller(params);
