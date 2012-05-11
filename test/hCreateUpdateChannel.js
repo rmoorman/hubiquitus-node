@@ -49,12 +49,12 @@ describe('hCommand', function(){
                 chid : Math.floor(Math.random()*1000001),
                 active : 'Y',
                 host : '' + new Date(),
-                owner : 'p',
+                owner : 'fake@jid',
                 participants : ['']
             };
             createCmd= {
                 reqid  : 'hCommandTest123',
-                sender : 'fake jid',
+                sender : 'fake@jid',
                 sid : 'fake sid',
                 sent : new Date(),
                 cmd : 'hCreateUpdateChannel',
@@ -152,6 +152,35 @@ describe('hCommand', function(){
                 done();
             });
             createCmd.params.headers= [{hKey: {}}];
+            hCommandController.emit('hCommand', {hCommand: createCmd});
+        })
+
+        it('should emit hResult error if owner different than sender', function(done){
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('cmd', createCmd.cmd);
+                hResult.should.have.property('reqid', createCmd.reqid);
+                hResult.should.have.property('status', status.NOT_AUTHORIZED);
+                done();
+            });
+            createCmd.params.owner = 'another@another.jid';
+            hCommandController.emit('hCommand', {hCommand: createCmd});
+        })
+
+        it('should emit hResult ok if sender has resource and owner doesnt', function(done){
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('cmd', createCmd.cmd);
+                hResult.should.have.property('reqid', createCmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+            createCmd.sender = 'another@another.jid/differentRes';
+            createCmd.params.owner = 'another@another.jid';
             hCommandController.emit('hCommand', {hCommand: createCmd});
         })
 
