@@ -90,5 +90,14 @@ describe('hCommand', function(){
             });
             hCommandController.emit('hCommand', {hCommand: nothingCommand});
         })
+
+        it('should ignore empty hcommands', function(done){
+            hCommandController.on('hResult', function(res){
+                //If it enters here there was a problem (multiple calls to done)
+                done();
+            });
+            hCommandController.emit('hCommand', {});
+            done();
+        })
     })
 })
