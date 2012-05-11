@@ -29,8 +29,9 @@ describe('hCommand', function(){
     var hCommandController;
     var createCmd;
     var defaultParams;
-    var existingID = 'Existing ID';
     var mongoURI = 'mongodb://localhost/test';
+    //A Channel that must exist in the database (created on first run. Some tests may fail)
+    var existingID = 'Existing ID';
 
     describe('#hCreateUpdateChannel', function(){
         beforeEach(function(){
@@ -133,7 +134,7 @@ describe('hCommand', function(){
                 var hResult = val.hResult;
                 hResult.should.have.property('cmd', createCmd.cmd);
                 hResult.should.have.property('reqid', createCmd.reqid);
-                hResult.should.have.property('status', status.OK);
+                hResult.should.have.property('status', status.OK, 'first run will create not update');
                 done();
             });
             createCmd.params.chid = existingID;
@@ -181,6 +182,22 @@ describe('hCommand', function(){
             });
             createCmd.sender = 'another@another.jid/differentRes';
             createCmd.params.owner = 'another@another.jid';
+            hCommandController.emit('hCommand', {hCommand: createCmd});
+        })
+
+        it('should emit hResult error if sender tries to update owner', function(done){
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('cmd', createCmd.cmd);
+                hResult.should.have.property('reqid', createCmd.reqid);
+                hResult.should.have.property('status', status.NOT_AUTHORIZED);
+                done();
+            });
+            createCmd.sender = 'a@jid.different';
+            createCmd.params.owner = 'a@jid.different';
+            createCmd.params.chid = existingID;
             hCommandController.emit('hCommand', {hCommand: createCmd});
         })
 
