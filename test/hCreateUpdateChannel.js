@@ -35,7 +35,7 @@ describe('hCommand', function(){
     describe('#hCreateUpdateChannel', function(){
         beforeEach(function(){
             var params = {
-                jid: 'hnode',
+                jid: 'hnode.localhost',
                 password: 'password',
                 host: 'localhost',
                 'mongo.URI' : mongoURI,
@@ -46,7 +46,7 @@ describe('hCommand', function(){
 
             hCommandController = new Controller(params);
             defaultParams = {
-                chid : new Date() + Math.floor(Math.random()*1000000000000000000001),
+                chid : Math.floor(Math.random()*1000001),
                 active : 'Y',
                 host : '' + new Date(),
                 owner : 'p',
