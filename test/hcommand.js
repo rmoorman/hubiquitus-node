@@ -61,6 +61,18 @@ describe('hCommand', function(){
             hCommandController.emit('hCommand', {hCommand: echoCmd});
         })
 
+        it('should call module when cmd with different case', function(done){
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+            echoCmd.cmd = 'dummycommand';
+            hCommandController.emit('hCommand', {hCommand: echoCmd});
+        })
+
         it('should emit hResult when command not found', function(done){
             hCommandController.on('hResult', function(res){
                 should.exist(res);
