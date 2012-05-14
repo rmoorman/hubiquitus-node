@@ -51,7 +51,7 @@ describe('hCommand', function(){
                 active : 'Y',
                 host : '' + new Date(),
                 owner : 'fake@jid',
-                participants : ['']
+                participants : ['u1@localhost']
             };
             createCmd= {
                 reqid  : 'hCommandTest123',
