@@ -48,7 +48,7 @@ describe('hCommand', function(){
             hCommandController = new Controller(params);
             defaultParams = {
                 chid : Math.floor(Math.random()*1000001),
-                active : 'Y',
+                active : true,
                 host : '' + new Date(),
                 owner : 'fake@jid',
                 participants : ['u1@localhost']
