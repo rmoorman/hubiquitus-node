@@ -54,11 +54,11 @@ describe('hSubscribe', function(){
         beforeEach(function(){
             cmd= {
                 reqid  : 'hCommandTest123',
-                sender : 'u1@localhost',
+                sender : jidInParticipants,
                 sid : 'fake sid',
                 sent : new Date(),
                 cmd : 'hSubscribe',
-                params : Math.random()
+                params : {chid: Math.random()}
             };
             hCommandController = new Controller(params);
         })
@@ -93,7 +93,7 @@ describe('hSubscribe', function(){
                 res.hResult.should.have.property('result').and.be.a('string');
                 done();
             });
-            cmd.params = 'this CHID does not exist';
+            cmd.params = {chid: 'this CHID does not exist'};
             hCommandController.emit('hCommand', {hCommand: cmd});
         })
 
@@ -108,7 +108,7 @@ describe('hSubscribe', function(){
                 hResult.should.have.property('result').and.be.a('string');
                 done();
             });
-            cmd.params = existingCHID;
+            cmd.params = {chid: existingCHID};
             cmd.sender = 'not in list';
             hCommandController.emit('hCommand', {hCommand: cmd});
         })
@@ -123,7 +123,7 @@ describe('hSubscribe', function(){
                 hResult.should.have.property('status', status.OK);
                 done();
             });
-            cmd.params = existingCHID;
+            cmd.params = {chid: existingCHID};
             cmd.sender = jidInParticipants;
             hCommandController.emit('hCommand', {hCommand: cmd});
         })
@@ -139,7 +139,7 @@ describe('hSubscribe', function(){
                 hResult.should.have.property('result').and.be.a('string');
                 done();
             });
-            cmd.params = existingCHID;
+            cmd.params = {chid: existingCHID};
             cmd.sender = jidInParticipants;
             hCommandController.emit('hCommand', {hCommand: cmd});
         })
