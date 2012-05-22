@@ -68,6 +68,7 @@ function main(){
             log.info("Stopping hNode...");
             for(var j = 0; j < children.length; j++)
                 children[j].kill();
+            process.exit();
         });
 
     //Launch the XMPP component
