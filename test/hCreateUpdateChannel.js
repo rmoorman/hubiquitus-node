@@ -215,6 +215,34 @@ describe('hCommand', function(){
             hCommandController.emit('hCommand', {hCommand: createCmd});
         })
 
+        it('should emit hResult error with invalid location format', function(done){
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('cmd', createCmd.cmd);
+                hResult.should.have.property('reqid', createCmd.reqid);
+                hResult.should.have.property('status', status.INVALID_ATTR);
+                done();
+            });
+            createCmd.params.location = "";
+            hCommandController.emit('hCommand', {hCommand: createCmd});
+        })
+
+        it('should emit hResult ok without location', function(done){
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('cmd', createCmd.cmd);
+                hResult.should.have.property('reqid', createCmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+            delete createCmd.params.location;
+            hCommandController.emit('hCommand', {hCommand: createCmd});
+        })
+
         it('should emit hResult ok with every field correct', function(done){
             hCommandController.on('hResult', function(res){
                 should.exist(res);
