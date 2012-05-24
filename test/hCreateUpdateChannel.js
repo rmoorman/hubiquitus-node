@@ -46,6 +46,7 @@ describe('hCommand', function(){
             };
 
             hCommandController = new Controller(params);
+
             defaultParams = {
                 chid : Math.floor(Math.random()*1000001),
                 active : true,
