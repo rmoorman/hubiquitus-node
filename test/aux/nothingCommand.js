@@ -17,18 +17,10 @@
  *     along with Hubiquitus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//Events
-var util = require('util');
-var events = require('events').EventEmitter;
-
 var Nothing = function(){
-    events.call(this);
 };
 
-util.inherits(Nothing, events);
-
-Nothing.prototype.exec = function(hCommand, context){
+Nothing.prototype.exec = function(hCommand, context, cb){
 };
 
-var nothing = new Nothing();
-exports.Command = nothing;
+exports.Command = Nothing;

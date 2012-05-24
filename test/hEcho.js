@@ -43,14 +43,14 @@ describe('hEcho', function(){
 
     describe('#Execute hEcho', function(){
         it('should emit result echoing input', function(done){
-            hEcho.on('result', function(res){
-                should.exist(res);
-                res.should.have.property('hCommand');
-                res.should.have.property('status', status.OK);
-                res.should.have.property('result', echoCmd.params);
+            hEcho.exec(echoCmd, null, function(statusValue, resultValue){
+                should.exist(statusValue);
+                should.exist(resultValue);
+                statusValue.should.be.equal(status.OK);
+                resultValue.should.be.equal(echoCmd.params);
                 done();
             });
-            hEcho.exec(echoCmd, null);
         })
     })
+
 })

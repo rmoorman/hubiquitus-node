@@ -17,11 +17,15 @@
  *     along with Hubiquitus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var Dummy = function(){
+//Calls callback after controller timeout
+
+var LateFinisher = function(){
 };
 
-Dummy.prototype.exec = function(hCommand, context, cb){
-    cb(0);
+LateFinisher.prototype.exec = function(hCommand, context, cb){
+    setTimeout(function(){
+        cb(0, 'finished!');
+    }, 2000);
 };
 
-exports.Command = Dummy;
+exports.Command = LateFinisher;

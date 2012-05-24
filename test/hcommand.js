@@ -103,6 +103,24 @@ describe('hCommand', function(){
             hCommandController.emit('hCommand', {hCommand: nothingCommand});
         })
 
+        it('should not allow command to call cb if after timeout', function(done){
+            params.timeout = 1000;
+            this.timeout = 3000;
+
+            hCommandController = new Controller(params);
+            var lateFinisher = echoCmd;
+            lateFinisher.cmd = 'lateFinisher'; //Calls callback at 2seg
+
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('status', status.EXEC_TIMEOUT);
+                done();
+            });
+            hCommandController.emit('hCommand', {hCommand: lateFinisher});
+        })
+
         it('should ignore empty hcommands', function(done){
             hCommandController.on('hResult', function(res){
                 //If it enters here there was a problem (multiple calls to done)
