@@ -64,7 +64,7 @@
                 hCommandController = new Controller(params);
             })
 
-            after(function(done){
+            afterEach(function(done){
                 mongoose.connect(mongoURI);
                 mongoose.connection.close(done);
             })
