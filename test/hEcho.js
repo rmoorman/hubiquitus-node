@@ -19,13 +19,14 @@
 
 var should = require('should');
 var status = require('../lib/codes.js').hResultStatus;
-var hEcho = require('../lib/hcommands/hEcho.js').Command;
+var hEchoModule = require('../lib/hcommands/hEcho.js').Command;
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
 describe('hEcho', function(){
 
     var echoCmd;
+    var hEcho;
 
     beforeEach(function(done){
         echoCmd = {
@@ -36,6 +37,7 @@ describe('hEcho', function(){
             cmd : 'hEcho',
             params : {hello : 'world'}
         };
+        hEcho = new hEchoModule();
         done();
     })
 
