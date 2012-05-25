@@ -20,13 +20,15 @@
 var should = require('should');
 var Controller = require('../lib/hcommand_controller.js').Controller;
 var status = require('../lib/codes.js').hResultStatus;
+var mongoose = require('mongoose');
+
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
 describe('hCommand', function(){
 
     var hCommandController;
-    var echoCmd;
+    var cmd;
     var params = {
         jid: 'hnode',
         password: 'password',
@@ -39,7 +41,7 @@ describe('hCommand', function(){
 
     beforeEach(function(done){
         hCommandController = new Controller(params);
-        echoCmd = {
+        cmd = {
             reqid  : 'hCommandTest123',
             sender : 'fake jid',
             sid : 'fake sid',
@@ -48,6 +50,13 @@ describe('hCommand', function(){
         };
         done();
     })
+
+    //Needs to be done because it is not closed correctly otherwise
+    afterEach(function(done){
+        mongoose.connect('mongodb://localhost/test');
+        mongoose.connection.close(done);
+    })
+
     describe('#Process an hCommand', function(){
 
         it('should call module when module exists', function(done){
@@ -58,7 +67,7 @@ describe('hCommand', function(){
                 hResult.should.have.property('status', status.OK);
                 done();
             });
-            hCommandController.emit('hCommand', {hCommand: echoCmd});
+            hCommandController.emit('hCommand', {hCommand: cmd});
         })
 
         it('should call module when cmd with different case', function(done){
@@ -69,8 +78,8 @@ describe('hCommand', function(){
                 hResult.should.have.property('status', status.OK);
                 done();
             });
-            echoCmd.cmd = 'dummycommand';
-            hCommandController.emit('hCommand', {hCommand: echoCmd});
+            cmd.cmd = 'dummycommand';
+            hCommandController.emit('hCommand', {hCommand: cmd});
         })
 
         it('should emit hResult when command not found', function(done){
@@ -82,16 +91,15 @@ describe('hCommand', function(){
                 done();
             });
 
-            echoCmd.cmd = 'inexistent command';
-            hCommandController.emit('hCommand', {hCommand: echoCmd});
+            cmd.cmd = 'inexistent command';
+            hCommandController.emit('hCommand', {hCommand: cmd});
         })
 
         it('should emit hResult when command timesout', function(done){
             params.timeout = 1000;
 
             hCommandController = new Controller(params);
-            var nothingCommand = echoCmd;
-            nothingCommand.cmd = 'nothingCommand'; //Does nothing, forces timeout
+            cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
 
             hCommandController.on('hResult', function(res){
                 should.exist(res);
@@ -100,16 +108,15 @@ describe('hCommand', function(){
                 hResult.should.have.property('status', status.EXEC_TIMEOUT);
                 done();
             });
-            hCommandController.emit('hCommand', {hCommand: nothingCommand});
+            hCommandController.emit('hCommand', {hCommand: cmd});
         })
 
         it('should not allow command to call cb if after timeout', function(done){
             params.timeout = 1000;
-            this.timeout = 3000;
+            this.timeout(3000);
 
             hCommandController = new Controller(params);
-            var lateFinisher = echoCmd;
-            lateFinisher.cmd = 'lateFinisher'; //Calls callback at 2seg
+            cmd.cmd = 'lateFinisher'; //Calls callback at 2seg
 
             hCommandController.on('hResult', function(res){
                 should.exist(res);
@@ -118,7 +125,24 @@ describe('hCommand', function(){
                 hResult.should.have.property('status', status.EXEC_TIMEOUT);
                 done();
             });
-            hCommandController.emit('hCommand', {hCommand: lateFinisher});
+            hCommandController.emit('hCommand', {hCommand: cmd});
+        })
+
+        it('should allow command to change timeout', function(done){
+            params.timeout = 1000;
+            this.timeout(4000);
+
+            hCommandController = new Controller(params);
+            cmd.cmd = 'timeoutChanger'; //Calls callback at 2seg
+
+            hCommandController.on('hResult', function(res){
+                should.exist(res);
+                res.should.have.property('hResult');
+                var hResult = res.hResult;
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+            hCommandController.emit('hCommand', {hCommand: cmd});
         })
 
         it('should ignore empty hcommands', function(done){
