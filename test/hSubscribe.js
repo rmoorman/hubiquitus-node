@@ -89,7 +89,7 @@ describe('hSubscribe', function(){
                 res.should.have.property('hResult');
                 res.hResult.should.have.property('cmd', cmd.cmd);
                 res.hResult.should.have.property('reqid', cmd.reqid);
-                res.hResult.should.have.property('status').and.equal(status.NOT_AVAILABLE);
+                res.hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
                 res.hResult.should.have.property('result').and.be.a('string');
                 done();
             });

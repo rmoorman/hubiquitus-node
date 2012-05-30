@@ -89,7 +89,7 @@ describe('hUnsubscribe', function(){
                 res.should.have.property('hResult');
                 res.hResult.should.have.property('cmd', cmd.cmd);
                 res.hResult.should.have.property('reqid', cmd.reqid);
-                res.hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
+                res.hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
                 res.hResult.should.have.property('result').and.be.a('string');
                 done();
             });
@@ -104,7 +104,7 @@ describe('hUnsubscribe', function(){
                 var hResult = res.hResult;
                 hResult.should.have.property('cmd', cmd.cmd);
                 hResult.should.have.property('reqid', cmd.reqid);
-                hResult.should.have.property('status', status.INVALID_ATTR);
+                hResult.should.have.property('status', status.NOT_AUTHORIZED);
                 hResult.should.have.property('result').and.be.a('string');
                 done();
             });
