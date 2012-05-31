@@ -34,7 +34,7 @@ describe('hCommand', function(){
     var existingID = 'Existing ID';
 
     describe('#hCreateUpdateChannel', function(){
-        beforeEach(function(){
+        beforeEach(function(done){
             var params = {
                 jid: 'hnode.localhost',
                 password: 'password',
@@ -44,8 +44,6 @@ describe('hCommand', function(){
                 modulePath : 'lib/hcommands',
                 timeout : 5000
             };
-
-            hCommandController = new Controller(params);
 
             defaultParams = {
                 chid : Math.floor(Math.random()*1000001),
@@ -62,6 +60,10 @@ describe('hCommand', function(){
                 cmd : 'hCreateUpdateChannel',
                 params : defaultParams
             };
+
+            hCommandController = new Controller(params);
+
+            hCommandController.on('ready', done)
         })
 
         afterEach(function(done){
