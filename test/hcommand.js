@@ -29,35 +29,37 @@ describe('hCommand', function(){
 
     var hCommandController;
     var cmd;
+    var mongoURI = 'mongodb://localhost/test';
     var params = {
         jid: 'hnode',
         password: 'password',
         host: 'localhost',
-        'mongo.URI' : 'mongodb://localhost/test',
+        'mongo.URI' : mongoURI,
         port: 5276,
         modulePath : 'test/aux',
-        timeout : 5000
+        timeout : 1000
     };
 
-    beforeEach(function(done){
-        hCommandController = new Controller(params);
-        cmd = {
-            reqid  : 'hCommandTest123',
-            sender : 'fake jid',
-            sid : 'fake sid',
-            sent : new Date(),
-            cmd : 'dummyCommand'
-        };
-        done();
-    })
-
-    //Needs to be done because it is not closed correctly otherwise
-    afterEach(function(done){
-        mongoose.connect('mongodb://localhost/test');
-        mongoose.connection.close(done);
-    })
-
     describe('#Process an hCommand', function(){
+
+        beforeEach(function(done){
+            cmd = {
+                reqid  : 'hCommandTest123',
+                sender : 'fake jid',
+                sid : 'fake sid',
+                sent : new Date(),
+                cmd : 'dummyCommand'
+            };
+
+            hCommandController = new Controller(params);
+            hCommandController.on('ready', done)
+        })
+
+        //Needs to be done because it is not closed correctly otherwise
+        afterEach(function(done){
+            mongoose.connect(mongoURI);
+            mongoose.connection.close(done);
+        })
 
         it('should call module when module exists', function(done){
             hCommandController.on('hResult', function(res){
@@ -96,9 +98,6 @@ describe('hCommand', function(){
         })
 
         it('should emit hResult when command timesout', function(done){
-            params.timeout = 1000;
-
-            hCommandController = new Controller(params);
             cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
 
             hCommandController.on('hResult', function(res){
@@ -112,10 +111,8 @@ describe('hCommand', function(){
         })
 
         it('should not allow command to call cb if after timeout', function(done){
-            params.timeout = 1000;
             this.timeout(3000);
 
-            hCommandController = new Controller(params);
             cmd.cmd = 'lateFinisher'; //Calls callback at 2seg
 
             hCommandController.on('hResult', function(res){
@@ -129,10 +126,8 @@ describe('hCommand', function(){
         })
 
         it('should allow command to change timeout', function(done){
-            params.timeout = 1000;
             this.timeout(4000);
 
-            hCommandController = new Controller(params);
             cmd.cmd = 'timeoutChanger'; //Calls callback at 2seg
 
             hCommandController.on('hResult', function(res){
@@ -153,5 +148,7 @@ describe('hCommand', function(){
             hCommandController.emit('hCommand', {});
             done();
         })
+
     })
+
 })
