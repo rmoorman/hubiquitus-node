@@ -48,7 +48,7 @@
                 status = require('../lib/codes.js').hResultStatus;
             })
 
-            beforeEach(function(){
+            beforeEach(function(done){
                 var hMessage = {
                     chid: existingCHID,
                     publisher: jidInParticipants
@@ -62,6 +62,7 @@
                     params : hMessage
                 };
                 hCommandController = new Controller(params);
+                hCommandController.on('ready', done);
             })
 
             afterEach(function(done){
