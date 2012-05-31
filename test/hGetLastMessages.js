@@ -48,7 +48,7 @@ describe('hGetLastMessages', function(){
             status = require('../lib/codes.js').hResultStatus;
         })
 
-        beforeEach(function(){
+        beforeEach(function(done){
             cmd= {
                 reqid  : 'hCommandTest123',
                 sender : validJID,
@@ -61,6 +61,7 @@ describe('hGetLastMessages', function(){
                 }
             };
             hCommandController = new Controller(params);
+            hCommandController.on('ready', done);
         })
 
         afterEach(function(done){
