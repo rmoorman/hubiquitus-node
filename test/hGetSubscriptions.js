@@ -48,7 +48,7 @@ describe('hGetSubscriptions', function(){
             status = require('../lib/codes.js').hResultStatus;
         })
 
-        beforeEach(function(){
+        beforeEach(function(done){
             cmd= {
                 reqid  : 'hCommandTest123',
                 sender : validJID,
@@ -57,9 +57,11 @@ describe('hGetSubscriptions', function(){
                 cmd : 'hGetSubscriptions'
             };
             hCommandController = new Controller(params);
+
+            hCommandController.on('ready', done)
         })
 
-        after(function(done){
+        afterEach(function(done){
             mongoose.connect(mongoURI);
             mongoose.connection.close(done);
         })
