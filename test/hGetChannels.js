@@ -33,7 +33,7 @@ describe('hCommand', function(){
     var mongoURI = 'mongodb://localhost/test';
 
     describe('#hGetChannels', function(){
-        before(function(){
+        before(function(done){
             var params = {
                 jid: 'hnode',
                 password: 'password',
@@ -45,6 +45,7 @@ describe('hCommand', function(){
             };
 
             hCommandController = new Controller(params);
+            hCommandController.on('ready', done);
         })
 
         beforeEach(function(){
@@ -57,7 +58,7 @@ describe('hCommand', function(){
             };
         })
 
-        after(function(done){
+        afterEach(function(done){
             mongoose.connect(mongoURI);
             mongoose.connection.close(done);
         })

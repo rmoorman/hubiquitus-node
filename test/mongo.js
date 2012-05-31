@@ -43,29 +43,6 @@ describe('Mongo', function(){
 
     describe('#connect', function(){
 
-        it('should return context object', function(done){
-            var context = db.connect(uri);
-            should.exist(context);
-
-            context.should.have.property('models');
-            context.should.have.property('connection');
-            done();
-        })
-
-        it('should return object with models', function(done){
-            var context = db.connect(uri);
-
-            context.models.should.have.property('hChannel');
-            done();
-        })
-
-        it('should return object with models containing hChannel', function(done){
-            var context = db.connect(uri);
-
-            context.models.should.have.property('hChannel');
-            done();
-        })
-
         it('should emit connect when connected', function(done){
             db.on('connect', done);
             db.connect(uri);
@@ -103,6 +80,40 @@ describe('Mongo', function(){
 
             var nonExistentAddress = 'mongodb://a';
             db.connect(nonExistentAddress);
+        })
+
+    })
+
+    describe('#context', function(){
+        it('should have context', function(done){
+            db.on('connect', function(){
+                var context = db.getContext();
+                should.exist(context);
+
+                context.should.have.property('models');
+                context.should.have.property('connection');
+                done();
+            });
+            db.connect(uri);
+
+        })
+
+        it('should have models', function(done){
+            db.on('connect', function(){
+                var context = db.getContext();
+                context.models.should.have.property('hChannel');
+                done();
+            });
+            db.connect(uri);
+        })
+
+        it('should have cache', function(done){
+            db.on('connect', function(){
+                var context = db.getContext();
+                context.should.have.property('cache');
+                done();
+            });
+            db.connect(uri);
         })
 
     })
