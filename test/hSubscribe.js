@@ -25,7 +25,7 @@ global.log = {debug: function(a){},info: function(a){},warn: function(a){},error
 
 
 /*
-NEEDS BEFORE hCREATEUPDATE. CANT BE RUN WITH ALL OTHERS
+ NEEDS BEFORE hCREATEUPDATE. CANT BE RUN WITH ALL OTHERS
  */
 describe('hSubscribe', function(){
 
@@ -51,7 +51,7 @@ describe('hSubscribe', function(){
             status = require('../lib/codes.js').hResultStatus;
         })
 
-        beforeEach(function(){
+        beforeEach(function(done){
             cmd= {
                 reqid  : 'hCommandTest123',
                 sender : jidInParticipants,
@@ -61,9 +61,10 @@ describe('hSubscribe', function(){
                 params : {chid: Math.random()}
             };
             hCommandController = new Controller(params);
+            hCommandController.on('ready', done);
         })
 
-        after(function(done){
+        afterEach(function(done){
             mongoose.connect(mongoURI);
             mongoose.connection.close(done);
         })
