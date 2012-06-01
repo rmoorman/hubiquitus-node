@@ -38,6 +38,7 @@ function main(){
 
     var children = [];
     var child;
+
     //For each port of socket.io start a new process
     var socketioArgs = {
         logLevel : options['global.loglevel'],
@@ -71,7 +72,7 @@ function main(){
             process.exit();
         });
 
-    //Launch the XMPP component
+    //Launch the Command Controller
     var controllerArgs = {
         jid : options['hnode.jid'],
         password : options['hnode.password'],
@@ -82,7 +83,26 @@ function main(){
         'mongo.URI' : options['mongo.URI']
     };
 
-    new Controller(controllerArgs);
+    var cmdController = new Controller(controllerArgs);
+
+    //Command passthrough for children processes
+    //Listen for results that are emitted to the cmdController and if destined to one of our children, emit it.
+    cmdController.on('hResult', function(res){
+        if( res && res.args && res.args.pid ){
+            var i = 0;
+            while(i < children.length && children[i].pid != res.args.pid) i++;
+            if(i < children.length)
+                children[i].send(res);
+        }
+    });
+
+    //The object should be in the form {hCommand : hCommand, args : <optional arguments {}>}
+    for(var i = 0; i < children.length; i++)
+        children[i].on('message', function(obj){
+            if(obj && obj.hCommand)
+                cmdController.emit('hCommand', obj);
+        })
+
 }
 
 main();
