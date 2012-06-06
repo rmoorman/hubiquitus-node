@@ -19,9 +19,7 @@
 
 var should = require('should');
 var Controller = require('../lib/hcommand_controller.js').Controller;
-var status = require('../lib/codes.js').hResultStatus;
-var mongoose = require('mongoose');
-
+var db = require('../lib/mongo.js').db;
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
@@ -29,20 +27,30 @@ describe('hCommand', function(){
 
     var hCommandController;
     var cmd;
+    var status = require('../lib/codes.js').hResultStatus;
     var mongoURI = 'mongodb://localhost/test';
     var params = {
         jid: 'hnode',
         password: 'password',
         host: 'localhost',
-        'mongo.URI' : mongoURI,
         port: 5276,
         modulePath : 'test/aux',
         timeout : 1000
     };
 
+    before(function(done){
+        db.on('connect', done);
+        db.connect(mongoURI);
+    })
+
+    after(function(done){
+        db.on('disconnect', done);
+        db.disconnect();
+    })
+
     describe('#Process an hCommand', function(){
 
-        beforeEach(function(done){
+        beforeEach(function(){
             cmd = {
                 reqid  : 'hCommandTest123',
                 sender : 'fake jid',
@@ -52,13 +60,6 @@ describe('hCommand', function(){
             };
 
             hCommandController = new Controller(params);
-            hCommandController.on('ready', done)
-        })
-
-        //Needs to be done because it is not closed correctly otherwise
-        afterEach(function(done){
-            mongoose.connect(mongoURI);
-            mongoose.connection.close(done);
         })
 
         it('should call module when module exists', function(done){

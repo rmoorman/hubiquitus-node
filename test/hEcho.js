@@ -18,7 +18,6 @@
  */
 
 var should = require('should');
-var status = require('../lib/codes.js').hResultStatus;
 var hEchoModule = require('../lib/hcommands/hEcho.js').Command;
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
@@ -27,6 +26,7 @@ describe('hEcho', function(){
 
     var echoCmd;
     var hEcho;
+    var status = require('../lib/codes.js').hResultStatus;
 
     beforeEach(function(done){
         echoCmd = {

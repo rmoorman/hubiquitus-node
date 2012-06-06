@@ -19,7 +19,7 @@
 
 var should = require('should');
 var Controller = require('../lib/hcommand_controller.js').Controller;
-var mongoose = require('mongoose');
+var db = require('../lib/mongo.js').db;
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
@@ -28,134 +28,131 @@ describe('hGetLastMessages', function(){
 
     var hCommandController;
     var cmd;
-    var status;
-    var params;
+    var status = require('../lib/codes.js').hResultStatus;
     var existingCHID = 'Existing ID';
     var validJID = 'u1@localhost';
     var mongoURI = 'mongodb://localhost/test';
 
-    describe('#hGetLastMessages', function(){
-        before(function(){
-            params = {
-                jid: 'hnode.localhost',
-                password: 'password',
-                host: 'localhost',
-                'mongo.URI' : mongoURI,
-                port: 5276,
-                modulePath : 'lib/hcommands',
-                timeout : 5000
-            };
-            status = require('../lib/codes.js').hResultStatus;
-        })
+    var controllerParams= {
+        jid: 'hnode.localhost',
+        password: 'password',
+        host: 'localhost',
+        port: 5276,
+        modulePath : 'lib/hcommands',
+        timeout : 5000
+    };
 
-        beforeEach(function(done){
-            cmd= {
-                reqid  : 'hCommandTest123',
-                sender : validJID,
-                sid : 'fake sid',
-                sent : new Date(),
-                cmd : 'hGetLastMessages',
-                params : {
-                    chid: existingCHID,
-                    quant: 5
-                }
-            };
-            hCommandController = new Controller(params);
-            hCommandController.on('ready', done);
-        })
-
-        afterEach(function(done){
-            mongoose.connect(mongoURI);
-            mongoose.connection.close(done);
-        })
-
-        it('should emit hResult ok if there are no hMessages stored', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('cmd', cmd.cmd);
-                hResult.should.have.property('reqid', cmd.reqid);
-                hResult.should.have.property('status', status.OK);
-                hResult.should.have.property('result').and.be.an.instanceof(Array);
-                done();
-            });
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should emit hResult error if no params is passed', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('cmd', cmd.cmd);
-                hResult.should.have.property('reqid', cmd.reqid);
-                hResult.should.have.property('status', status.INVALID_ATTR);
-                hResult.should.have.property('result').and.be.a('string');
-                done();
-            });
-            delete cmd.params;
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should emit hResult error if no channel is passed', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('cmd', cmd.cmd);
-                hResult.should.have.property('reqid', cmd.reqid);
-                hResult.should.have.property('status', status.MISSING_ATTR);
-                hResult.should.have.property('result').and.be.a('string');
-                done();
-            });
-            delete cmd.params.chid;
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should emit hResult error if publisher not in participants list', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('cmd', cmd.cmd);
-                hResult.should.have.property('reqid', cmd.reqid);
-                hResult.should.have.property('status', status.NOT_AUTHORIZED);
-                hResult.should.have.property('result').and.be.a('string');
-                done();
-            });
-            cmd.sender = 'not in list';
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should emit hResult ok without quant', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('cmd', cmd.cmd);
-                hResult.should.have.property('reqid', cmd.reqid);
-                hResult.should.have.property('status', status.OK);
-                hResult.should.have.property('result').and.be.an.instanceof(Array);
-                done();
-            });
-            delete cmd.params.quant;
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should emit hResult ok if there are hMessages', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('cmd', cmd.cmd);
-                hResult.should.have.property('reqid', cmd.reqid);
-                hResult.should.have.property('status', status.OK);
-                hResult.should.have.property('result').and.be.an.instanceof(Array);
-                done();
-            });
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
+    before(function(done){
+        db.on('connect', done);
+        db.connect(mongoURI);
     })
+
+    after(function(done){
+        db.on('disconnect', done);
+        db.disconnect();
+    })
+
+    beforeEach(function(){
+        cmd= {
+            reqid  : 'hCommandTest123',
+            sender : validJID,
+            sid : 'fake sid',
+            sent : new Date(),
+            cmd : 'hGetLastMessages',
+            params : {
+                chid: existingCHID,
+                quant: 5
+            }
+        };
+        hCommandController = new Controller(controllerParams);
+    })
+
+    it('should emit hResult ok if there are no hMessages stored', function(done){
+        hCommandController.on('hResult', function(res){
+            should.exist(res);
+            res.should.have.property('hResult');
+            var hResult = res.hResult;
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            hResult.should.have.property('result').and.be.an.instanceof(Array);
+            done();
+        });
+        hCommandController.emit('hCommand', {hCommand: cmd});
+    })
+
+    it('should emit hResult error if no params is passed', function(done){
+        hCommandController.on('hResult', function(res){
+            should.exist(res);
+            res.should.have.property('hResult');
+            var hResult = res.hResult;
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+        delete cmd.params;
+        hCommandController.emit('hCommand', {hCommand: cmd});
+    })
+
+    it('should emit hResult error if no channel is passed', function(done){
+        hCommandController.on('hResult', function(res){
+            should.exist(res);
+            res.should.have.property('hResult');
+            var hResult = res.hResult;
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.MISSING_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+        delete cmd.params.chid;
+        hCommandController.emit('hCommand', {hCommand: cmd});
+    })
+
+    it('should emit hResult error if publisher not in participants list', function(done){
+        hCommandController.on('hResult', function(res){
+            should.exist(res);
+            res.should.have.property('hResult');
+            var hResult = res.hResult;
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.NOT_AUTHORIZED);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+        cmd.sender = 'not in list';
+        hCommandController.emit('hCommand', {hCommand: cmd});
+    })
+
+    it('should emit hResult ok without quant', function(done){
+        hCommandController.on('hResult', function(res){
+            should.exist(res);
+            res.should.have.property('hResult');
+            var hResult = res.hResult;
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            hResult.should.have.property('result').and.be.an.instanceof(Array);
+            done();
+        });
+        delete cmd.params.quant;
+        hCommandController.emit('hCommand', {hCommand: cmd});
+    })
+
+    it('should emit hResult ok if there are hMessages', function(done){
+        hCommandController.on('hResult', function(res){
+            should.exist(res);
+            res.should.have.property('hResult');
+            var hResult = res.hResult;
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            hResult.should.have.property('result').and.be.an.instanceof(Array);
+            done();
+        });
+        hCommandController.emit('hCommand', {hCommand: cmd});
+    })
+
 })

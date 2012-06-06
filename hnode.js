@@ -72,36 +72,48 @@ function main(){
             process.exit();
         });
 
-    //Launch the Command Controller
+    //Set the Command Controller options
     var controllerArgs = {
         jid : options['hnode.jid'],
         password : options['hnode.password'],
         host : options['hnode.host'],
         port : options['hnode.port'],
         modulePath : options['hcommands.path'],
-        timeout : options['hcommands.timeout'],
-        'mongo.URI' : options['mongo.URI']
+        timeout : options['hcommands.timeout']
     };
 
-    var cmdController = new Controller(controllerArgs);
-
-    //Command passthrough for children processes
-    //Listen for results that are emitted to the cmdController and if destined to one of our children, emit it.
-    cmdController.on('hResult', function(res){
-        if( res && res.args && res.args.pid ){
-            var i = 0;
-            while(i < children.length && children[i].pid != res.args.pid) i++;
-            if(i < children.length)
-                children[i].send(res);
-        }
+    //Set listeners for Mongo errors/ connection
+    var db = require('./lib/mongo.js').db;
+    db.on('error', function(err){
+        log.error('Error Connecting to database', err);
+        process.exit(1);
     });
 
-    //The object should be in the form {hCommand : hCommand, args : <optional arguments {}>}
-    for(var i = 0; i < children.length; i++)
-        children[i].on('message', function(obj){
-            if(obj && obj.hCommand)
-                cmdController.emit('hCommand', obj);
-        })
+    //When connected, launch the command controller
+    db.on('connect', function(){
+        var cmdController = new Controller(controllerArgs);
+
+        //Command passthrough for children processes
+        //Listen for results that are emitted to the cmdController and if destined to one of our children, emit it.
+        cmdController.on('hResult', function(res){
+            if( res && res.args && res.args.pid ){
+                var i = 0;
+                while(i < children.length && children[i].pid != res.args.pid) i++;
+                if(i < children.length)
+                    children[i].send(res);
+            }
+        });
+
+        //The object should be in the form {hCommand : hCommand, args : <optional arguments {}>}
+        for(var i = 0; i < children.length; i++)
+            children[i].on('message', function(obj){
+                if(obj && obj.hCommand)
+                    cmdController.emit('hCommand', obj);
+            })
+    });
+
+    //Start connection to Mongo
+    db.connect(options['mongo.URI']);
 
 }
 

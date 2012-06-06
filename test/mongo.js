@@ -18,40 +18,31 @@
  */
 
 var should = require('should');
-var Mongo = require('../lib/mongo.js').db;
-var codes = require('../lib/codes.js');
+var db = require('../lib/mongo.js').db;
+var errors = require('../lib/codes.js').errors;
 
 global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
 
 describe('Mongo', function(){
 
     var uri = 'mongodb://localhost/test';
-    var db;
-
-    beforeEach(function(done){
-        db = new Mongo();
-        done();
-    })
-
-    afterEach(function(done){
-        //Clean up connection
-        if(db.connection)
-            db.connection.close(done);
-        else
-            done();
-    })
 
     describe('#connect', function(){
 
+        afterEach(function(done){
+            db.once('disconnect', done);
+            db.disconnect();
+        })
+
         it('should emit connect when connected', function(done){
-            db.on('connect', done);
+            db.once('connect', done);
             db.connect(uri);
         })
 
         it('should emit error when a second connection is attempted', function(done){
-            db.on('error', function(obj){
+            db.once('error', function(obj){
                 should.exist(obj);
-                obj.should.have.property('code', codes.errors.ALREADY_CONNECTED);
+                obj.should.have.property('code', errors.ALREADY_CONNECTED);
                 done();
             });
 
@@ -60,9 +51,9 @@ describe('Mongo', function(){
         })
 
         it('should emit error when invalid address', function(done){
-            db.on('error', function(obj){
+            db.once('error', function(obj){
                 should.exist(obj);
-                obj.should.have.property('code', codes.errors.TECH_ERROR);
+                obj.should.have.property('code', errors.TECH_ERROR);
                 done();
             });
 
@@ -72,9 +63,9 @@ describe('Mongo', function(){
 
         it('should emit error when timeout', function(done){
             this.timeout(5000);
-            db.on('error', function(obj){
+            db.once('error', function(obj){
                 should.exist(obj);
-                obj.should.have.property('code', codes.errors.CONN_TIMEOUT);
+                obj.should.have.property('code', errors.CONN_TIMEOUT);
                 done();
             });
 
@@ -83,39 +74,4 @@ describe('Mongo', function(){
         })
 
     })
-
-    describe('#context', function(){
-        it('should have context', function(done){
-            db.on('connect', function(){
-                var context = db.getContext();
-                should.exist(context);
-
-                context.should.have.property('models');
-                context.should.have.property('connection');
-                done();
-            });
-            db.connect(uri);
-
-        })
-
-        it('should have models', function(done){
-            db.on('connect', function(){
-                var context = db.getContext();
-                context.models.should.have.property('hChannel');
-                done();
-            });
-            db.connect(uri);
-        })
-
-        it('should have cache', function(done){
-            db.on('connect', function(){
-                var context = db.getContext();
-                context.should.have.property('cache');
-                done();
-            });
-            db.connect(uri);
-        })
-
-    })
-
 })

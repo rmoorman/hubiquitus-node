@@ -21,8 +21,6 @@ var should = require('should');
 var xmppComponent = require('../lib/server_connectors/xmpp_component').Component;
 var errors = require('../lib/codes.js').errors;
 
-
-
 describe('XMPP Component', function(){
 
     var params;
