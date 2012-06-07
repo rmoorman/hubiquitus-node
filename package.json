@@ -17,7 +17,7 @@
         "node": ">0.4.0"
     },
     "dependencies": {
-        "log4js" : "=0.4.1",
+        "winston" : "=0.6.1",
         "socket.io" : "=0.8.7",
         "node-xmpp" : "=0.3.1",
         "node-xmpp-bosh" : "=0.5.6",
