@@ -21,8 +21,6 @@ var should = require('should');
 var Controller = require('../lib/hcommand_controller.js').Controller;
 var db = require('../lib/mongo.js').db;
 
-global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
-
 describe('hGetChannels', function(){
 
     var hCommandController;

@@ -20,8 +20,6 @@
 var should = require('should');
 var hEchoModule = require('../lib/hcommands/hEcho.js').Command;
 
-global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
-
 describe('hEcho', function(){
 
     var echoCmd;

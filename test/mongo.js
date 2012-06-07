@@ -21,8 +21,6 @@ var should = require('should');
 var db = require('../lib/mongo.js').db;
 var errors = require('../lib/codes.js').errors;
 
-global.log = {debug: function(a){},info: function(a){},warn: function(a){},error: function(a){}};
-
 describe('Mongo', function(){
 
     var uri = 'mongodb://localhost/test';
