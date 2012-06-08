@@ -6,18 +6,19 @@ var validJID = 'u1@localhost';
 
 var mongoURI = 'mongodb://localhost/test';
 
-var xmppConnectionParams = {
-    jid: 'hnode.localhost',
-    password: 'password',
-    host: 'localhost',
-    port: 5276
-};
-
 var cmdControllerParams = {
     modulePath : 'lib/hcommands',
     timeout : 5000,
     jid : validJID,
     checkSender: false
+};
+
+var xmppConnectionParams = {
+    jid: 'hnode.localhost',
+    password: 'password',
+    host: 'localhost',
+    port: 5276,
+    commandOptions: cmdControllerParams
 };
 
 
