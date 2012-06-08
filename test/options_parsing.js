@@ -19,88 +19,85 @@
 
 require('should');
 var fs = require('fs');
-var createOptions = require('../lib/options.js').createOptions;
+
 
 describe('Options Parsing', function(){
 
-    beforeEach(function(done){
+    beforeEach(function(){
         process.argv = ['node', 'hnode.js'];
+    })
+
+    it('should get default options if nothing specified', function(done){
+        var options = require('../lib/options.js').options;
+        options.should.be.a('object');
+        options.should.have.property('global.loglevel', 'WARN');
+        options.should.have.property('socket.io.ports').with.lengthOf(1);
+        options.should.have.property('socket.io.namespace', '');
+        options.should.have.property('socket.io.disctimeout', 15000);
+        options.should.have.property('socket.io.ridwindow', 5);
+        options.should.have.property('bosh.ports').with.lengthOf(1);
+        options.should.have.property('bosh.pidgin_compatible', true);
         done();
     })
 
-    describe('#createOptions()', function(){
-        it('should get default options if nothing specified', function(done){
-            var options = createOptions();
-            options.should.be.a('object');
-            options.should.have.property('global.loglevel', 'WARN');
-            options.should.have.property('socket.io.ports').with.lengthOf(1);
-            options.should.have.property('socket.io.namespace', '');
-            options.should.have.property('socket.io.disctimeout', 15000);
-            options.should.have.property('socket.io.ridwindow', 5);
-            options.should.have.property('bosh.ports').with.lengthOf(1);
-            options.should.have.property('bosh.pidgin_compatible', true);
-            done();
-        })
+    it('should change an option when a new one is specified', function(done){
+        var i = 2;
+        process.argv[i++] = '--global.loglevel';
+        process.argv[i++] = 'INFO';
 
-        it('should change an option when a new one is specified', function(done){
-            var i = 2;
-            process.argv[i++] = '--global.loglevel';
-            process.argv[i++] = 'INFO';
+        var options = require('../lib/options.js').createOptions();
+        options.should.be.a('object');
+        options.should.have.property('global.loglevel', 'INFO');
+        done();
+    })
 
-            var options = createOptions();
-            options.should.be.a('object');
-            options.should.have.property('global.loglevel', 'INFO');
-            done();
-        })
+    it('should load options from file', function(done){
+        process.argv[2] = '--config';
+        process.argv[3] = '/tmp/slod.config';
 
-        it('should load options from file', function(done){
-            process.argv[2] = '--config';
-            process.argv[3] = '/tmp/slod.config';
+        var fd = fs.openSync('/tmp/slod.config', 'w');
+        fs.writeSync(fd, 'socket.io.ports = 3214,1241');
 
-            var fd = fs.openSync('/tmp/slod.config', 'w');
-            fs.writeSync(fd, 'socket.io.ports = 3214,1241');
+        var options = require('../lib/options.js').createOptions()
+        options.should.be.a('object');
+        options.should.have.property('socket.io.ports').with.lengthOf(2);
+        options.should.have.property('socket.io.ports').and.eql([3214,1241]);
+        done();
+    })
 
-            var options = createOptions();
-            options.should.be.a('object');
-            options.should.have.property('socket.io.ports').with.lengthOf(2);
-            options.should.have.property('socket.io.ports').and.eql([3214,1241]);
-            done();
-        })
+    it('should convert overrided option to int when needed', function(done){
+        var i = 2;
+        process.argv[i++] = '--socket.io.disctimeout';
+        process.argv[i++] = '1111';
 
-        it('should convert overrided option to int when needed', function(done){
-            var i = 2;
-            process.argv[i++] = '--socket.io.disctimeout';
-            process.argv[i++] = '1111';
+        var options = require('../lib/options.js').createOptions()
+        options.should.be.a('object');
+        options.should.have.property('socket.io.disctimeout').and.be.a('number');
+        done();
+    })
 
-            var options = createOptions();
-            options.should.be.a('object');
-            options.should.have.property('socket.io.disctimeout').and.be.a('number');
-            done();
-        })
+    it('should convert overrided option to array when needed', function(done){
+        var i = 2;
+        process.argv[i++] = '--socket.io.ports';
+        process.argv[i++] = '1111,2222';
 
-        it('should convert overrided option to array when needed', function(done){
-            var i = 2;
-            process.argv[i++] = '--socket.io.ports';
-            process.argv[i++] = '1111,2222';
+        var options = require('../lib/options.js').createOptions()
+        options.should.be.a('object');
+        options.should.have.property('socket.io.ports').with.lengthOf(2);
+        done();
+    })
 
-            var options = createOptions();
-            options.should.be.a('object');
-            options.should.have.property('socket.io.ports').with.lengthOf(2);
-            done();
-        })
+    it('should convert overrided option to int arrays when needed', function(done){
+        var i = 2;
+        process.argv[i++] = '--socket.io.ports';
+        process.argv[i++] = '1111,2222';
 
-        it('should convert overrided option to int arrays when needed', function(done){
-            var i = 2;
-            process.argv[i++] = '--socket.io.ports';
-            process.argv[i++] = '1111,2222';
-
-            var options = createOptions();
-            options.should.be.a('object');
-            options.should.have.property('socket.io.ports');
-            options['socket.io.ports'].map(function(el){
-                el.should.be.a('number');
-            });
-            done();
-        })
+        var options = require('../lib/options.js').createOptions()
+        options.should.be.a('object');
+        options.should.have.property('socket.io.ports');
+        options['socket.io.ports'].map(function(el){
+            el.should.be.a('number');
+        });
+        done();
     })
 })

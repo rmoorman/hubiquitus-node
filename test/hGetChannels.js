@@ -18,58 +18,36 @@
  */
 
 var should = require('should');
-var Controller = require('../lib/hcommand_controller.js').Controller;
-var db = require('../lib/mongo.js').db;
+var config = require('./_config.js');
 
 describe('hGetChannels', function(){
 
-    var hCommandController;
+    var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var mongoURI = 'mongodb://localhost/test';
 
-    var controllerParams= {
-        jid: 'hnode.localhost',
-        password: 'password',
-        host: 'localhost',
-        port: 5276,
-        modulePath : 'lib/hcommands',
-        timeout : 5000
-    };
+    before(config.beforeFN)
 
-    before(function(done){
-        db.on('connect', done);
-        db.connect(mongoURI);
-    })
-
-    after(function(done){
-        db.on('disconnect', done);
-        db.disconnect();
-    })
+    after(config.afterFN)
 
     beforeEach(function(){
         cmd= {
             reqid  : 'hCommandTest123',
-            sender : 'fake jid',
+            sender : config.validJID,
             sid : 'fake sid',
             sent : new Date(),
             cmd : 'hGetChannels'
         };
-        hCommandController = new Controller(controllerParams);
     })
 
-    it('should emit hResult when correct', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult when correct', function(done){
+        hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
             hResult.should.have.property('result');
             done();
         });
-        hCommandController.emit('hCommand', {hCommand: cmd});
     })
 
 })

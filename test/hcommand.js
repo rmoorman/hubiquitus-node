@@ -18,136 +18,91 @@
  */
 
 var should = require('should');
-var Controller = require('../lib/hcommand_controller.js').Controller;
-var db = require('../lib/mongo.js').db;
+var config = require('./_config.js');
 
 describe('hCommand', function(){
 
     var hCommandController;
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var mongoURI = 'mongodb://localhost/test';
-    var params = {
-        jid: 'hnode',
-        password: 'password',
-        host: 'localhost',
-        port: 5276,
-        modulePath : 'test/aux',
-        timeout : 1000
-    };
+    var params = JSON.parse(JSON.stringify(config.cmdParams));
 
     before(function(done){
-        db.on('connect', done);
-        db.connect(mongoURI);
+        config.db.on('connect', done);
+        config.db.connect(config.mongoURI);
+
+        params.modulePath = 'test/aux';
+        params.timeout = 1000;
+        params.checkSender = true;
     })
 
     after(function(done){
-        db.on('disconnect', done);
-        db.disconnect();
+        config.db.on('disconnect', done);
+        config.db.disconnect();
     })
 
-    describe('#Process an hCommand', function(){
 
-        beforeEach(function(){
-            cmd = {
-                reqid  : 'hCommandTest123',
-                sender : 'fake jid',
-                sid : 'fake sid',
-                sent : new Date(),
-                cmd : 'dummyCommand'
-            };
+    beforeEach(function(){
+        cmd = {
+            reqid  : 'hCommandTest123',
+            sender : config.validJID,
+            sid : 'fake sid',
+            sent : new Date(),
+            cmd : 'dummyCommand'
+        };
 
-            hCommandController = new Controller(params);
-        })
+        hCommandController = new config.cmdController(params);
+    })
 
-        it('should call module when module exists', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('status', status.OK);
-                done();
-            });
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should call module when cmd with different case', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('status', status.OK);
-                done();
-            });
-            cmd.cmd = 'dummycommand';
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should emit hResult when command not found', function(done){
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('status', status.NOT_AVAILABLE);
-                done();
-            });
-
-            cmd.cmd = 'inexistent command';
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should emit hResult when command timesout', function(done){
-            cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
-
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('status', status.EXEC_TIMEOUT);
-                done();
-            });
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should not allow command to call cb if after timeout', function(done){
-            this.timeout(3000);
-
-            cmd.cmd = 'lateFinisher'; //Calls callback at 2seg
-
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('status', status.EXEC_TIMEOUT);
-                done();
-            });
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should allow command to change timeout', function(done){
-            this.timeout(4000);
-
-            cmd.cmd = 'timeoutChanger'; //Calls callback at 2seg
-
-            hCommandController.on('hResult', function(res){
-                should.exist(res);
-                res.should.have.property('hResult');
-                var hResult = res.hResult;
-                hResult.should.have.property('status', status.OK);
-                done();
-            });
-            hCommandController.emit('hCommand', {hCommand: cmd});
-        })
-
-        it('should ignore empty hcommands', function(done){
-            hCommandController.on('hResult', function(res){
-                //If it enters here there was a problem (multiple calls to done)
-                done();
-            });
-            hCommandController.emit('hCommand', {});
+    it('should call module when module exists', function(done){
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('status', status.OK);
             done();
-        })
+        });
+    })
 
+    it('should call module when cmd with different case', function(done){
+        cmd.cmd = 'dummycommand';
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
+    })
+
+    it('should return hResult when command not found', function(done){
+        cmd.cmd = 'inexistent command';
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('status', status.NOT_AVAILABLE);
+            done();
+        });
+    })
+
+    it('should return hResult when command timesout', function(done){
+        cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('status', status.EXEC_TIMEOUT);
+            done();
+        });
+    })
+
+    it('should not allow command to call cb if after timeout', function(done){
+        this.timeout(3000);
+
+        cmd.cmd = 'lateFinisher'; //Calls callback at 2seg
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('status', status.EXEC_TIMEOUT);
+            done();
+        });
+    })
+
+    it('should allow command to change timeout', function(done){
+        this.timeout(4000);
+
+        cmd.cmd = 'timeoutChanger'; //Calls callback at 2seg
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
     })
 
 })

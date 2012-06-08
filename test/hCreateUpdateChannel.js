@@ -18,246 +18,174 @@
  */
 
 var should = require('should');
-var Controller = require('../lib/hcommand_controller.js').Controller;
-var db = require('../lib/mongo.js').db;
+var config = require('./_config.js');
 
 describe('hCreateUpdateChannel', function(){
 
-    var hCommandController;
+    var hCommandController = new config.cmdController(config.cmdParams);
     var createCmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var mongoURI = 'mongodb://localhost/test';
-    //A Channel that must exist in the database (created on first run. Some tests may fail)
+
+    //Channel that will be created and updated
     var existingID = 'Existing ID';
 
-    var controllerParams= {
-        jid: 'hnode.localhost',
-        password: 'password',
-        host: 'localhost',
-        port: 5276,
-        modulePath : 'lib/hcommands',
-        timeout : 5000
-    };
+    before(config.beforeFN)
 
-    before(function(done){
-        db.on('connect', done);
-        db.connect(mongoURI);
-    })
-
-    after(function(done){
-        db.on('disconnect', done);
-        db.disconnect();
-    })
+    after(config.afterFN)
 
     beforeEach(function(){
-        var defaultParams = {
-            chid : Math.floor(Math.random()*1000001),
-            active : true,
-            host : '' + new Date(),
-            owner : 'fake@jid',
-            participants : ['u1@localhost']
-        };
         createCmd= {
             reqid  : 'hCommandTest123',
-            sender : 'fake@jid',
+            sender : config.validJID,
             sid : 'fake sid',
             sent : new Date(),
             cmd : 'hCreateUpdateChannel',
-            params : defaultParams
+            params : {
+                chid : '' + Math.floor(Math.random()*10000),
+                active : true,
+                host : '' + new Date(),
+                owner : config.validJID,
+                participants : [config.validJID]
+            }
         };
-
-        hCommandController = new Controller(controllerParams);
     })
 
-    it('should emit hResult error without params', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
+    it('should return hResult error without params', function(done){
         createCmd.params = null;
-        hCommandController.emit('hCommand', {hCommand: createCmd});
-    })
-
-    it('should emit hResult error with params not an object', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string');
             done();
         });
-        createCmd.params = 'string';
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult error without chid', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult error with params not an object', function(done){
+        createCmd.params = 'string';
+        hCommandController.execCommand(createCmd, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error without chid', function(done){
+        createCmd.params.chid = undefined;
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
             hResult.should.have.property('result').and.be.a('string').and.match(/chid/i);
             done();
         });
-        createCmd.params.chid = undefined;
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult error without required attr', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult error without required attr', function(done){
+        createCmd.params.host = undefined;
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
             done();
         });
-        createCmd.params.host = undefined;
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult ok if chid exists updating', function(done){
-        hCommandController.once('hResult', function(val){
-            should.exist(val);
-            val.should.have.property('hResult');
-            var hResult = val.hResult;
+    it('should return hResult ok if chid exists updating', function(done){
+        createCmd.params.chid = existingID;
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK, 'first run will create not update');
             done();
         });
-        createCmd.params.chid = existingID;
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult error if invalid hHeader content type', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult error if invalid hHeader content type', function(done){
+        createCmd.params.headers= [{hKey: {}}];
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string').and.match(/headers/i);
             done();
         });
-        createCmd.params.headers= [{hKey: {}}];
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult error if owner different than sender', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult error if owner different than sender', function(done){
+        createCmd.params.owner = 'another@another.jid';
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
             done();
         });
-        createCmd.params.owner = 'another@another.jid';
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult ok if sender has resource and owner doesnt', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult ok if sender has resource and owner doesnt', function(done){
+        createCmd.sender = config.validJID + '/resource';
+        createCmd.params.owner = config.validJID;
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
             done();
         });
-        createCmd.sender = 'another@another.jid/differentRes';
-        createCmd.params.owner = 'another@another.jid';
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult error if sender tries to update owner', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            done();
-        });
-        createCmd.sender = 'a@jid.different';
+    it('should return hResult error if sender tries to update owner', function(done){
         createCmd.params.owner = 'a@jid.different';
         createCmd.params.chid = existingID;
-        hCommandController.emit('hCommand', {hCommand: createCmd});
+        hCommandController.execCommand(createCmd, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.NOT_AUTHORIZED);
+            done();
+        });
     })
 
-    it('should emit hResult ok without optional attr', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult ok without optional attr', function(done){
+        createCmd.params.chdesc = undefined;
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
             done();
         });
-        createCmd.params.chdesc = undefined;
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult error with invalid location format', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult error with invalid location format', function(done){
+        createCmd.params.location = "";
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
             done();
         });
-        createCmd.params.location = "";
-        hCommandController.emit('hCommand', {hCommand: createCmd});
     })
 
-    it('should emit hResult ok without location', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.OK);
-            done();
-        });
+    it('should return hResult ok without location', function(done){
         delete createCmd.params.location;
-        hCommandController.emit('hCommand', {hCommand: createCmd});
-    })
-
-    it('should emit hResult ok with every field correct', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+        hCommandController.execCommand(createCmd, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
             done();
         });
+    })
+
+    it('should return hResult ok with every field correct', function(done){
         createCmd.params.chdesc = 'a';
         createCmd.params.priority = 3;
         createCmd.params.location = {lng : 's'};
         createCmd.params.headers = [{hKey : 'key', hValue: 'value'}];
-        hCommandController.emit('hCommand', {hCommand: createCmd});
+        hCommandController.execCommand(createCmd, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
     })
 })

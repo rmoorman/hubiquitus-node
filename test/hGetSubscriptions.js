@@ -18,74 +18,47 @@
  */
 
 var should = require('should');
-var Controller = require('../lib/hcommand_controller.js').Controller;
-var db = require('../lib/mongo.js').db;
+var config = require('./_config.js');
 
 describe('hGetSubscriptions', function(){
 
-    var hCommandController;
+    var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var validJID = 'u1@localhost';
-    var mongoURI = 'mongodb://localhost/test';
 
-    var controllerParams= {
-        jid: 'hnode.localhost',
-        password: 'password',
-        host: 'localhost',
-        port: 5276,
-        modulePath : 'lib/hcommands',
-        timeout : 5000
-    };
+    before(config.beforeFN)
 
-    before(function(done){
-        db.on('connect', done);
-        db.connect(mongoURI);
-    })
-
-    after(function(done){
-        db.on('disconnect', done);
-        db.disconnect();
-    })
+    after(config.afterFN)
 
     beforeEach(function(){
         cmd= {
             reqid  : 'hCommandTest123',
-            sender : validJID,
+            sender : config.validJID,
             sid : 'fake sid',
             sent : new Date(),
             cmd : 'hGetSubscriptions'
         };
-        hCommandController = new Controller(controllerParams);
     })
 
-    it('should emit hResult ok if user doesnt have subscriptions', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result').and.be.an.instanceof(Array);
-            done();
-        });
+    it('should return hResult ok if user doesnt have subscriptions', function(done){
         cmd.sender = 'dontexist@a';
-        hCommandController.emit('hCommand', {hCommand: cmd});
-    })
-
-    it('should emit hResult ok if user has have subscriptions', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+        hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
             hResult.should.have.property('result').and.be.an.instanceof(Array);
             done();
         });
-        hCommandController.emit('hCommand', {hCommand: cmd});
+    })
+
+    it('should return hResult ok if user has have subscriptions', function(done){
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            hResult.should.have.property('result').and.be.an.instanceof(Array);
+            done();
+        });
     })
 
 })

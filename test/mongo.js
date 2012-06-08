@@ -18,57 +18,55 @@
  */
 
 var should = require('should');
-var db = require('../lib/mongo.js').db;
+var config = require('./_config.js');
 var errors = require('../lib/codes.js').errors;
 
 describe('Mongo', function(){
 
-    var uri = 'mongodb://localhost/test';
-
     describe('#connect', function(){
 
         afterEach(function(done){
-            db.once('disconnect', done);
-            db.disconnect();
+            config.db.once('disconnect', done);
+            config.db.disconnect();
         })
 
         it('should emit connect when connected', function(done){
-            db.once('connect', done);
-            db.connect(uri);
+            config.db.once('connect', done);
+            config.db.connect(config.mongoURI);
         })
 
         it('should emit error when a second connection is attempted', function(done){
-            db.once('error', function(obj){
+            config.db.once('error', function(obj){
                 should.exist(obj);
                 obj.should.have.property('code', errors.ALREADY_CONNECTED);
                 done();
             });
 
-            db.connect(uri);
-            db.connect(uri);
+            config.db.connect(config.mongoURI);
+            config.db.connect(config.mongoURI);
         })
 
         it('should emit error when invalid address', function(done){
-            db.once('error', function(obj){
+            config.db.once('error', function(obj){
                 should.exist(obj);
                 obj.should.have.property('code', errors.TECH_ERROR);
                 done();
             });
 
             var fakeUri = 'invalidUri';
-            db.connect(fakeUri);
+            config.db.connect(fakeUri);
         })
 
         it('should emit error when timeout', function(done){
             this.timeout(5000);
-            db.once('error', function(obj){
+            config.db.once('error', function(obj){
                 should.exist(obj);
                 obj.should.have.property('code', errors.CONN_TIMEOUT);
                 done();
             });
 
             var nonExistentAddress = 'mongodb://a';
-            db.connect(nonExistentAddress);
+            config.db.connect(nonExistentAddress);
         })
 
     })

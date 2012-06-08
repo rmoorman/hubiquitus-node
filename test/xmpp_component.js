@@ -18,67 +18,76 @@
  */
 
 var should = require('should');
-var xmppComponent = require('../lib/server_connectors/xmpp_component').Component;
+var config = require('./_config.js');
 var errors = require('../lib/codes.js').errors;
+var status = require('../lib/codes.js').statuses;
 
 describe('XMPP Component', function(){
 
     var params;
-    var component;
-
-    beforeEach(function(done){
-        params ={
-            jid: 'hnode',
-            password: 'password',
-            host: 'localhost',
-            port: 5276
-        };
-        done();
-
-    })
+    var component = config.xmppConnection;
 
     describe('#connect()', function(){
+        beforeEach(function(){
+            params = JSON.parse(JSON.stringify(config.xmppParams));
+        })
+
+        afterEach(function(done){
+            if(component.status == status.CONNECTED){
+                component.once('disconnect', done);
+                component.disconnect();
+            }else
+                done();
+        })
+
         it('should emit an event when connected', function(done){
-            component = new xmppComponent(params);
-            component.on('connected', done);
-            component.connect();
+            component.once('connect', done);
+            component.connect(params);
         })
 
         it('should emit an error when wrong host', function(done){
             params.host= 'inexistent host';
-            component = new xmppComponent(params);
-            component.on('error', function(error){
+            component.once('error', function(error){
                 should.exist(error);
                 error.should.have.property('code', errors.TECH_ERROR);
                 done() });
-            component.connect();
+            component.connect(params);
         })
 
         it('should emit an error when wrong authentication', function(done){
             params.password= 'another password';
-            component = new xmppComponent(params);
-            component.on('error', function(error){
+            component.once('error', function(error){
                 should.exist(error);
                 error.should.have.property('code', errors.AUTH_FAILED);
                 done() });
-            component.connect();
+            component.connect(params);
         })
 
     })
 
     describe('#disconnect()', function(){
+        beforeEach(function(){
+            params = JSON.parse(JSON.stringify(config.xmppParams));
+        })
+
+        afterEach(function(done){
+            if(component.status == status.CONNECTED){
+                component.once('disconnect', done);
+                component.disconnect();
+            }else
+                done();
+        })
+
         it('should emit an event when disconnected', function(done){
-            component = new xmppComponent(params);
-            component.on('connected', function(){
-                component.on('disconnected', done);
+            component.once('connect', function(){
+                component.once('disconnect', done);
                 component.disconnect();
             });
-            component.connect();
+            component.connect(params);
         })
 
         it('should emit an error when not connected', function(done){
-            component = new xmppComponent(params);
-            component.on('error', function(error){
+            component.once('error', function(error){
                 should.exist(error);
                 error.should.have.property('code', errors.NOT_CONNECTED);
                 done() });

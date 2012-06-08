@@ -18,110 +18,74 @@
  */
 
 var should = require('should');
-var Controller = require('../lib/hcommand_controller.js').Controller;
-var db = require('../lib/mongo.js').db;
+var config = require('./_config.js');
 
 /*
  NEEDS BEFORE hSubscribe
  */
 describe('hUnsubscribe', function(){
 
-    var hCommandController;
+    var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
     var existingCHID = 'Existing ID';
-    var existingJID = 'u1@localhost';
-    var mongoURI = 'mongodb://localhost/test';
 
-    var controllerParams= {
-        jid: 'hnode.localhost',
-        password: 'password',
-        host: 'localhost',
-        port: 5276,
-        modulePath : 'lib/hcommands',
-        timeout : 5000
-    };
+    before(config.beforeFN)
 
-    before(function(done){
-        db.on('connect', done);
-        db.connect(mongoURI);
-    })
-
-    after(function(done){
-        db.on('disconnect', done);
-        db.disconnect();
-    })
+    after(config.afterFN)
 
     beforeEach(function(){
         cmd= {
             reqid  : 'hCommandTest123',
-            sender : existingJID,
+            sender : config.validJID,
             sid : 'fake sid',
             sent : new Date(),
             cmd : 'hUnsubscribe',
             params : {chid: existingCHID}
         };
-        hCommandController = new Controller(controllerParams);
     })
 
-    it('should emit hResult error when missing params', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult error when missing params', function(done){
+        delete cmd['params'];
+        hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
             hResult.should.have.property('result').and.be.a('string');
             done();
         });
-        delete cmd['params'];
-        hCommandController.emit('hCommand', {hCommand: cmd});
     })
 
-    it('should emit hResult error when chid doesnt exist', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            res.hResult.should.have.property('cmd', cmd.cmd);
-            res.hResult.should.have.property('reqid', cmd.reqid);
-            res.hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
-            res.hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error when chid doesnt exist', function(done){
+        cmd.params = {chid: 'this CHID does not exist'};
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
+            hResult.should.have.property('result').and.be.a('string');
             done();
         });
-        cmd.params = {chid: 'this CHID does not exist'};
-        hCommandController.emit('hCommand', {hCommand: cmd});
     })
 
-    it('should emit hResult error if not subscribed', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult error if not subscribed', function(done){
+        cmd.params = {chid: 'this CHID does not exist'};
+        hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
             hResult.should.have.property('result').and.be.a('string');
             done();
         });
-        cmd.params = {chid: 'this CHID does not exist'};
-        cmd.sender = existingJID;
-        hCommandController.emit('hCommand', {hCommand: cmd});
     })
 
-    it('should emit hResult when correct', function(done){
-        hCommandController.on('hResult', function(res){
-            should.exist(res);
-            res.should.have.property('hResult');
-            var hResult = res.hResult;
+    it('should return hResult when correct', function(done){
+        cmd.params = {chid: existingCHID};
+        hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
             done();
         });
-        cmd.params = {chid: existingCHID};
-        cmd.sender = existingJID;
-        hCommandController.emit('hCommand', {hCommand: cmd});
     })
 
 })

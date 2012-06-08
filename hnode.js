@@ -18,9 +18,6 @@
  *     along with Hubiquitus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var createOptions = require('./lib/options.js').createOptions;
-var Controller = require('./lib/hcommand_controller.js').Controller;
-
 var fork = require('child_process').fork;
 
 //For logging
@@ -30,33 +27,26 @@ var log = require('winston');
  * Starts the gateway instantiating its modules
  */
 function main(){
-    var options = createOptions();
+    var opts = require('./lib/options.js');
+
     var sioModule = __dirname + '/lib/client_connectors/socketio_connector.js';
     var boshModule = __dirname + '/lib/client_connectors/bosh_connector.js';
 
     var children = [];
     var child;
 
-    //For each port of socket.io start a new process
-    var socketioArgs = {
-        logLevel : options['global.loglevel'],
-        namespace : options['socket.io.namespace'],
-        discTimeout : options['socket.io.disctimeout'],
-        ridWindow : options['socket.io.ridwindow']
-    };
-
-    for(var i = 0; i < options['socket.io.ports'].length; i++){
-        socketioArgs.port = options['socket.io.ports'][i];
+    for(var i = 0; i < opts.options['socket.io.ports'].length; i++){
+        opts.sioConnector.port = opts.options['socket.io.ports'][i];
         child = fork(__dirname + '/lib/worker.js');
-        child.send({module: sioModule, args: socketioArgs});
+        child.send({module: sioModule, args: opts.sioConnector});
         children.push(child);
     }
 
     //For each port of bosh start a new process
-    for(var i = 0; i < options['bosh.ports'].length; i++){
-        options['bosh.port'] = options['bosh.ports'][i];
+    for(var i = 0; i < opts.options['bosh.ports'].length; i++){
+        opts.boshConnector.port = opts.options['bosh.ports'][i];
         child = fork(__dirname + '/lib/worker.js');
-        child.send({module: boshModule, args: options});
+        child.send({module: boshModule, args: opts.boshConnector});
         children.push(child);
     }
 
@@ -70,16 +60,6 @@ function main(){
             process.exit();
         });
 
-    //Set the Command Controller options
-    var controllerArgs = {
-        jid : options['hnode.jid'],
-        password : options['hnode.password'],
-        host : options['hnode.host'],
-        port : options['hnode.port'],
-        modulePath : options['hcommands.path'],
-        timeout : options['hcommands.timeout']
-    };
-
     //Set listeners for Mongo errors/ connection
     var db = require('./lib/mongo.js').db;
     db.on('error', function(err){
@@ -87,32 +67,14 @@ function main(){
         process.exit(1);
     });
 
-    //When connected, launch the command controller
+    //When connected to the DB connect to XMPP (so that commands that arrive only do so after a db connection).
     db.on('connect', function(){
-        var cmdController = new Controller(controllerArgs);
-
-        //Command passthrough for children processes
-        //Listen for results that are emitted to the cmdController and if destined to one of our children, emit it.
-        cmdController.on('hResult', function(res){
-            if( res && res.args && res.args.pid ){
-                var i = 0;
-                while(i < children.length && children[i].pid != res.args.pid) i++;
-                if(i < children.length)
-                    children[i].send(res);
-            }
-        });
-
-        //The object should be in the form {hCommand : hCommand, args : <optional arguments {}>}
-        for(var i = 0; i < children.length; i++)
-            children[i].on('message', function(obj){
-                if(obj && obj.hCommand)
-                    cmdController.emit('hCommand', obj);
-            })
+        var xmppConnection = require('./lib/server_connectors/xmpp_component.js').componentConnection;
+        xmppConnection.connect(opts.xmppConnection);
     });
 
     //Start connection to Mongo
-    db.connect(options['mongo.URI']);
-
+    db.connect(opts.options['mongo.URI']);
 }
 
 main();
