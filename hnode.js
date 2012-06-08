@@ -67,12 +67,6 @@ function main(){
         process.exit(1);
     });
 
-    //When connected to the DB connect to XMPP (so that commands that arrive only do so after a db connection).
-    db.on('connect', function(){
-        var xmppConnection = require('./lib/server_connectors/xmpp_component.js').componentConnection;
-        xmppConnection.connect(opts.xmppConnection);
-    });
-
     //Start connection to Mongo
     db.connect(opts.options['mongo.URI']);
 }
