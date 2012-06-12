@@ -25,11 +25,20 @@ describe('hPublish', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = 'Existing ID';
+    var existingCHID = '' + Math.floor(Math.random()*10000);
+    var inactiveChan = '' + Math.floor(Math.random()*10000);
 
     before(config.beforeFN)
 
     after(config.afterFN)
+
+    before(function(done){
+        config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
+    })
+
+    before(function(done){
+        config.createChannel(inactiveChan, [config.validJID], config.validJID, false, done);
+    })
 
     beforeEach(function(){
         cmd= {
@@ -61,13 +70,13 @@ describe('hPublish', function(){
         hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
+            hResult.should.have.property('status').and.equal(status.NOT_AVAILABLE);
             hResult.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error if not allowed', function(done){
+    it('should return hResult error if not in participants list', function(done){
         cmd.params.publisher = 'not@in.list';
         hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -81,6 +90,17 @@ describe('hPublish', function(){
     it('should return hResult error if sender != publisher', function(done){
         cmd.params.publisher = 'a@b.com';
         cmd.sender = 'a@c.com';
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.NOT_AUTHORIZED);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error if channel inactive', function(done){
+        cmd.params.chid = inactiveChan;
         hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);

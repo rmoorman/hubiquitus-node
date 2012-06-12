@@ -30,7 +30,8 @@ exports.validJID = validJID;
 
 exports.cmdParams = cmdControllerParams;
 
-exports.cmdController = require('../lib/hcommand_controller.js').Controller;
+var cmdController = require('../lib/hcommand_controller.js').Controller;
+exports.cmdController = cmdController;
 
 exports.db = require('../lib/mongo.js').db;
 
@@ -58,6 +59,72 @@ exports.afterFN = function(done){
     });
     db.disconnect();
 };
+
+exports.createChannel = function(chid, participants, owner, active, done){
+    var hCommandController = new cmdController(cmdControllerParams);
+    hCommandController.execCommand({
+        reqid  : 'hCommandTest123',
+        sender : owner,
+        sid : 'fake sid',
+        sent : new Date(),
+        cmd : 'hCreateUpdateChannel',
+        params : {
+            chid : chid,
+            active : active,
+            host : '' + new Date(),
+            owner : owner,
+            participants : participants
+        }
+    }, function(hResult){done();});
+};
+
+exports.subscribeToChannel = function(sender, chid, done){
+    var hCommandController = new cmdController(cmdControllerParams);
+    hCommandController.execCommand({
+        reqid  : 'hCommandTest123',
+        sender : sender,
+        sid : 'fake sid',
+        sent : new Date(),
+        cmd : 'hSubscribe',
+        params : {chid: chid}
+    }, function(hResult){
+        done();
+    });
+};
+
+exports.unsubscribeFromChannel = function(sender, chid, done){
+    var hCommandController = new cmdController(cmdControllerParams);
+    hCommandController.execCommand({
+        reqid  : 'hCommandTest123',
+        sender : sender,
+        sid : 'fake sid',
+        sent : new Date(),
+        cmd : 'hUnsubscribe',
+        params : {chid: chid}
+    }, function(hResult){
+        done();
+    });
+};
+
+exports.publishMessage = function(sender, chid, type, payload, transient, done){
+    var hCommandController = new cmdController(cmdControllerParams);
+    hCommandController.execCommand({
+        reqid  : 'hCommandTest123',
+        sender : sender,
+        sid : 'fake sid',
+        sent : new Date(),
+        cmd : 'hPublish',
+        params : {
+            chid: chid,
+            publisher: sender,
+            payload: payload,
+            type: type,
+            transient: transient
+        }
+    }, function(hResult){
+        done();
+    });
+}
 
 var winston = require('winston');
 winston.remove(winston.transports.Console);

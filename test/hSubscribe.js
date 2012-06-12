@@ -25,9 +25,13 @@ describe('hSubscribe', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = 'Existing ID';
+    var existingCHID = '' + Math.floor(Math.random()*10000);
 
     before(config.beforeFN)
+
+    before(function(done){
+        config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
+    })
 
     after(config.afterFN)
 
@@ -58,7 +62,7 @@ describe('hSubscribe', function(){
         hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
+            hResult.should.have.property('status').and.equal(status.NOT_AVAILABLE);
             hResult.should.have.property('result').and.be.a('string');
             done();
         });

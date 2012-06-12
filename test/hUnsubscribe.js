@@ -28,9 +28,35 @@ describe('hUnsubscribe', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = 'Existing ID';
+    var existingCHID = '' + Math.floor(Math.random()*10000);
+    var inactiveCHID = '' + Math.floor(Math.random()*10000);
 
     before(config.beforeFN)
+
+    //Create active channel
+    before(function(done){
+        config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
+    })
+
+    //Subscribe to channel
+    before(function(done){
+        config.subscribeToChannel(config.validJID, existingCHID, done);
+    })
+
+    //Create active channel to be inactive
+    before(function(done){
+        config.createChannel(inactiveCHID, [config.validJID], config.validJID, true, done);
+    })
+
+    //Subscribe to the channel to be inactive
+    before(function(done){
+        config.subscribeToChannel(config.validJID, inactiveCHID, done);
+    })
+
+    //Make channel inactive
+    before(function(done){
+        config.createChannel(inactiveCHID, [config.validJID], config.validJID, false, done);
+    })
 
     after(config.afterFN)
 
@@ -73,6 +99,17 @@ describe('hUnsubscribe', function(){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error when chid is inactive', function(done){
+        cmd.params = {chid: inactiveCHID};
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
             hResult.should.have.property('result').and.be.a('string');
             done();
         });
