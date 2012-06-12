@@ -26,9 +26,6 @@ describe('hCreateUpdateChannel', function(){
     var createCmd;
     var status = require('../lib/codes.js').hResultStatus;
 
-    //Channel that will be created and updated
-    var existingID = 'Existing ID';
-
     before(config.beforeFN)
 
     after(config.afterFN)
@@ -93,16 +90,6 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
-    it('should return hResult ok if chid exists updating', function(done){
-        createCmd.params.chid = existingID;
-        hCommandController.execCommand(createCmd, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.OK, 'first run will create not update');
-            done();
-        });
-    })
-
     it('should return hResult error if invalid hHeader content type', function(done){
         createCmd.params.headers= [{hKey: {}}];
         hCommandController.execCommand(createCmd, function(hResult){
@@ -124,6 +111,28 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
+    it('should return hResult error INVALID_ATTR if system.indexes used as chid', function(done){
+        createCmd.params.chid = 'system.indexes';
+        hCommandController.execCommand(createCmd, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error INVALID_ATTR if a word starting with "h" is used as chid', function(done){
+        createCmd.params.chid = 'hSomething';
+        hCommandController.execCommand(createCmd, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
     it('should return hResult ok if sender has resource and owner doesnt', function(done){
         createCmd.sender = config.validJID + '/resource';
         createCmd.params.owner = config.validJID;
@@ -131,17 +140,6 @@ describe('hCreateUpdateChannel', function(){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
-            done();
-        });
-    })
-
-    it('should return hResult error if sender tries to update owner', function(done){
-        createCmd.params.owner = 'a@jid.different';
-        createCmd.params.chid = existingID;
-        hCommandController.execCommand(createCmd, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
             done();
         });
     })
@@ -187,5 +185,37 @@ describe('hCreateUpdateChannel', function(){
             hResult.should.have.property('status', status.OK);
             done();
         });
+    })
+
+    describe('#Update Channel', function(){
+        //Channel that will be created and updated
+        var existingCHID = '' + Math.floor(Math.random()*10000);
+
+        before(function(done){
+            config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
+        })
+
+        it('should return hResult ok if chid exists updating', function(done){
+            createCmd.params.chid = existingCHID;
+            createCmd.params.participants = ['u2@another'];
+            hCommandController.execCommand(createCmd, function(hResult){
+                hResult.should.have.property('cmd', createCmd.cmd);
+                hResult.should.have.property('reqid', createCmd.reqid);
+                hResult.should.have.property('status', status.OK, 'first run will create not update');
+                done();
+            });
+        })
+
+        it('should return hResult error if sender tries to update owner', function(done){
+            createCmd.params.owner = 'a@jid.different';
+            createCmd.params.chid = existingCHID;
+            hCommandController.execCommand(createCmd, function(hResult){
+                hResult.should.have.property('cmd', createCmd.cmd);
+                hResult.should.have.property('reqid', createCmd.reqid);
+                hResult.should.have.property('status', status.NOT_AUTHORIZED);
+                done();
+            });
+        })
+
     })
 })
