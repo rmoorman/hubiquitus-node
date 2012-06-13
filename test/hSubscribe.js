@@ -26,11 +26,16 @@ describe('hSubscribe', function(){
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
     var existingCHID = '' + Math.floor(Math.random()*10000);
+    var inactiveChannel = '' + Math.floor(Math.random()*10000);
 
     before(config.beforeFN)
 
     before(function(done){
         config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
+    })
+
+    before(function(done){
+        config.createChannel(inactiveChannel, [config.validJID], config.validJID, false, done);
     })
 
     after(config.afterFN)
@@ -71,6 +76,17 @@ describe('hSubscribe', function(){
     it('should return hResult error if not in participants list', function(done){
         cmd.params = {chid: existingCHID};
         cmd.sender = 'not in list';
+        hCommandController.execCommand(cmd, function(hResult){
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status', status.NOT_AUTHORIZED);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error NOT_AUTHORIZED if channel is inactive', function(done){
+        cmd.params = {chid: inactiveChannel};
         hCommandController.execCommand(cmd, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
