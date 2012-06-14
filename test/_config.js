@@ -14,10 +14,8 @@ var cmdControllerParams = {
 };
 
 var xmppConnectionParams = {
-    jid: 'hnode.localhost',
-    password: 'password',
-    host: 'localhost',
-    port: 5276,
+    jid: 'hnode@localhost',
+    password: 'hnode',
     commandOptions: cmdControllerParams
 };
 
@@ -37,10 +35,10 @@ exports.db = require('../lib/mongo.js').db;
 
 exports.mongoURI = mongoURI;
 
-var xmppConnection = require('../lib/server_connectors/xmpp_component.js').componentConnection;
+var xmppConnection = require('../lib/server_connectors/xmpp_hnode.js').ServerConnection;
 exports.xmppConnection = xmppConnection;
 
-exports.xmppParams = xmppConnectionParams
+exports.xmppParams = xmppConnectionParams;
 
 exports.beforeFN = function(done){
     var db = require('../lib/mongo.js').db;
