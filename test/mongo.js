@@ -18,56 +18,253 @@
  */
 
 var should = require('should');
-var config = require('./_config.js');
-var errors = require('../lib/codes.js').errors;
+var db = require('../lib/mongo.js').db;
 
-describe('Mongo', function(){
+var validURI = require('./_config.js').mongoURI;
 
-    describe('#connect', function(){
+describe('#Database', function(){
 
+    describe('#connect()',function(){
         afterEach(function(done){
-            config.db.once('disconnect', done);
-            config.db.disconnect();
+            db.removeAllListeners('error');
+            db.removeAllListeners('connect');
+            db.removeAllListeners('disconnect');
+
+            db.once('disconnect',done);
+            db.disconnect();
         })
 
-        it('should emit connect when connected', function(done){
-            config.db.once('connect', done);
-            config.db.connect(config.mongoURI);
-        })
-
-        it('should emit error when a second connection is attempted', function(done){
-            config.db.once('error', function(obj){
-                should.exist(obj);
-                obj.should.have.property('code', errors.ALREADY_CONNECTED);
+        it('should return invalid URI if URI does not start with mongodb://', function(done){
+            db.once('error', function(error){
                 done();
             });
-
-            config.db.connect(config.mongoURI);
-            config.db.connect(config.mongoURI);
+            db.connect('localhost/dbName');
         })
 
-        it('should emit error when invalid address', function(done){
-            config.db.once('error', function(obj){
-                should.exist(obj);
-                obj.should.have.property('code', errors.TECH_ERROR);
+        it('should return invalid URI if URI missing db', function(done){
+            db.once('error', function(error){
                 done();
             });
-
-            var fakeUri = 'invalidUri';
-            config.db.connect(fakeUri);
+            db.connect('mongodb://localhost');
         })
 
-        it('should emit error when timeout', function(done){
-            this.timeout(5000);
-            config.db.once('error', function(obj){
-                should.exist(obj);
-                obj.should.have.property('code', errors.CONN_TIMEOUT);
+        it('should return invalid URI if port is not a number', function(done){
+            db.once('error', function(error){
                 done();
             });
+            db.connect('mongodb://localhost:notNumber/dbName');
+        })
 
-            var nonExistentAddress = 'mongodb://a';
-            config.db.connect(nonExistentAddress);
+        it('should accept URI if it does not have a port and emit connect', function(done){
+            db.once('connect', done);
+            db.connect('mongodb://localhost/dbName');
+        })
+
+        it('should accept URI with port', function(done){
+            //Will return an error because Mongo is not listening to that port
+            db.once('error', done);
+            db.connect('mongodb://localhost:10/dbName');
+        })
+
+
+        it('should emit connect automatically if a second connection is attempted and first one succeeds', function(done){
+            //Will return an error because Mongo is not listening to that port
+            var counter = 0;
+            db.on('connect', function(){
+                if(++counter == 2)
+                    done();
+                else if(counter == 1)
+                    db.connect(validURI);
+            });
+            db.connect(validURI);
         })
 
     })
+
+    describe('#disconnect()', function(){
+        afterEach(function(done){
+            db.removeAllListeners('error');
+            db.removeAllListeners('connect');
+            db.removeAllListeners('disconnect');
+
+            db.once('disconnect',done);
+            db.disconnect();
+        })
+
+        it('should emit disconnect if not connected and function called', function(done){
+            db.once('disconnect', done);
+            db.disconnect();
+        })
+
+        it('should emit disconnect when successful disconnection', function(done){
+            db.once('disconnect', done);
+            db.once('connect', function(){
+                db.disconnect();
+            });
+            db.connect(validURI);
+        })
+    })
+
+    describe('#saveHChannel()', function(){
+        before(function(done){
+            db.once('connect', done);
+            db.connect(validURI);
+        })
+
+        it('should allow to save without callback', function(done){
+            var chid = db.createPk();
+            db.saveHChannel({chid: chid});
+
+            db.get('hChannels').findOne({chid: chid}, function(err, doc){
+                should.not.exist(err);
+                should.exist(doc);
+                done();
+            })
+        })
+
+        it('should call cb without error using valid hChannel', function(done){
+            db.saveHChannel({chid: 'another chid'}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                done();
+            });
+        })
+
+        it('should call cb with error with hChannel without chid', function(done){
+            db.saveHChannel({priority: 1}, function(err, result){
+                should.exist(err);
+                should.exist(result);
+                done();
+            });
+        })
+
+        it('should do nothing with hChannel without chid and no cb', function(){
+            db.saveHChannel({priority: 1});
+        })
+    })
+
+    describe('#saveHCommand()', function(){
+        before(function(done){
+            db.once('connect', done);
+            db.connect(validURI);
+        })
+
+        it('should allow to save without callback', function(done){
+            var cmd = db.createPk();
+
+            db.saveHCommand({cmd: cmd});
+
+            db.get('hCommands').findOne({cmd: cmd}, function(err, doc){
+                should.not.exist(err);
+                should.exist(doc);
+                done();
+            })
+        })
+
+        it('should call cb without error using valid hCommand', function(done){
+            db.saveHCommand({cmd: 'commandName'}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                done();
+            });
+        })
+    })
+
+    describe('#saveHResult()', function(){
+        before(function(done){
+            db.once('connect', done);
+            db.connect(validURI);
+        })
+
+        it('should allow to save without callback', function(done){
+            var cmd = db.createPk();
+            db.saveHResult({cmd: cmd});
+
+            db.get('hResults').findOne({cmd: cmd}, function(err, doc){
+                should.not.exist(err);
+                should.exist(doc);
+                done();
+            })
+        })
+
+        it('should call cb without error using valid hResult', function(done){
+            db.saveHResult({cmd: 'commandName'}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                done();
+            });
+        })
+    })
+
+    describe('#saveHMessage()', function(){
+        before(function(done){
+            db.once('connect', done);
+            db.connect(validURI);
+        })
+
+        it('should allow to save without callback', function(done){
+            var chid = db.createPk();
+            db.saveHMessage({chid: chid});
+
+            db.get(chid).findOne({chid: chid}, function(err, doc){
+                should.not.exist(err);
+                should.exist(doc);
+                done();
+            })
+        })
+
+        it('should call cb without error using valid hMessage', function(done){
+            db.saveHChannel({chid: 'chid'}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                done();
+            });
+        })
+
+        it('should call cb with error with hMessage without chid', function(done){
+            db.saveHChannel({priority: 1}, function(err, result){
+                should.exist(err);
+                should.exist(result);
+                done();
+            });
+        })
+
+        it('should do nothing with hMessage without chid and error', function(){
+            db.saveHChannel({priority: 1});
+        })
+    })
+
+    describe('#searchCollections()', function(){
+        before(function(done){
+            db.once('connect', done);
+            db.connect(validURI);
+        })
+
+        it('should be able to search static collections', function(done){
+            db.get('hChannels').findOne(function(err, item) {
+                should.not.exist(err);
+                done();
+            });
+        })
+
+        it('should be able to search dynamic collections', function(done){
+            db.get('newCollection').findOne(function(err, item) {
+                should.not.exist(err);
+                should.not.exist(item);
+                done();
+            });
+        })
+    })
+
+    describe('#createPk()', function(){
+        it('should return a 24 HEX encoded string that can be used as an _id for mongo', function(){
+            var id = db.createPk();
+            var mdb = require('mongodb');
+            should.exist(id);
+            id.should.have.length(24);
+            id.should.match(/([0-9]|[a-f]|[A-F])/g);
+            new mdb.ObjectID(id); //Will throw error if invalid id
+        })
+    })
+
 })
