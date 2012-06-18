@@ -73,7 +73,7 @@ describe('hUnsubscribe', function(){
 
     it('should return hResult error when missing params', function(done){
         delete cmd['params'];
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
@@ -84,7 +84,7 @@ describe('hUnsubscribe', function(){
 
     it('should return hResult error when chid doesnt exist', function(done){
         cmd.params = {chid: 'this CHID does not exist'};
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
@@ -95,7 +95,7 @@ describe('hUnsubscribe', function(){
 
     it('should return hResult error if not subscribed', function(done){
         cmd.params = {chid: 'this CHID does not exist'};
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -106,7 +106,7 @@ describe('hUnsubscribe', function(){
 
     it('should return hResult error when chid is inactive', function(done){
         cmd.params = {chid: inactiveCHID};
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
@@ -117,7 +117,7 @@ describe('hUnsubscribe', function(){
 
     it('should return hResult when correct', function(done){
         cmd.params = {chid: existingCHID};
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);

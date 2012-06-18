@@ -53,7 +53,7 @@ describe('hSubscribe', function(){
 
     it('should return hResult error when missing params', function(done){
         delete cmd['params'];
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
@@ -64,7 +64,7 @@ describe('hSubscribe', function(){
 
     it('should return hResult error when chid doesnt exist', function(done){
         cmd.params = {chid: 'this CHID does not exist'};
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status').and.equal(status.NOT_AVAILABLE);
@@ -76,7 +76,7 @@ describe('hSubscribe', function(){
     it('should return hResult error if not in participants list', function(done){
         cmd.params = {chid: existingCHID};
         cmd.sender = 'not in list';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -87,7 +87,7 @@ describe('hSubscribe', function(){
 
     it('should return hResult error NOT_AUTHORIZED if channel is inactive', function(done){
         cmd.params = {chid: inactiveChannel};
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -99,7 +99,7 @@ describe('hSubscribe', function(){
     it('should return hResult when correct', function(done){
         cmd.params = {chid: existingCHID};
         cmd.sender = config.validJID;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -110,7 +110,7 @@ describe('hSubscribe', function(){
     it('should return hResult error if already subscribed', function(done){
         cmd.params = {chid: existingCHID};
         cmd.sender = config.validJID;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);

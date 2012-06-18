@@ -56,7 +56,7 @@ describe('hPublish', function(){
 
     it('should return hResult error when missing params', function(done){
         delete cmd['params'];
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
@@ -67,7 +67,7 @@ describe('hPublish', function(){
 
     it('should return hResult error when chid doesnt exist', function(done){
         cmd.params.chid = 'this CHID does not exist';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status').and.equal(status.NOT_AVAILABLE);
@@ -78,7 +78,7 @@ describe('hPublish', function(){
 
     it('should return hResult error if not in participants list', function(done){
         cmd.params.publisher = 'not@in.list';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -90,7 +90,7 @@ describe('hPublish', function(){
     it('should return hResult error if sender != publisher', function(done){
         cmd.params.publisher = 'a@b.com';
         cmd.sender = 'a@c.com';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -101,7 +101,7 @@ describe('hPublish', function(){
 
     it('should return hResult error if channel inactive', function(done){
         cmd.params.chid = inactiveChan;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -111,7 +111,7 @@ describe('hPublish', function(){
     })
 
     it('should return hResult when correct', function(done){
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);

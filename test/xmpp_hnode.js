@@ -22,7 +22,7 @@ var config = require('./_config.js');
 var errors = require('../lib/codes.js').errors;
 var status = require('../lib/codes.js').statuses;
 
-describe('XMPP Component', function(){
+describe('hServer XMPP Connection', function(){
 
     var params;
     var component = config.xmppConnection;
@@ -42,15 +42,6 @@ describe('XMPP Component', function(){
 
         it('should emit an event when connected', function(done){
             component.once('connect', done);
-            component.connect(params);
-        })
-
-        it('should emit an error when wrong host', function(done){
-            params.host= 'inexistent host';
-            component.once('error', function(error){
-                should.exist(error);
-                error.should.have.property('code', errors.TECH_ERROR);
-                done() });
             component.connect(params);
         })
 
@@ -92,6 +83,33 @@ describe('XMPP Component', function(){
                 error.should.have.property('code', errors.NOT_CONNECTED);
                 done() });
             component.disconnect();
+        })
+
+    })
+
+    describe('#sendIQ()', function(){
+
+        before(function(done){
+            params = JSON.parse(JSON.stringify(config.xmppParams));
+            component.once('connect', done);
+            component.connect(params);
+        })
+
+        after(function(done){
+            component.once('disconnect', done);
+            component.disconnect();
+        })
+
+        it('should call cb that sent an iq', function(done){
+            var content = new (require('node-xmpp').Element)('message', {});
+            component.sendIQ({},content, function(stanza){
+                done();
+            });
+        })
+
+        it('should allow to send iq without cb', function(){
+            var content = new (require('node-xmpp').Element)('message', {});
+            component.sendIQ({},content);
         })
 
     })

@@ -49,7 +49,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error without params', function(done){
         createCmd.params = null;
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
@@ -60,7 +60,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error with params not an object', function(done){
         createCmd.params = 'string';
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
@@ -71,7 +71,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error without chid', function(done){
         createCmd.params.chid = undefined;
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
@@ -82,7 +82,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error without required attr', function(done){
         createCmd.params.host = undefined;
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
@@ -92,7 +92,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error if invalid hHeader content type', function(done){
         createCmd.params.headers= [{hKey: {}}];
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
@@ -103,7 +103,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error if owner different than sender', function(done){
         createCmd.params.owner = 'another@another.jid';
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -113,7 +113,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error INVALID_ATTR if system.indexes used as chid', function(done){
         createCmd.params.chid = 'system.indexes';
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
@@ -124,7 +124,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error INVALID_ATTR if a word starting with "h" is used as chid', function(done){
         createCmd.params.chid = 'hSomething';
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
@@ -136,7 +136,7 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult ok if sender has resource and owner doesnt', function(done){
         createCmd.sender = config.validJID + '/resource';
         createCmd.params.owner = config.validJID;
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -146,7 +146,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult ok without optional attr', function(done){
         createCmd.params.chdesc = undefined;
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -156,7 +156,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error with invalid location format', function(done){
         createCmd.params.location = "";
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
@@ -166,7 +166,7 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult ok without location', function(done){
         delete createCmd.params.location;
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -179,7 +179,7 @@ describe('hCreateUpdateChannel', function(){
         createCmd.params.priority = 3;
         createCmd.params.location = {lng : 's'};
         createCmd.params.headers = [{hKey : 'key', hValue: 'value'}];
-        hCommandController.execCommand(createCmd, function(hResult){
+        hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -198,7 +198,7 @@ describe('hCreateUpdateChannel', function(){
         it('should return hResult ok if chid exists updating', function(done){
             createCmd.params.chid = existingCHID;
             createCmd.params.participants = ['u2@another'];
-            hCommandController.execCommand(createCmd, function(hResult){
+            hCommandController.execCommand(createCmd, null, function(hResult){
                 hResult.should.have.property('cmd', createCmd.cmd);
                 hResult.should.have.property('reqid', createCmd.reqid);
                 hResult.should.have.property('status', status.OK, 'first run will create not update');
@@ -209,7 +209,7 @@ describe('hCreateUpdateChannel', function(){
         it('should return hResult error if sender tries to update owner', function(done){
             createCmd.params.owner = 'a@jid.different';
             createCmd.params.chid = existingCHID;
-            hCommandController.execCommand(createCmd, function(hResult){
+            hCommandController.execCommand(createCmd, null, function(hResult){
                 hResult.should.have.property('cmd', createCmd.cmd);
                 hResult.should.have.property('reqid', createCmd.reqid);
                 hResult.should.have.property('status', status.NOT_AUTHORIZED);

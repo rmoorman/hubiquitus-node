@@ -8,16 +8,12 @@ var mongoURI = 'mongodb://localhost/test';
 
 var cmdControllerParams = {
     modulePath : 'lib/hcommands',
-    timeout : 5000,
-    jid : validJID,
-    checkSender: false
+    timeout : 5000
 };
 
 var xmppConnectionParams = {
-    jid: 'hnode.localhost',
-    password: 'password',
-    host: 'localhost',
-    port: 5276,
+    jid: 'hnode@localhost',
+    password: 'hnode',
     commandOptions: cmdControllerParams
 };
 
@@ -37,10 +33,10 @@ exports.db = require('../lib/mongo.js').db;
 
 exports.mongoURI = mongoURI;
 
-var xmppConnection = require('../lib/server_connectors/xmpp_component.js').componentConnection;
+var xmppConnection = require('../lib/server_connectors/xmpp_hnode.js').ServerConnection;
 exports.xmppConnection = xmppConnection;
 
-exports.xmppParams = xmppConnectionParams
+exports.xmppParams = xmppConnectionParams;
 
 exports.beforeFN = function(done){
     var db = require('../lib/mongo.js').db;
@@ -75,7 +71,7 @@ exports.createChannel = function(chid, participants, owner, active, done){
             owner : owner,
             participants : participants
         }
-    }, function(hResult){done();});
+    }, null, function(hResult){done();});
 };
 
 exports.subscribeToChannel = function(sender, chid, done){
@@ -87,7 +83,7 @@ exports.subscribeToChannel = function(sender, chid, done){
         sent : new Date(),
         cmd : 'hSubscribe',
         params : {chid: chid}
-    }, function(hResult){
+    }, null, function(hResult){
         done();
     });
 };
@@ -101,7 +97,7 @@ exports.unsubscribeFromChannel = function(sender, chid, done){
         sent : new Date(),
         cmd : 'hUnsubscribe',
         params : {chid: chid}
-    }, function(hResult){
+    }, null, function(hResult){
         done();
     });
 };
@@ -121,7 +117,7 @@ exports.publishMessage = function(sender, chid, type, payload, transient, done){
             type: type,
             transient: transient
         }
-    }, function(hResult){
+    }, null, function(hResult){
         done();
     });
 }
