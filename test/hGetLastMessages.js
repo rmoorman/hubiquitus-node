@@ -56,7 +56,7 @@ describe('hGetLastMessages', function(){
                 participants : [config.validJID],
                 headers : [{hKey: 'maxMsgRetrieval', hValue: ''+maxMsgRetrieval}]
             }
-        }, function(hResult){done();});
+        }, null, function(hResult){done();});
     })
 
     for(var i = 0; i < 15; i++)
@@ -86,7 +86,7 @@ describe('hGetLastMessages', function(){
     })
 
     it('should return hResult ok if there are no hMessages stored', function(done){
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -97,7 +97,7 @@ describe('hGetLastMessages', function(){
 
     it('should return hResult error MISSING_ATTR if no params is passed', function(done){
         delete cmd.params;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
@@ -108,7 +108,7 @@ describe('hGetLastMessages', function(){
 
     it('should return hResult error MISSING_ATTR if no channel is passed', function(done){
         delete cmd.params.chid;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
@@ -119,7 +119,7 @@ describe('hGetLastMessages', function(){
 
     it('should return hResult error NOT_AUTHORIZED if publisher not in participants list', function(done){
         cmd.sender = 'not in list';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -130,7 +130,7 @@ describe('hGetLastMessages', function(){
 
     it('should return hResult error NOT_AVAILABLE if channel does not exist', function(done){
         cmd.params.chid = 'this channel does not exist';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AVAILABLE);
@@ -141,7 +141,7 @@ describe('hGetLastMessages', function(){
 
     it('should return hResult error NOT_AUTHORIZED if channel inactive', function(done){
         cmd.params.chid = inactiveChan;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
@@ -153,7 +153,7 @@ describe('hGetLastMessages', function(){
     it('should return hResult ok with 10 messages if not default in channel or cmd', function(done){
         delete cmd.params.nbLastMsg;
         cmd.params.chid = existingCHID;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -165,7 +165,7 @@ describe('hGetLastMessages', function(){
     it('should return hResult ok with default messages of channel if not specified', function(done){
         delete cmd.params.nbLastMsg;
         cmd.params.chid = chanWithHeader;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
@@ -177,7 +177,7 @@ describe('hGetLastMessages', function(){
     it('should return hResult ok with nb of msgs in cmd if specified', function(done){
         var length = 4;
         cmd.params.nbLastMsg = length;
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);

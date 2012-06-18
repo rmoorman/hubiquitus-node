@@ -8,9 +8,7 @@ var mongoURI = 'mongodb://localhost/test';
 
 var cmdControllerParams = {
     modulePath : 'lib/hcommands',
-    timeout : 5000,
-    jid : validJID,
-    checkSender: false
+    timeout : 5000
 };
 
 var xmppConnectionParams = {
@@ -73,7 +71,7 @@ exports.createChannel = function(chid, participants, owner, active, done){
             owner : owner,
             participants : participants
         }
-    }, function(hResult){done();});
+    }, null, function(hResult){done();});
 };
 
 exports.subscribeToChannel = function(sender, chid, done){
@@ -85,7 +83,7 @@ exports.subscribeToChannel = function(sender, chid, done){
         sent : new Date(),
         cmd : 'hSubscribe',
         params : {chid: chid}
-    }, function(hResult){
+    }, null, function(hResult){
         done();
     });
 };
@@ -99,7 +97,7 @@ exports.unsubscribeFromChannel = function(sender, chid, done){
         sent : new Date(),
         cmd : 'hUnsubscribe',
         params : {chid: chid}
-    }, function(hResult){
+    }, null, function(hResult){
         done();
     });
 };
@@ -119,7 +117,7 @@ exports.publishMessage = function(sender, chid, type, payload, transient, done){
             type: type,
             transient: transient
         }
-    }, function(hResult){
+    }, null, function(hResult){
         done();
     });
 }

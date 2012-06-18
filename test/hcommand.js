@@ -33,7 +33,6 @@ describe('hCommand', function(){
 
         params.modulePath = 'test/aux';
         params.timeout = 1000;
-        params.checkSender = true;
     })
 
     after(function(done){
@@ -55,7 +54,7 @@ describe('hCommand', function(){
     })
 
     it('should call module when module exists', function(done){
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.OK);
             done();
         });
@@ -63,7 +62,29 @@ describe('hCommand', function(){
 
     it('should call module when cmd with different case', function(done){
         cmd.cmd = 'dummycommand';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
+    })
+
+    it('should not allow to execute a command if user different than sender', function(done){
+        hCommandController.execCommand(cmd, 'another@jid', function(hResult){
+            hResult.should.have.property('status', status.NOT_AUTHORIZED);
+            done();
+        });
+    })
+
+    it('should allow to execute a command if user has resource and sender doesnt', function(done){
+        hCommandController.execCommand(cmd, config.validJID + '/resource', function(hResult){
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
+    })
+
+    it('should allow to execute a command if sender has resource and user doesnt', function(done){
+        cmd.sender = config.validJID + '/resource';
+        hCommandController.execCommand(cmd, config.validJID, function(hResult){
             hResult.should.have.property('status', status.OK);
             done();
         });
@@ -71,7 +92,7 @@ describe('hCommand', function(){
 
     it('should return hResult when command not found', function(done){
         cmd.cmd = 'inexistent command';
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.NOT_AVAILABLE);
             done();
         });
@@ -79,7 +100,7 @@ describe('hCommand', function(){
 
     it('should return hResult when command timesout', function(done){
         cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.EXEC_TIMEOUT);
             done();
         });
@@ -89,7 +110,7 @@ describe('hCommand', function(){
         this.timeout(3000);
 
         cmd.cmd = 'lateFinisher'; //Calls callback at 2seg
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.EXEC_TIMEOUT);
             done();
         });
@@ -99,7 +120,7 @@ describe('hCommand', function(){
         this.timeout(4000);
 
         cmd.cmd = 'timeoutChanger'; //Calls callback at 2seg
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.OK);
             done();
         });

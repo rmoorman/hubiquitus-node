@@ -41,7 +41,7 @@ describe('hGetChannels', function(){
     })
 
     it('should return hResult when correct', function(done){
-        hCommandController.execCommand(cmd, function(hResult){
+        hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);

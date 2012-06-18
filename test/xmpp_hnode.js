@@ -22,7 +22,7 @@ var config = require('./_config.js');
 var errors = require('../lib/codes.js').errors;
 var status = require('../lib/codes.js').statuses;
 
-describe('XMPP Component', function(){
+describe('hServer XMPP Connection', function(){
 
     var params;
     var component = config.xmppConnection;
