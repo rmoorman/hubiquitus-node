@@ -141,6 +141,32 @@ describe('#Database', function(){
         it('should do nothing with hChannel without chid and no cb', function(){
             db.saveHChannel({priority: 1});
         })
+
+        it('should call onSave functions when succeeds even if it does not have cb', function(done){
+            db.get('hChannels').onSave = [function(result){
+                done();
+                delete db.get('hChannels').onSave;
+            }];
+
+            db.saveHChannel({chid: 'a chid', priority: 1});
+        })
+
+        it('should call onSave functions when succeeds and then call cb', function(done){
+            var counter = 0;
+            db.get('hChannels').onSave = [function(result){
+                delete db.get('hChannels').onSave;
+                if(++counter == 2)
+                    done();
+            }];
+
+            db.saveHChannel({chid: 'a chid', priority: 1}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                if(++counter == 2)
+                    done();
+            });
+        })
+
     })
 
     describe('#saveHCommand()', function(){
@@ -168,6 +194,32 @@ describe('#Database', function(){
                 done();
             });
         })
+
+        it('should call onSave functions when succeeds even if it does not have cb', function(done){
+            db.get('hCommands').onSave = [function(result){
+                done();
+                delete db.get('hCommands').onSave;
+            }];
+
+            db.saveHCommand({cmd: 'a cmd'});
+        })
+
+        it('should call onSave functions when succeeds and then call cb', function(done){
+            var counter = 0;
+            db.get('hCommands').onSave = [function(result){
+                delete db.get('hCommands').onSave;
+                if(++counter == 2)
+                    done();
+            }];
+
+            db.saveHCommand({cmd: 'a cmd'}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                if(++counter == 2)
+                    done();
+            });
+        })
+
     })
 
     describe('#saveHResult()', function(){
@@ -194,6 +246,32 @@ describe('#Database', function(){
                 done();
             });
         })
+
+        it('should call onSave functions when succeeds even if it does not have cb', function(done){
+            db.get('hResults').onSave = [function(result){
+                done();
+                delete db.get('hResults').onSave;
+            }];
+
+            db.saveHResult({cmd: 'a cmd'});
+        })
+
+        it('should call onSave functions when succeeds and then call cb', function(done){
+            var counter = 0;
+            db.get('hResults').onSave = [function(result){
+                delete db.get('hResults').onSave;
+                if(++counter == 2)
+                    done();
+            }];
+
+            db.saveHResult({cmd: 'a cmd'}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                if(++counter == 2)
+                    done();
+            });
+        })
+
     })
 
     describe('#saveHMessage()', function(){
@@ -214,7 +292,7 @@ describe('#Database', function(){
         })
 
         it('should call cb without error using valid hMessage', function(done){
-            db.saveHChannel({chid: 'chid'}, function(err, result){
+            db.saveHMessage({chid: 'chid'}, function(err, result){
                 should.not.exist(err);
                 should.exist(result);
                 done();
@@ -222,7 +300,7 @@ describe('#Database', function(){
         })
 
         it('should call cb with error with hMessage without chid', function(done){
-            db.saveHChannel({priority: 1}, function(err, result){
+            db.saveHMessage({priority: 1}, function(err, result){
                 should.exist(err);
                 should.exist(result);
                 done();
@@ -230,8 +308,34 @@ describe('#Database', function(){
         })
 
         it('should do nothing with hMessage without chid and error', function(){
-            db.saveHChannel({priority: 1});
+            db.saveHMessage({priority: 1});
         })
+
+        it('should call onSave functions when succeeds even if it does not have cb', function(done){
+            db.get('hMessages').onSave = [function(result){
+                done();
+                delete db.get('hMessages').onSave;
+            }];
+
+            db.saveHMessage({chid: 'a chid'});
+        })
+
+        it('should call onSave functions when succeeds and then call cb', function(done){
+            var counter = 0;
+            db.get('hMessages').onSave = [function(result){
+                delete db.get('hMessages').onSave;
+                if(++counter == 2)
+                    done();
+            }];
+
+            db.saveHMessage({chid: 'a chid'}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                if(++counter == 2)
+                    done();
+            });
+        })
+
     })
 
     describe('#searchCollections()', function(){
