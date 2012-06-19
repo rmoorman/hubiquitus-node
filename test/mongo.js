@@ -393,11 +393,10 @@ describe('#Database', function(){
     })
 
     describe('#createPk()', function(){
-        it('should return an instance of ObjectID', function(){
+        it('should return a string', function(){
             var id = db.createPk();
-            var mdb = require('mongodb');
             should.exist(id);
-            id.should.be.an.instanceof(mdb.ObjectID);
+            id.should.be.a('string');
         })
     })
 
