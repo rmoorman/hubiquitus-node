@@ -47,7 +47,8 @@ describe('hCommand', function(){
             sender : config.validJID,
             sid : 'fake sid',
             sent : new Date(),
-            cmd : 'dummyCommand'
+            cmd : 'dummyCommand',
+            params: {}
         };
 
         hCommandController = new config.cmdController(params);
@@ -98,7 +99,7 @@ describe('hCommand', function(){
         });
     })
 
-    it('should return hResult when command timesout', function(done){
+    it('should return hResult when command timeout', function(done){
         cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.EXEC_TIMEOUT);
@@ -122,6 +123,53 @@ describe('hCommand', function(){
         cmd.cmd = 'timeoutChanger'; //Calls callback at 2seg
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.OK);
+            done();
+        });
+    })
+
+    it('should save hCommand and hResult with same _id when transient=false without reqid and transient', function(done){
+        cmd.transient = false;
+        cmd.params.randomValue = '' + config.db.createPk();
+
+        //Sequence: execCommand, testCommand, testResult
+
+        var testCommand = function(err, item){
+            should.not.exist(err);
+            should.exist(item);
+            item.should.have.property('cmd', cmd.cmd);
+            item.should.not.have.property('transient');
+            item.should.not.have.property('reqid');
+
+            config.db.get('hResults').findOne({ _id: item._id}, testResult);
+        };
+
+        //Called by testCommand
+        var testResult = function(err, item2) {
+            should.not.exist(err);
+            should.exist(item2);
+            item2.should.have.property('cmd', cmd.cmd);
+            item2.should.not.have.property('transient');
+            item2.should.not.have.property('reqid');
+            done();
+        };
+
+        hCommandController.execCommand(cmd, config.validJID, function(hResult){
+            hResult.should.have.property('status', status.OK);
+
+            config.db.get('hCommands').findOne({params: {
+                randomValue: cmd.params.randomValue
+            }}, testCommand);
+
+        });
+    })
+
+    it('should return same reqid even if when transient=false reqid changes in mongodb', function(done){
+        cmd.transient = false;
+        cmd.params.randomValue = '' + config.db.createPk();
+
+        hCommandController.execCommand(cmd, config.validJID, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.should.have.property('reqid', cmd.reqid);
             done();
         });
     })
