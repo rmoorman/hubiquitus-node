@@ -21,6 +21,7 @@ var should = require('should');
 var db = require('../lib/mongo.js').db;
 
 var validURI = require('./_config.js').mongoURI;
+var codes = require('../lib/codes.js').mongoCodes;
 
 describe('#Database', function(){
 
@@ -36,6 +37,9 @@ describe('#Database', function(){
 
         it('should return invalid URI if URI does not start with mongodb://', function(done){
             db.once('error', function(error){
+                should.exist(error);
+                error.should.have.property('code', codes.INVALID_URI);
+                error.should.have.property('msg');
                 done();
             });
             db.connect('localhost/dbName');
@@ -43,6 +47,9 @@ describe('#Database', function(){
 
         it('should return invalid URI if URI missing db', function(done){
             db.once('error', function(error){
+                should.exist(error);
+                error.should.have.property('code', codes.INVALID_URI);
+                error.should.have.property('msg');
                 done();
             });
             db.connect('mongodb://localhost');
@@ -50,6 +57,9 @@ describe('#Database', function(){
 
         it('should return invalid URI if port is not a number', function(done){
             db.once('error', function(error){
+                should.exist(error);
+                error.should.have.property('code', codes.INVALID_URI);
+                error.should.have.property('msg');
                 done();
             });
             db.connect('mongodb://localhost:notNumber/dbName');
@@ -62,7 +72,12 @@ describe('#Database', function(){
 
         it('should accept URI with port', function(done){
             //Will return an error because Mongo is not listening to that port
-            db.once('error', done);
+            db.once('error', function(error){
+                should.exist(error);
+                error.should.have.property('code', codes.TECH_ERROR);
+                error.should.have.property('msg');
+                done();
+            });
             db.connect('mongodb://localhost:10/dbName');
         })
 
@@ -133,6 +148,8 @@ describe('#Database', function(){
         it('should call cb with error with hChannel without chid', function(done){
             db.saveHChannel({priority: 1}, function(err, result){
                 should.exist(err);
+                err.should.have.property('code', codes.MISSING_ATTR);
+                err.should.have.property('msg');
                 should.exist(result);
                 done();
             });
@@ -144,8 +161,8 @@ describe('#Database', function(){
 
         it('should call onSave functions when succeeds even if it does not have cb', function(done){
             db.get('hChannels').onSave.push(function(result){
-                done();
                 db.get('hChannels').onSave.pop();
+                done();
             });
 
             db.saveHChannel({chid: 'a chid', priority: 1});
@@ -315,6 +332,8 @@ describe('#Database', function(){
         it('should call cb with error with hMessage without chid', function(done){
             db.saveHMessage({priority: 1}, function(err, result){
                 should.exist(err);
+                err.should.have.property('code', codes.MISSING_ATTR);
+                err.should.have.property('msg');
                 should.exist(result);
                 done();
             });
