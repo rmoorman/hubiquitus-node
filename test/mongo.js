@@ -311,7 +311,7 @@ describe('#Database', function(){
         })
 
         it('should allow to save without callback', function(done){
-            var chid = db.createPk();
+            var chid = '' + db.createPk();
             db.saveHMessage({chid: chid});
 
             db.get(chid).findOne({chid: chid}, function(err, doc){
@@ -393,13 +393,11 @@ describe('#Database', function(){
     })
 
     describe('#createPk()', function(){
-        it('should return a 24 HEX encoded string that can be used as an _id for mongo', function(){
+        it('should return an instance of ObjectID', function(){
             var id = db.createPk();
             var mdb = require('mongodb');
             should.exist(id);
-            id.should.have.length(24);
-            id.should.match(/([0-9]|[a-f]|[A-F])/g);
-            new mdb.ObjectID(id); //Will throw error if invalid id
+            id.should.be.an.instanceof(mdb.ObjectID);
         })
     })
 
