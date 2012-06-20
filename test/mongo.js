@@ -19,11 +19,12 @@
 
 var should = require('should');
 var db = require('../lib/mongo.js').db;
+var config = require('./_config.js');
 
-var validURI = require('./_config.js').mongoURI;
 var codes = require('../lib/codes.js').mongoCodes;
 
 describe('#Database', function(){
+    var validURI = config.mongoURI;
 
     describe('#connect()',function(){
         afterEach(function(done){
@@ -121,42 +122,54 @@ describe('#Database', function(){
     })
 
     describe('#saveHChannel()', function(){
+        var validChannel;
+
         before(function(done){
             db.once('connect', done);
             db.connect(validURI);
         })
 
-        it('should allow to save without callback', function(done){
-            var chid = db.createPk();
-            db.saveHChannel({chid: chid});
+        beforeEach(function(){
+            validChannel = {
+                _id: db.createPk(),
+                host: 'domain.com',
+                owner: config.validJID,
+                participants: [config.validJID],
+                active: true
+            };
+        })
 
-            db.get('hChannels').findOne({chid: chid}, function(err, doc){
+        it('should allow to save without callback', function(done){
+            db.saveHChannel(validChannel);
+
+            db.get('hChannels').findOne({_id: validChannel._id}, function(err, doc){
                 should.not.exist(err);
-                should.exist(doc);
+                doc.should.be.eql(validChannel);
                 done();
             })
         })
 
         it('should call cb without error using valid hChannel', function(done){
-            db.saveHChannel({chid: 'another chid'}, function(err, result){
+            db.saveHChannel(validChannel, function(err, result){
                 should.not.exist(err);
-                should.exist(result);
+                result.should.be.eql(validChannel);
                 done();
             });
         })
 
-        it('should call cb with error with hChannel without chid', function(done){
-            db.saveHChannel({priority: 1}, function(err, result){
+        it('should call cb with error with hChannel without mandatory attribute', function(done){
+            delete validChannel._id;
+            db.saveHChannel(validChannel, function(err, result){
                 should.exist(err);
                 err.should.have.property('code', codes.MISSING_ATTR);
                 err.should.have.property('msg');
-                should.exist(result);
                 done();
             });
         })
 
         it('should do nothing with hChannel without chid and no cb', function(){
-            db.saveHChannel({priority: 1});
+            delete validChannel._id;
+            db.saveHChannel(validChannel);
         })
 
         it('should call onSave functions when succeeds even if it does not have cb', function(done){
@@ -165,7 +178,7 @@ describe('#Database', function(){
                 done();
             });
 
-            db.saveHChannel({chid: 'a chid', priority: 1});
+            db.saveHChannel(validChannel);
         })
 
         it('should call onSave functions when succeeds and then call cb', function(done){
@@ -176,23 +189,21 @@ describe('#Database', function(){
                     done();
             });
 
-            db.saveHChannel({chid: 'a chid', priority: 1}, function(err, result){
+            db.saveHChannel(validChannel, function(err, result){
                 should.not.exist(err);
-                should.exist(result);
+                result.should.be.eql(validChannel);
                 if(++counter == 2)
                     done();
             });
         })
 
         it('should update cache when successful saving', function(done){
-            var chid = '' + Math.floor(Math.random()*10000);
-            db.saveHChannel({chid: chid, priority: 2}, function(err, result){
+            db.saveHChannel(validChannel, function(err, result){
                 should.not.exist(err);
-                should.exist(result);
+                result.should.be.eql(validChannel);
 
-                should.exist(db.cache.hChannels[chid]);
-                db.cache.hChannels[chid].chid.should.be.eql(chid);
-                db.cache.hChannels[chid].priority.should.be.eql(2);
+                should.exist(db.cache.hChannels[validChannel._id]);
+                db.cache.hChannels[validChannel._id]._id.should.be.eql(validChannel._id);
                 done();
             });
         })
