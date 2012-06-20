@@ -135,8 +135,8 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR if priority >4', function(done){
-        createCmd.params.priority = 5;
+    it('should return hResult error INVALID_ATTR if priority >5', function(done){
+        createCmd.params.priority = 6;
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
