@@ -71,7 +71,7 @@ describe('hUnsubscribe', function(){
         };
     })
 
-    it('should return hResult error when missing params', function(done){
+    it('should return hResult error MISSING_ATTR when missing params', function(done){
         delete cmd['params'];
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -82,7 +82,7 @@ describe('hUnsubscribe', function(){
         });
     })
 
-    it('should return hResult error when chid doesnt exist', function(done){
+    it('should return hResult error NOT_AUTHORIZED when chid doesnt exist', function(done){
         cmd.params = {chid: 'this CHID does not exist'};
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -93,7 +93,7 @@ describe('hUnsubscribe', function(){
         });
     })
 
-    it('should return hResult error if not subscribed', function(done){
+    it('should return hResult error NOT_AUTHORIZED if not subscribed', function(done){
         cmd.params = {chid: 'this CHID does not exist'};
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -104,7 +104,7 @@ describe('hUnsubscribe', function(){
         });
     })
 
-    it('should return hResult error when chid is inactive', function(done){
+    it('should return hResult error NOT_AUTHORIZED when chid is inactive', function(done){
         cmd.params = {chid: inactiveCHID};
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -115,7 +115,7 @@ describe('hUnsubscribe', function(){
         });
     })
 
-    it('should return hResult when correct', function(done){
+    it('should return hResult OK when correct', function(done){
         cmd.params = {chid: existingCHID};
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
