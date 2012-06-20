@@ -51,7 +51,7 @@ describe('hSubscribe', function(){
         };
     })
 
-    it('should return hResult error when missing params', function(done){
+    it('should return hResult error MISSING_ATTR when missing params', function(done){
         delete cmd['params'];
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -62,7 +62,7 @@ describe('hSubscribe', function(){
         });
     })
 
-    it('should return hResult error when chid is not part of params', function(done){
+    it('should return hResult error MISSING_ATTR when chid is not part of params', function(done){
         cmd.params = {};
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -73,7 +73,7 @@ describe('hSubscribe', function(){
         });
     })
 
-    it('should return hResult error when chid doesnt exist', function(done){
+    it('should return hResult error NOT_AVAILABLE when chid doesnt exist', function(done){
         cmd.params = {chid: 'this CHID does not exist'};
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
@@ -84,7 +84,7 @@ describe('hSubscribe', function(){
         });
     })
 
-    it('should return hResult error if not in participants list', function(done){
+    it('should return hResult error NOT_AUTHORIZED if not in participants list', function(done){
         cmd.params = {chid: existingCHID};
         cmd.sender = 'not in list';
         hCommandController.execCommand(cmd, null, function(hResult){
@@ -107,7 +107,7 @@ describe('hSubscribe', function(){
         });
     })
 
-    it('should return hResult when correct', function(done){
+    it('should return hResult OK when correct', function(done){
         cmd.params = {chid: existingCHID};
         cmd.sender = config.validJID;
         hCommandController.execCommand(cmd, null, function(hResult){

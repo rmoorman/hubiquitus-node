@@ -69,7 +69,7 @@ describe('hCommand', function(){
         });
     })
 
-    it('should not allow to execute a command if user different than sender', function(done){
+    it('should return hResult error NOT_AUTHORIZED if user different than sender', function(done){
         hCommandController.execCommand(cmd, 'another@jid', function(hResult){
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
             done();
@@ -91,7 +91,7 @@ describe('hCommand', function(){
         });
     })
 
-    it('should return hResult when command not found', function(done){
+    it('should return hResult error NOT_AVAILABLE when command not found', function(done){
         cmd.cmd = 'inexistent command';
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.NOT_AVAILABLE);
@@ -99,7 +99,7 @@ describe('hCommand', function(){
         });
     })
 
-    it('should return hResult when command timeout', function(done){
+    it('should return hResult error EXEC_TIMEOUT when command timeout', function(done){
         cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.EXEC_TIMEOUT);
