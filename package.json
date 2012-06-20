@@ -2,7 +2,7 @@
     "author": "Federico Wasserman",
     "name": "hubiquitus-node",
     "description": "hServer implementation of the Hubiquitus Framework",
-    "version": "0.4.0",
+    "version": "0.4a1",
     "homepage": "www.hubiquitus.com",
     "repository": {
         "type": "git",
