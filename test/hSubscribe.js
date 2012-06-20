@@ -25,8 +25,8 @@ describe('hSubscribe', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = '' + Math.floor(Math.random()*10000);
-    var inactiveChannel = '' + Math.floor(Math.random()*10000);
+    var existingCHID = config.db.createPk();
+    var inactiveChannel = config.db.createPk();
 
     before(config.beforeFN)
 
@@ -47,7 +47,7 @@ describe('hSubscribe', function(){
             sid : 'fake sid',
             sent : new Date(),
             cmd : 'hSubscribe',
-            params : {chid: Math.random()}
+            params : {chid: config.db.createPk()}
         };
     })
 
@@ -57,6 +57,17 @@ describe('hSubscribe', function(){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.MISSING_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error when chid is not part of params', function(done){
+        cmd.params = {};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('cmd', cmd.cmd);
+            hResult.should.have.property('reqid', cmd.reqid);
+            hResult.should.have.property('status').and.equal(status.MISSING_ATTR);
             hResult.should.have.property('result').and.be.a('string');
             done();
         });
