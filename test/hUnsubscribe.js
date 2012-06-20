@@ -28,8 +28,8 @@ describe('hUnsubscribe', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = '' + Math.floor(Math.random()*10000);
-    var inactiveCHID = '' + Math.floor(Math.random()*10000);
+    var existingCHID = config.db.createPk();
+    var inactiveCHID = config.db.createPk();
 
     before(config.beforeFN)
 
@@ -67,7 +67,7 @@ describe('hUnsubscribe', function(){
             sid : 'fake sid',
             sent : new Date(),
             cmd : 'hUnsubscribe',
-            params : {chid: existingCHID}
+            params : {chid: config.db.createPk()}
         };
     })
 
