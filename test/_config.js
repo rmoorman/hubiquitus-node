@@ -1,7 +1,8 @@
 /*
  CONFIGURE ALL PARAMETERS FOR CONNECTION AND DATABASE HERE
  */
-
+var should = require('should');
+var status = require('../lib/codes.js').hResultStatus;
 var validJID = 'u1@localhost';
 
 var mongoURI = 'mongodb://localhost/test';
@@ -71,7 +72,10 @@ exports.createChannel = function(chid, participants, owner, active, done){
             owner : owner,
             participants : participants
         }
-    }, null, function(hResult){done();});
+    }, null, function(hResult){
+        hResult.should.have.property('status', status.OK);
+        done();
+    });
 };
 
 exports.subscribeToChannel = function(sender, chid, done){
@@ -84,6 +88,7 @@ exports.subscribeToChannel = function(sender, chid, done){
         cmd : 'hSubscribe',
         params : {chid: chid}
     }, null, function(hResult){
+        hResult.should.have.property('status', status.OK);
         done();
     });
 };
@@ -98,11 +103,13 @@ exports.unsubscribeFromChannel = function(sender, chid, done){
         cmd : 'hUnsubscribe',
         params : {chid: chid}
     }, null, function(hResult){
+        hResult.should.have.property('status', status.OK);
         done();
     });
 };
 
-exports.publishMessage = function(sender, chid, type, payload, transient, done){
+exports.publishMessage = function(sender, chid, type, payload, published, transient, done){
+
     var hCommandController = new cmdController(cmdControllerParams);
     hCommandController.execCommand({
         reqid  : 'hCommandTest123',
@@ -113,13 +120,16 @@ exports.publishMessage = function(sender, chid, type, payload, transient, done){
         params : {
             chid: chid,
             publisher: sender,
+            published: published,
             payload: payload,
             type: type,
             transient: transient
         }
     }, null, function(hResult){
+        hResult.should.have.property('status', status.OK);
         done();
     });
+
 }
 
 var winston = require('winston');

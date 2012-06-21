@@ -25,9 +25,10 @@ describe('hGetLastMessages', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = '' + Math.floor(Math.random()*10000);
-    var chanWithHeader = '' + Math.floor(Math.random()*10000);
-    var inactiveChan = '' + Math.floor(Math.random()*10000);
+    var existingCHID = config.db.createPk();
+    var chanWithHeader = config.db.createPk();
+    var inactiveChan = config.db.createPk();
+    var DateTab = [];
 
     var maxMsgRetrieval = 6;
 
@@ -54,19 +55,16 @@ describe('hGetLastMessages', function(){
                 host : '' + new Date(),
                 owner : config.validJID,
                 participants : [config.validJID],
-                headers : [{hKey: 'maxMsgRetrieval', hValue: ''+maxMsgRetrieval}]
+                headers : [{hK: 'MAX_MESSAGE_RETRIEVAL', hV: ''+maxMsgRetrieval}]
             }
         }, null, function(hResult){done();});
     })
 
-    for(var i = 0; i < 15; i++)
-        before(function(done){
-            config.publishMessage(config.validJID, existingCHID, undefined, undefined, false, done);
-        })
 
-    for(var i = 0; i < 15; i++)
+
+    for(var i = 0; i < 11; i++)
         before(function(done){
-            config.publishMessage(config.validJID, chanWithHeader, undefined, undefined, false, done);
+            config.publishMessage(config.validJID, chanWithHeader, undefined, undefined, undefined, false, done);
         })
 
     after(config.afterFN)
@@ -80,7 +78,7 @@ describe('hGetLastMessages', function(){
             cmd : 'hGetLastMessages',
             params : {
                 chid: existingCHID,
-                nbLasMsg: 5
+                nbLastMsg: 5
             }
         };
     })
@@ -90,100 +88,164 @@ describe('hGetLastMessages', function(){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
             hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result').and.be.an.instanceof(Array);
+            hResult.should.have.property('result').and. be.an.instanceof(Array);
+            hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(0);
             done();
         });
     })
 
-    it('should return hResult error MISSING_ATTR if no params is passed', function(done){
-        delete cmd.params;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
+    describe('Test with messages published',function() {
+
+        for(var i = 0; i < 11; i++) {
+            var count = 0;
+            var date = new Date(100000 + i * 100000);
+            DateTab.push(date);
+            before(function(done){
+                config.publishMessage(config.validJID, existingCHID, undefined, undefined,DateTab[count], false, done);
+                count++;
+            })
+
+        }
+
+        it('should return hResult error MISSING_ATTR if no params is passed', function(done){
+            delete cmd.params;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.MISSING_ATTR);
+                hResult.should.have.property('result').and.be.a('string');
+                done();
+            });
+        })
+
+        it('should return hResult error MISSING_ATTR if no channel is passed', function(done){
+            delete cmd.params.chid;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.MISSING_ATTR);
+                hResult.should.have.property('result').and.be.a('string');
+                done();
+            });
+        })
+
+        it('should return hResult error NOT_AUTHORIZED if publisher not in participants list', function(done){
+            cmd.sender = 'not in list';
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.NOT_AUTHORIZED);
+                hResult.should.have.property('result').and.be.a('string');
+                done();
+            });
+        })
+
+        it('should return hResult error NOT_AVAILABLE if channel does not exist', function(done){
+            cmd.params.chid = 'this channel does not exist';
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.NOT_AVAILABLE);
+                hResult.should.have.property('result').and.be.a('string');
+                done();
+            });
+        })
+
+        it('should return hResult error NOT_AUTHORIZED if channel inactive', function(done){
+            cmd.params.chid = inactiveChan;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.NOT_AUTHORIZED);
+                hResult.should.have.property('result').and.be.a('string');
+                done();
+            });
+        })
+
+        it('should return hResult ok with 10 msgs if not header in chan and cmd quant not a number', function(done){
+            cmd.params.nbLastMsg = 'not a number';
+            cmd.params.chid = existingCHID;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(10);;
+                done();
+            });
+        })
+
+        it('should return hResult ok with 10 messages if not default in channel or cmd', function(done){
+            delete cmd.params.nbLastMsg;
+            cmd.params.chid = existingCHID;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(10);;
+                done();
+            });
+        })
+
+        it('should return hResult ok with 10 last messages', function(done){
+            delete cmd.params.nbLastMsg;
+            cmd.params.chid = existingCHID;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(10);
+
+                for(i=0; i<10;i++) {
+                    var int = DateTab.length - (i + 1);
+
+                    //Should be a string for compare
+                    var supposedDate = '' +DateTab[int];
+                    var trueDate = '' + hResult.result[i].published;
+
+                    supposedDate.should.be.eql(trueDate);
+                }
+                done();
+            });
+        })
+
+        it('should return hResult ok with default messages of channel if not specified', function(done){
+            delete cmd.params.nbLastMsg;
+            cmd.params.chid = chanWithHeader;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(maxMsgRetrieval);
+                done();
+            });
+        })
+
+        it('should return hResult ok with nb of msgs in cmd if specified with headers', function(done){
+            var length = 4;
+            cmd.params.nbLastMsg = length;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(length);
+                done();
+            });
+        })
+
+        it('should return hResult ok with nb of msgs in cmd if specified if header specified', function(done){
+            var length = 4;
+            cmd.params.nbLastMsg = length;
+            cmd.params.chid = chanWithHeader;
+            hCommandController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('cmd', cmd.cmd);
+                hResult.should.have.property('reqid', cmd.reqid);
+                hResult.should.have.property('status', status.OK);
+                hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(length);
+                done();
+            });
+        })
     })
 
-    it('should return hResult error MISSING_ATTR if no channel is passed', function(done){
-        delete cmd.params.chid;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
 
-    it('should return hResult error NOT_AUTHORIZED if publisher not in participants list', function(done){
-        cmd.sender = 'not in list';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error NOT_AVAILABLE if channel does not exist', function(done){
-        cmd.params.chid = 'this channel does not exist';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.NOT_AVAILABLE);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error NOT_AUTHORIZED if channel inactive', function(done){
-        cmd.params.chid = inactiveChan;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult ok with 10 messages if not default in channel or cmd', function(done){
-        delete cmd.params.nbLastMsg;
-        cmd.params.chid = existingCHID;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(10);;
-            done();
-        });
-    })
-
-    it('should return hResult ok with default messages of channel if not specified', function(done){
-        delete cmd.params.nbLastMsg;
-        cmd.params.chid = chanWithHeader;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(maxMsgRetrieval);
-            done();
-        });
-    })
-
-    it('should return hResult ok with nb of msgs in cmd if specified', function(done){
-        var length = 4;
-        cmd.params.nbLastMsg = length;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(length);
-            done();
-        });
-    })
 
 })
