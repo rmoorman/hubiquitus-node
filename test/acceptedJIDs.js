@@ -22,6 +22,7 @@ var should = require('should');
 describe('jid Tests', function(){
     var checkJID = require('../lib/validators.js').validateJID;
     var splitJID = require('../lib/validators.js').splitJID;
+    var compJID = require('../lib/validators.js').compareJIDs;
 
     it('should accept jid a@b', function(){
         checkJID('a@b').should.be.true;
@@ -75,6 +76,24 @@ describe('jid Tests', function(){
         jid.should.have.length(3);
         jid[0].should.be.eql(user);
         jid[1].should.be.eql(domain);
+    })
+
+    it('should compare to true two jid with different resource', function(){
+        var user = 'asd*-+123',
+            domain = 'zxcasc.asc*-+',
+            resource1 = '+-zzxc-.,*+',
+            resource2 = 'asd45zxc';
+
+        compJID(user + '@' + domain + '/' + resource1, user + '@' + domain + '/' + resource2).should.be.true;
+    })
+
+    it('should compare to false two jid with different resource if "r" is active', function(){
+        var user = 'asd*-+123',
+            domain = 'zxcasc.asc*-+',
+            resource1 = '+-zzxc-.,*+',
+            resource2 = 'asd45zxc';
+
+        compJID(user + '@' + domain + '/' + resource1, user + '@' + domain + '/' + resource2, 'r').should.be.false;
     })
 })
 
