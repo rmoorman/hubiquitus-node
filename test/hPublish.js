@@ -399,62 +399,8 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR if headers is not a []', function(done){
+    it('should return hResult error INVALID_ATTR if headers is not an object', function(done){
         cmd.params.headers= 'aaa';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if headers is not a [{hK: string, hV: string}]', function(done){
-        cmd.params.headers= [{hK: []}];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if headers is not a [{hK: string, hV: string}]', function(done){
-        cmd.params.headers= [{hK: ''}];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if headers is not a [{hK: string, hV: string}]', function(done){
-        cmd.params.headers= [{hK: [], hV: ''}];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if headers is not a [{hK: string, hV: string}]', function(done){
-        cmd.params.headers= [{hV: []}];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if headers is not a [{hK: string, hV: string}]', function(done){
-        cmd.params.headers= [{hV: ''}];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if headers is not a [{hK: string, hV: string}]', function(done){
-        cmd.params.headers= [{hK: '', hV: []}];
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string');

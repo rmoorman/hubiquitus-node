@@ -312,30 +312,8 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR if headers is not an array', function(done){
+    it('should return hResult error INVALID_ATTR if headers is not an object', function(done){
         createCmd.params.headers= '';
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string').and.match(/header/i);
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if invalid hK (hHeader) content type', function(done){
-        createCmd.params.headers= [{hK: {}, hV: ''}];
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string').and.match(/header/i);
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if invalid hV (hHeader) content type', function(done){
-        createCmd.params.headers= [{hK: '', hV: {}}];
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
