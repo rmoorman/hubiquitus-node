@@ -55,7 +55,7 @@ describe('hGetLastMessages', function(){
                 host : '' + new Date(),
                 owner : config.validJID,
                 participants : [config.validJID],
-                headers : [{hK: 'MAX_MESSAGE_RETRIEVAL', hV: ''+maxMsgRetrieval}]
+                headers : [{hK: 'MAX_MSG_RETRIEVAL', hV: ''+maxMsgRetrieval}]
             }
         }, null, function(hResult){done();});
     })
