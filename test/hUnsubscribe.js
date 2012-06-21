@@ -93,6 +93,16 @@ describe('hUnsubscribe', function(){
         });
     })
 
+    it('should return hResult NOT_AUTHORIZED if not subscribed and no subscriptions', function(done){
+        cmd.sender = 'a@jid.com';
+        cmd.params = {chid: existingCHID};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.NOT_AUTHORIZED);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
     it('should return hResult error NOT_AUTHORIZED if not subscribed', function(done){
         cmd.params = {chid: 'this CHID does not exist'};
         hCommandController.execCommand(cmd, null, function(hResult){

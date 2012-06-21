@@ -26,12 +26,17 @@ describe('hSubscribe', function(){
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
     var existingCHID = config.db.createPk();
+    var existingCHID2 = config.db.createPk();
     var inactiveChannel = config.db.createPk();
 
     before(config.beforeFN)
 
     before(function(done){
         config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
+    })
+
+    before(function(done){
+        config.createChannel(existingCHID2, [config.validJID], config.validJID, true, done);
     })
 
     before(function(done){
