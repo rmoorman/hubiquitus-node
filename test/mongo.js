@@ -22,6 +22,7 @@ var db = require('../lib/mongo.js').db;
 var config = require('./_config.js');
 
 var codes = require('../lib/codes.js').mongoCodes;
+var status = require('../lib/codes.js').hResultStatus;
 
 describe('#Database', function(){
     var validURI = config.mongoURI;
@@ -161,8 +162,8 @@ describe('#Database', function(){
             delete validChannel._id;
             db.saveHChannel(validChannel, function(err, result){
                 should.exist(err);
-                err.should.have.property('code', codes.MISSING_ATTR);
-                err.should.have.property('msg');
+                should.exist(result);
+                err.should.be.eql(status.MISSING_ATTR);
                 done();
             });
         })
