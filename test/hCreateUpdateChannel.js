@@ -223,18 +223,6 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR if owner is not a valid JID', function(done){
-        createCmd.params.owner = 'this is not a jid';
-        createCmd.sender = 'this is not a jid';
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string').and.match(/owner/i);
-            done();
-        });
-    })
-
     it('should return hResult error INVALID_ATTR if owner JID is not bare', function(done){
         createCmd.params.owner = 'a@b/resource';
         createCmd.sender = 'a@b/resource';
