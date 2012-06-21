@@ -341,20 +341,6 @@ describe('#Database', function(){
             });
         })
 
-        it('should call cb with error with hMessage without chid', function(done){
-            db.saveHMessage({priority: 1}, function(err, result){
-                should.exist(err);
-                err.should.have.property('code', codes.MISSING_ATTR);
-                err.should.have.property('msg');
-                should.exist(result);
-                done();
-            });
-        })
-
-        it('should do nothing with hMessage without chid and error', function(){
-            db.saveHMessage({priority: 1});
-        })
-
         it('should call onSave functions when succeeds even if it does not have cb', function(done){
             db.get('hMessages').onSave.push(function(result){
                 db.get('hMessages').onSave.pop();
