@@ -2,7 +2,7 @@
     "author": "Federico Wasserman",
     "name": "hubiquitus-node",
     "description": "hServer implementation of the Hubiquitus Framework",
-    "version": "0.4a1",
+    "version": "0.3.9",
     "homepage": "www.hubiquitus.com",
     "repository": {
         "type": "git",
@@ -18,7 +18,7 @@
     },
     "dependencies": {
         "winston" : "=0.6.1",
-        "socket.io" : "=0.8.7",
+        "socket.io" : ">=0.8.7",
         "node-xmpp" : "=0.3.1",
         "node-xmpp-bosh" : "=0.5.6",
         "mongodb" : "=1.0.2"
