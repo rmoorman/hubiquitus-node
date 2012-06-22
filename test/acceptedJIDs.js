@@ -23,6 +23,7 @@ describe('jid Tests', function(){
     var checkJID = require('../lib/validators.js').validateJID;
     var splitJID = require('../lib/validators.js').splitJID;
     var compJID = require('../lib/validators.js').compareJIDs;
+    var getBareJID = require('../lib/validators.js').getBareJID;
 
     it('should accept jid a@b', function(){
         checkJID('a@b').should.be.true;
@@ -94,6 +95,21 @@ describe('jid Tests', function(){
             resource2 = 'asd45zxc';
 
         compJID(user + '@' + domain + '/' + resource1, user + '@' + domain + '/' + resource2, 'r').should.be.false;
+    })
+
+    it('should get bare JID from a JID with resource', function(){
+        var user = 'asd*-+123',
+            domain = 'zxcasc.asc*-+',
+            resource = '+-zzxc-.,*+';
+
+        getBareJID(user + '@' + domain + '/' + resource).should.be.eql(user + '@' + domain);
+    })
+
+    it('should get bare JID from a JID without resource', function(){
+        var user = 'asd*-+123',
+            domain = 'zxcasc.asc*-+';
+
+        getBareJID(user + '@' + domain).should.be.eql(user + '@' + domain);
     })
 })
 
