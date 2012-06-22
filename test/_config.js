@@ -39,6 +39,15 @@ exports.xmppConnection = xmppConnection;
 
 exports.xmppParams = xmppConnectionParams;
 
+exports.genericCmd = {
+    reqid  : 'hCommandTest123',
+    sender : exports.validJID,
+    sid : 'fake sid',
+    sent : new Date(),
+    cmd : 'INCOMPLETE CMD',
+    params : {}
+};
+
 exports.beforeFN = function(done){
     var db = require('../lib/mongo.js').db;
     db.once('connect', function(){
