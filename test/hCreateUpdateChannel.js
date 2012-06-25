@@ -399,6 +399,24 @@ describe('hCreateUpdateChannel', function(){
             });
         })
 
+        it('should return hResult OK if a new participant is added', function(done){
+            createCmd.params.chid = existingCHID;
+            createCmd.params.participants = [config.validJID, 'u2@another2'];
+            hCommandController.execCommand(createCmd, null, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+        })
+
+        it('should return hResult OK if an old participant is removed', function(done){
+            createCmd.params.chid = existingCHID;
+            createCmd.params.participants = ['u2@another2'];
+            hCommandController.execCommand(createCmd, null, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+        })
+
         it('should return hResult error if sender tries to update owner', function(done){
             createCmd.params.owner = 'a@jid.different';
             createCmd.params.chid = existingCHID;
