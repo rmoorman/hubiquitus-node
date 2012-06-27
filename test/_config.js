@@ -3,7 +3,16 @@
  */
 var should = require('should');
 var status = require('../lib/codes.js').hResultStatus;
+
 var validJID = 'u1@localhost';
+
+//Array of logins (with params if you want) to connect to XMPP
+exports.logins = [
+    {
+        jid: 'u1@localhost',
+        password: 'u1'
+    }
+];
 
 var mongoURI = 'mongodb://localhost/test';
 
@@ -14,8 +23,7 @@ var cmdControllerParams = {
 
 var xmppConnectionParams = {
     jid: 'hnode@localhost',
-    password: 'hnode',
-    commandOptions: cmdControllerParams
+    password: 'hnode'
 };
 
 
@@ -34,7 +42,7 @@ exports.db = require('../lib/mongo.js').db;
 
 exports.mongoURI = mongoURI;
 
-var xmppConnection = require('../lib/server_connectors/xmpp_hnode.js').ServerConnection;
+var xmppConnection = require('../lib/hAdmin.js').getHAdmin(cmdControllerParams);
 exports.xmppConnection = xmppConnection;
 
 exports.xmppParams = xmppConnectionParams;
