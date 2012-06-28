@@ -137,6 +137,15 @@ describe('hSetFilter', function(){
         });
     })
 
+    it('should return hResult INVALID_ATTR if transient is specified', function(done){
+        cmd.params.template = {msgid: config.db.createPk()};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', hResultStatus.INVALID_ATTR);
+            hResult.result.should.be.a('string').and.match(/msgid/);
+            done();
+        });
+    })
+
     it('should return hResult MISSING_ATTR if radius specified but lat missing', function(done){
         cmd.params.radius = 1000;
         cmd.params.template = {location: {lng: Math.random()*100000 }};
