@@ -74,6 +74,7 @@ describe('hClient XMPP Connection', function(){
         var cmd, hMsg;
         var activeChan = config.db.createPk();
         var filterName = config.db.createPk();
+        var filterName2 = config.db.createPk();
 
         before(function(done){
             hClient.once('connect', done);
@@ -374,6 +375,28 @@ describe('hClient XMPP Connection', function(){
             });
         })
 
+        it('should return null if payload in filter has an array inside like in msg but with less elements', function(done){
+            cmd.params.template = {payload: {something: ['is', 'awesome']}};
+            hMsg.payload = {something: ['is', 'awesome', 'not']};
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                should.not.exist(hClient.filterMessage(hMsg));
+                done();
+            });
+        })
+
+        it('should return null if payload in filter has an array inside like in msg but in different order', function(done){
+            cmd.params.template = {payload: {something: ['awesome', 'is']}};
+            hMsg.payload = {something: ['is', 'awesome']};
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                should.not.exist(hClient.filterMessage(hMsg));
+                done();
+            });
+        })
+
         it('should return message if payload in filter and same obj in msg', function(done){
             cmd.params.template = {payload: {something: 'is awesome'}};
             hMsg.payload = {something: 'is awesome'};
@@ -415,6 +438,52 @@ describe('hClient XMPP Connection', function(){
                 hResult.should.have.property('status', codes.hResultStatus.OK);
                 hClient.filterMessage(hMsg).should.be.eql(hMsg);
                 done();
+            });
+        })
+
+        it('should return msg if payload in filter has an array inside that matches msg', function(done){
+            cmd.params.template = {payload: {something: ['awesome', 'is']}};
+            hMsg.payload = {something: ['awesome', 'is']};
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                hClient.filterMessage(hMsg).should.be.eql(hMsg);
+                done();
+            });
+        })
+
+        it('should return null if msg passes first filter but not second one', function(done){
+            cmd.params.template = {priority: 5};
+            hMsg.priority = 5;
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+
+                cmd.params.name = filterName2;
+                cmd.params.template = {publisher: 'someone@else.com'};
+                hClient.command(cmd, function(hResult){
+                    hResult.should.have.property('status', codes.hResultStatus.OK);
+                    should.not.exist(hClient.filterMessage(hMsg));
+                    done();
+                });
+            });
+        })
+
+        it('should return msg if there are two filters and passes both', function(done){
+            cmd.params.template = {priority: 5};
+            hMsg.priority = 5;
+            hMsg.publisher = 'someone@else.com'
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+
+                cmd.params.name = filterName2;
+                cmd.params.template = {publisher: 'someone@else.com'};
+                hClient.command(cmd, function(hResult){
+                    hResult.should.have.property('status', codes.hResultStatus.OK);
+                    hClient.filterMessage(hMsg).should.be.eql(hMsg);
+                    done();
+                });
             });
         })
 
