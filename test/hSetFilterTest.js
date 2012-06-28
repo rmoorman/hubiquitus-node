@@ -214,4 +214,53 @@ describe('hSetFilter', function(){
         });
     })
 
+    describe('hClient filter', function(){
+        var hClientConst = require('../lib/hClient.js').hClient;
+        var hClient = new hClientConst(config.cmdParams);
+
+        before(function(done){
+            hClient.once('connect', done);
+            hClient.connect(config.logins[0]);
+        })
+
+        after(function(done){
+            hClient.once('disconnect', done);
+            hClient.disconnect();
+        })
+
+        it('should add filters and add it to list of filtersOrder', function(done){
+            cmd.params.template = {publisher: 'someone@someone.com'};
+            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.params.name = filterName;
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', hResultStatus.OK);
+                hClient.filters.should.have.property(filterName);
+                hClient.filtersOrder.should.include(filterName);
+                done();
+            });
+        })
+
+        it('should add a second filter after first one in filterOrder', function(done){
+            cmd.params.template = {publisher: 'another@someone.com'};
+            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.params.name = config.db.createPk();
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', hResultStatus.OK);
+                hClient.filtersOrder[1].should.be.eql(cmd.params.name);
+                done();
+            });
+        })
+
+        it('should update filter without altering filterOrder', function(done){
+            cmd.params.template = {publisher: 'another@someone.com'};
+            cmd.entity = 'hnode@' + hClient.domain;
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', hResultStatus.OK);
+                hClient.filtersOrder[0].should.be.eql(filterName);
+                hClient.filtersOrder.should.have.lengthOf(2);
+                done();
+            });
+        })
+
+    })
 })
