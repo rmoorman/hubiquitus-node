@@ -452,6 +452,30 @@ describe('hClient XMPP Connection', function(){
             });
         })
 
+        it('should return msg if radius set and distance is smaller than that in template', function(done){
+            cmd.params.template = {location: {lat: 48.832563, lng: 2.34762}};
+            cmd.params.radius = 5000;
+            hMsg.location= {lat: 48.842012, lng: 2.330024};
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                hClient.filterMessage(hMsg).should.be.eql(hMsg);
+                done();
+            });
+        })
+
+        it('should return msg if radius set and distance is smaller than that in template', function(done){
+            cmd.params.template = {location: {lat: 48.832563, lng: 2.34762}};
+            cmd.params.radius = 5000;
+            hMsg.location= {lat: 48.842012, lng: 2.330024};
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                hClient.filterMessage(hMsg).should.be.eql(hMsg);
+                done();
+            });
+        })
+
         it('should return null if msg passes first filter but not second one', function(done){
             cmd.params.template = {priority: 5};
             hMsg.priority = 5;
