@@ -198,7 +198,7 @@ describe('hSetFilter', function(){
         cmd.params.name = filterName;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.OK);
-            should.exist(hCommandController.context.filters[filterName]);
+            should.exist(hCommandController.context.hClient.filters[filterName]);
             done();
         });
     })
@@ -208,8 +208,8 @@ describe('hSetFilter', function(){
         cmd.params.name = filterName;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.OK);
-            should.exist(hCommandController.context.filters[filterName]);
-            hCommandController.context.filters[filterName].should.have.property('template', cmd.params.template);
+            should.exist(hCommandController.context.hClient.filters[filterName]);
+            hCommandController.context.hClient.filters[filterName].should.have.property('template', cmd.params.template);
             done();
         });
     })
