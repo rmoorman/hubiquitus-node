@@ -137,11 +137,20 @@ describe('hSetFilter', function(){
         });
     })
 
-    it('should return hResult INVALID_ATTR if transient is specified', function(done){
+    it('should return hResult INVALID_ATTR if msgid is specified', function(done){
         cmd.params.template = {msgid: config.db.createPk()};
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.INVALID_ATTR);
             hResult.result.should.be.a('string').and.match(/msgid/);
+            done();
+        });
+    })
+
+    it('should return hResult INVALID_ATTR if chid is specified in template', function(done){
+        cmd.params.template = {chid: config.db.createPk()};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', hResultStatus.INVALID_ATTR);
+            hResult.result.should.be.a('string').and.match(/chid/);
             done();
         });
     })
@@ -198,6 +207,18 @@ describe('hSetFilter', function(){
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.INVALID_ATTR);
             hResult.result.should.be.a('string').and.match(/headers/);
+            done();
+        });
+    })
+
+    it('should return hResult MISSING_ATTR if nothing was set', function(done){
+        delete cmd.params.relevant;
+        delete cmd.params.radius;
+        delete cmd.params.template;
+
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', hResultStatus.MISSING_ATTR);
+            hResult.result.should.be.a('string');
             done();
         });
     })
