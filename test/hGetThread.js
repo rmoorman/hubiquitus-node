@@ -185,4 +185,67 @@ describe('hGetThread', function(){
         });
     })
 
+    describe('test filters', function(){
+        var hClientConst = require('../lib/hClient.js').hClient;
+        var hClient = new hClientConst(config.cmdParams);
+        var filterMessagesPublished = 0;
+
+        before(function(done){
+            hClient.once('connect', done);
+            hClient.connect(config.logins[0]);
+        })
+
+        after(function(done){
+            hClient.once('disconnect', done);
+            hClient.disconnect();
+        })
+
+        for(var i = 0; i < 4; i++)
+            before(function(done){
+                var cmd = JSON.parse(JSON.stringify(config.genericCmd));
+                cmd.cmd = 'hPublish';
+                cmd.params = {
+                    chid: activeChannel,
+                    convid: convid,
+                    type: 'a type',
+                    transient: false,
+                    publisher: config.validJID
+                };
+                cmdController.execCommand(cmd, null, function(hResult){
+                    hResult.should.have.property('status', status.OK);
+                    publishedMessages++;
+                    filterMessagesPublished++;
+                    done();
+                });
+            })
+
+        before(function(done){
+            hClient.command({
+                reqid: 'testCmd',
+                entity: 'hnode@' + hClient.domain,
+                sender: config.logins[0].jid,
+                cmd: 'hSetFilter',
+                params: {
+                    chid: activeChannel,
+                    name: 'a filter',
+                    template: {type: 'a type'}
+                }
+            }, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+        })
+
+
+        it('should return only filtered messages of convid', function(done){
+            cmd.entity = 'hnode@' + hClient.domain;
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(filterMessagesPublished);
+                done();
+            });
+        })
+
+    })
+
 })

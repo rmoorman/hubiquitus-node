@@ -312,6 +312,4 @@ describe('hGetLastMessages', function(){
 
     })
 
-
-
 })
