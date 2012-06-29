@@ -104,6 +104,15 @@ describe('hUnsetFilter', function(){
         });
     })
 
+    it('should return hResult NOT_AVAILABLE if the channel does not exist is not found', function(done){
+        cmd.params.chid = 'not a valid channel';
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', hResultStatus.NOT_AVAILABLE);
+            hResult.result.should.be.a('string');
+            done();
+        });
+    })
+
     it('should return hResult MISSING_ATTR if name is missing', function(done){
         delete cmd.params.name;
         hCommandController.execCommand(cmd, null, function(hResult){
@@ -113,20 +122,20 @@ describe('hUnsetFilter', function(){
         });
     })
 
-//    it('should return hResult MISSING_ATTR if chid is missing', function(done){
-//        delete cmd.params.chid;
-//        hCommandController.execCommand(cmd, null, function(hResult){
-//            hResult.should.have.property('status', hResultStatus.MISSING_ATTR);
-//            hResult.result.should.be.a('string').and.match(/chid/);
-//            done();
-//        });
-//    })
+    it('should return hResult MISSING_ATTR if chid is missing', function(done){
+        delete cmd.params.chid;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', hResultStatus.MISSING_ATTR);
+            hResult.result.should.be.a('string').and.match(/chid/);
+            done();
+        });
+    })
 
     it('should return hResult OK removing a filter if everything is correct', function(done){
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.OK);
-            should.not.exist(hCommandController.context.hClient.filters[filterName]);
-            hCommandController.context.hClient.filtersOrder.should.have.lengthOf(1);
+            should.not.exist(hCommandController.context.hClient.filters[activeChan][filterName]);
+            hCommandController.context.hClient.filtersOrder[activeChan].should.have.lengthOf(1);
             done();
         });
     })
@@ -166,13 +175,13 @@ describe('hUnsetFilter', function(){
         it('should remove filter from the hClient', function(done){
             cmd.entity = 'hnode@' + hClient.domain;
             cmd.params.name = filterName2;
-            hClient.filtersOrder.should.have.lengthOf(1);
-            should.exist(hClient.filters[hClient.filtersOrder[0]]);
+            hClient.filtersOrder[activeChan].should.have.lengthOf(1);
+            should.exist(hClient.filters[activeChan][hClient.filtersOrder[activeChan][0]]);
 
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', hResultStatus.OK);
-                hClient.filtersOrder.should.have.lengthOf(0);
-                should.not.exist(hClient.filters[filterName2]);
+                hClient.filtersOrder[activeChan].should.have.lengthOf(0);
+                should.not.exist(hClient.filters[activeChan][filterName2]);
                 done();
             });
         })

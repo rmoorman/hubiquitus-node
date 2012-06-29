@@ -228,7 +228,7 @@ describe('hSetFilter', function(){
         cmd.params.name = filterName;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.OK);
-            should.exist(hCommandController.context.hClient.filters[filterName]);
+            should.exist(hCommandController.context.hClient.filters[activeChan][filterName]);
             done();
         });
     })
@@ -238,8 +238,8 @@ describe('hSetFilter', function(){
         cmd.params.name = filterName;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.OK);
-            should.exist(hCommandController.context.hClient.filters[filterName]);
-            hCommandController.context.hClient.filters[filterName].should.have.property('template', cmd.params.template);
+            should.exist(hCommandController.context.hClient.filters[activeChan][filterName]);
+            hCommandController.context.hClient.filters[activeChan][filterName].should.have.property('template', cmd.params.template);
             done();
         });
     })
@@ -264,8 +264,8 @@ describe('hSetFilter', function(){
             cmd.params.name = filterName;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', hResultStatus.OK);
-                hClient.filters.should.have.property(filterName);
-                hClient.filtersOrder.should.include(filterName);
+                hClient.filters[activeChan].should.have.property(filterName);
+                hClient.filtersOrder[activeChan].should.include(filterName);
                 done();
             });
         })
@@ -276,7 +276,7 @@ describe('hSetFilter', function(){
             cmd.params.name = config.db.createPk();
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', hResultStatus.OK);
-                hClient.filtersOrder[1].should.be.eql(cmd.params.name);
+                hClient.filtersOrder[activeChan][1].should.be.eql(cmd.params.name);
                 done();
             });
         })
@@ -286,8 +286,8 @@ describe('hSetFilter', function(){
             cmd.entity = 'hnode@' + hClient.domain;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', hResultStatus.OK);
-                hClient.filtersOrder[0].should.be.eql(filterName);
-                hClient.filtersOrder.should.have.lengthOf(2);
+                hClient.filtersOrder[activeChan][0].should.be.eql(filterName);
+                hClient.filtersOrder[activeChan].should.have.lengthOf(2);
                 done();
             });
         })
