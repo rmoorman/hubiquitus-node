@@ -189,6 +189,7 @@ describe('hGetThread', function(){
         var hClientConst = require('../lib/hClient.js').hClient;
         var hClient = new hClientConst(config.cmdParams);
         var filterMessagesPublished = 0;
+        var convid2 = config.db.createPk();
 
         before(function(done){
             hClient.once('connect', done);
@@ -200,20 +201,54 @@ describe('hGetThread', function(){
             hClient.disconnect();
         })
 
-        for(var i = 0; i < 4; i++)
+        before(function(done){
+            var cmd = JSON.parse(JSON.stringify(config.genericCmd));
+            cmd.cmd = 'hPublish';
+            cmd.params = {
+                chid: activeChannel,
+                convid: convid,
+                type: 'a type',
+                transient: false,
+                publisher: config.validJID
+            };
+            cmdController.execCommand(cmd, null, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                publishedMessages++;
+                done();
+            });
+        })
+
+        for(var i = 0; i < 3; i++)
             before(function(done){
                 var cmd = JSON.parse(JSON.stringify(config.genericCmd));
                 cmd.cmd = 'hPublish';
                 cmd.params = {
                     chid: activeChannel,
-                    convid: convid,
+                    convid: convid2,
                     type: 'a type',
                     transient: false,
                     publisher: config.validJID
                 };
                 cmdController.execCommand(cmd, null, function(hResult){
                     hResult.should.have.property('status', status.OK);
-                    publishedMessages++;
+                    filterMessagesPublished++;
+                    done();
+                });
+            })
+
+        for(var i = 0; i < 3; i++)
+            before(function(done){
+                var cmd = JSON.parse(JSON.stringify(config.genericCmd));
+                cmd.cmd = 'hPublish';
+                cmd.params = {
+                    chid: activeChannel,
+                    convid: convid2,
+                    type: 'another type',
+                    transient: false,
+                    publisher: config.validJID
+                };
+                cmdController.execCommand(cmd, null, function(hResult){
+                    hResult.should.have.property('status', status.OK);
                     filterMessagesPublished++;
                     done();
                 });
@@ -237,8 +272,18 @@ describe('hGetThread', function(){
         })
 
 
-        it('should return only filtered messages of convid', function(done){
+        it('should not return msgs if a msg OTHER than the first one pass the filter', function(done){
             cmd.entity = 'hnode@' + hClient.domain;
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
+                done();
+            });
+        })
+
+        it('should return ALL convid msgs if the first one complies with the filter', function(done){
+            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.params.convid = convid2;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', status.OK);
                 hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(filterMessagesPublished);
