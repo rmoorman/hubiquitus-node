@@ -70,6 +70,7 @@ describe('hGetThreads', function(){
             chid: activeChannel,
             transient: false,
             publisher: config.validJID,
+            priority: 3,
             convid: shouldNotAppearConvids.pop(),
             type: 'hConvState',
             payload: {status: correctStatus}
@@ -88,6 +89,7 @@ describe('hGetThreads', function(){
         cmd.params = {
             chid: activeChannel,
             transient: false,
+            priority: 3,
             publisher: config.validJID,
             type: 'hConvState',
             payload: {status: correctStatus}
@@ -216,6 +218,48 @@ describe('hGetThreads', function(){
                 hResult.result.should.not.include(shouldNotAppearConvids[i]);
             done();
         });
+    })
+
+    describe('test filters', function(){
+        var hClientConst = require('../lib/hClient.js').hClient;
+        var hClient = new hClientConst(config.cmdParams);
+
+        before(function(done){
+            hClient.once('connect', done);
+            hClient.connect(config.logins[0]);
+        })
+
+        after(function(done){
+            hClient.once('disconnect', done);
+            hClient.disconnect();
+        })
+
+        before(function(done){
+            hClient.command({
+                reqid: 'testCmd',
+                entity: 'hnode@' + hClient.domain,
+                sender: config.logins[0].jid,
+                cmd: 'hSetFilter',
+                params: {
+                    chid: activeChannel,
+                    name: 'a filter',
+                    template: {priority: 3}
+                }
+            }, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+        })
+
+        it('should only return convids of filtered conversations', function(done){
+            cmd.entity = 'hnode@' + hClient.domain;
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(1);
+                done();
+            });
+        })
+
     })
 
 })
