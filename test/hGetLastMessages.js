@@ -248,6 +248,70 @@ describe('hGetLastMessages', function(){
         })
     })
 
+    describe('test filters', function(){
+        var hClientConst = require('../lib/hClient.js').hClient;
+        var hClient = new hClientConst(config.cmdParams);
+
+        before(function(done){
+            hClient.once('connect', done);
+            hClient.connect(config.logins[0]);
+        })
+
+        after(function(done){
+            hClient.once('disconnect', done);
+            hClient.disconnect();
+        })
+
+        for(var i = 0; i < 5; i++) {
+            before(function(done){
+                config.publishMessage(config.validJID, existingCHID, 'a type', undefined, undefined, false, done);
+            })
+        }
+
+        before(function(done){
+            hClient.command({
+                reqid: 'testCmd',
+                entity: 'hnode@' + hClient.domain,
+                sender: config.logins[0].jid,
+                cmd: 'hSetFilter',
+                params: {
+                    chid: existingCHID,
+                    name: 'a filter',
+                    template: {type: 'a type'}
+                }
+            }, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                done();
+            });
+        })
+
+
+        it('should return only filtered messages with right quantity', function(done){
+            cmd.params.nbLastMsg = 3;
+            cmd.entity = 'hnode@' + hClient.domain;
+            hClient.command(cmd, function(hResult){
+                hResult.status.should.be.eql(status.OK);
+                hResult.result.should.have.length(3);
+                for(var i = 0; i < hResult.result.length; i++)
+                    hResult.result[i].should.have.property('type', 'a type');
+                done();
+            })
+        })
+
+        it('should return only filtered messages with less quantity if demanded does not exist.', function(done){
+            cmd.params.nbLastMsg = 1000;
+            cmd.entity = 'hnode@' + hClient.domain;
+            hClient.command(cmd, function(hResult){
+                hResult.status.should.be.eql(status.OK);
+                hResult.result.should.have.length(5);
+                for(var i = 0; i < hResult.result.length; i++)
+                    hResult.result[i].should.have.property('type', 'a type');
+                done();
+            })
+        })
+
+    })
+
 
 
 })
