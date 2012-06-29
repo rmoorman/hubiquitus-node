@@ -322,7 +322,7 @@ describe('hPublish', function(){
         cmd.params.chid = richChannel;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('location', channelLocation);
+            hResult.result.location.should.be.eql(channelLocation);
             done();
         });
     })
