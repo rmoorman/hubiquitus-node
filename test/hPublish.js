@@ -254,7 +254,7 @@ describe('hPublish', function(){
     })
 
     it('should return hResult error INVALID_ATTR if relevance specified and not a date', function(done){
-        cmd.params.relevance = 545454;
+        cmd.params.relevance = 'this is not a date';
         cmd.params.chid = poorChannel;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
@@ -453,7 +453,7 @@ describe('hPublish', function(){
     })
 
     it('should return hResult error INVALID_ATTR if published specified and not a date', function(done){
-        cmd.params.published = 26454;
+        cmd.params.published = 'this is not a date';
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string');
