@@ -125,7 +125,21 @@ exports.unsubscribeFromChannel = function(sender, chid, done){
     });
 };
 
-exports.publishMessage = function(sender, chid, type, payload, published, transient, done){
+exports.publishMessage = function(sender, chid, type, payload, published, transient, opts, done){
+    if(typeof opts === 'function'){ done = opts; opts = {}; }
+
+    var params = {
+        chid: chid,
+        publisher: sender,
+        published: published,
+        payload: payload,
+        type: type,
+        transient: transient
+    };
+
+    for(var attr in opts)
+        if(opts.hasOwnProperty(attr))
+            params[attr] = opts[attr];
 
     var hCommandController = new cmdController(cmdControllerParams);
     hCommandController.execCommand({
@@ -134,14 +148,7 @@ exports.publishMessage = function(sender, chid, type, payload, published, transi
         sid : 'fake sid',
         sent : new Date(),
         cmd : 'hPublish',
-        params : {
-            chid: chid,
-            publisher: sender,
-            published: published,
-            payload: payload,
-            type: type,
-            transient: transient
-        }
+        params : params
     }, null, function(hResult){
         hResult.should.have.property('status', status.OK);
         done();

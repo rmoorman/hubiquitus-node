@@ -20,7 +20,7 @@
 var should = require('should');
 var config = require('./_config.js');
 
-describe('hGetChannels', function(){
+describe('hListFilters', function(){
 
     var hClientConst = require('../lib/hClient.js').hClient;
     var hClient = new hClientConst(config.cmdParams);
