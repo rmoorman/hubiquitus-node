@@ -253,6 +253,77 @@ describe('hPublish', function(){
         });
     })
 
+    it('should return hResult error INVALID_ATTR if relevance specified and not a date', function(done){
+        cmd.params.relevance = 545454;
+        cmd.params.chid = poorChannel;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult OK with relevance set if no headers specified', function(done){
+        var relevance = new Date( new Date().getTime() - 50000000 );
+        cmd.params.relevance = relevance;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.relevance.getTime().should.be.eql(relevance.getTime());
+            done();
+        });
+    })
+
+    it('should return hResult OK with hServer published time + header if bigger than relevance set', function(done){
+        var offset = 50000;
+        var relevance = new Date( new Date().getTime() - 50000000 );
+        cmd.params.headers= {RELEVANCE_OFFSET: offset};
+        cmd.params.relevance = relevance;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.relevance.getTime().should.be.eql(hResult.result.published.getTime() + offset);
+            done();
+        });
+    })
+
+    it('should return hResult OK with relevance set if relevance_offset set but older', function(done){
+        var offset = 50000;
+        var relevance = new Date( new Date().getTime() + 50000000 );
+        cmd.params.relevance = relevance;
+        cmd.params.headers= {RELEVANCE_OFFSET: offset};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.relevance.getTime().should.be.eql(relevance.getTime());
+            done();
+        });
+    })
+
+    it('should return hResult OK with user set published time + header if bigger than relevance set', function(done){
+        var offset = 50000;
+        var published = new Date( new Date().getTime() - 100000 );
+        cmd.params.relevance = new Date( new Date().getTime() - 50000000 );
+        cmd.params.headers= {RELEVANCE_OFFSET: offset};
+        cmd.params.published = published;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.relevance.getTime().should.be.eql(published.getTime() + offset);
+            done();
+        });
+    })
+
+    it('should return hResult OK with relevance set if relevance_offset + user set published older', function(done){
+        var offset = 50000;
+        var relevance = new Date( new Date().getTime() + 50000000 );
+        var published = new Date( new Date().getTime() - 100000 );
+        cmd.params.relevance = relevance;
+        cmd.params.headers= {RELEVANCE_OFFSET: offset};
+        cmd.params.published = published;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.relevance.getTime().should.be.eql(relevance.getTime());
+            done();
+        });
+    })
+
     it('should return hResult error INVALID_ATTR if transient is not boolean', function(done){
         cmd.params.transient = 'this is not a boolean';
         hCommandController.execCommand(cmd, null, function(hResult){
@@ -381,6 +452,15 @@ describe('hPublish', function(){
         });
     })
 
+    it('should return hResult error INVALID_ATTR if published specified and not a date', function(done){
+        cmd.params.published = 26454;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
     it('should return hResult OK without published set and have a set published time by server', function(done){
         delete cmd.params.published;
         hCommandController.execCommand(cmd, null, function(hResult){
@@ -404,6 +484,46 @@ describe('hPublish', function(){
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error INVALID_ATTR if RELEVANCE_OFFSET header is not a number', function(done){
+        cmd.params.headers= {RELEVANCE_OFFSET: 'a string'};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.result.should.match(/RELEVANCE_OFFSET/);
+            done();
+        });
+    })
+
+    it('should return hResult OK with relevance set to published time + header', function(done){
+        var published = new Date(),
+            offset = 50000;
+        cmd.params.headers= {RELEVANCE_OFFSET: offset};
+        cmd.params.published = published;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.relevance.getTime().should.be.eql(published.getTime() + offset);
+            done();
+        });
+    })
+
+    it('should return hResult OK with relevance set to hServer published time + header', function(done){
+        var offset = 50000;
+        cmd.params.headers= {RELEVANCE_OFFSET: offset};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.relevance.getTime().should.be.eql(hResult.result.published.getTime() + offset);
+            done();
+        });
+    })
+
+    it('should return hResult error INVALID_ATTR if MAX_MSG_RETRIEVAL header is not a number', function(done){
+        cmd.params.headers= {MAX_MSG_RETRIEVAL: 'a string'};
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.result.should.match(/MAX_MSG_RETRIEVAL/);
             done();
         });
     })
@@ -445,7 +565,7 @@ describe('hPublish', function(){
         cmd.params.transient = true;
         cmd.params.location = {lng: '123123'};
         cmd.params.author = 'a@b.com';
-        cmd.params.headers = [{hK: 'as', hV: 'as'}];
+        cmd.params.headers = { MAX_MSG_RETRIEVAL: 3, RELEVANCE_OFFSET: 5450};
         cmd.params.payload = {};
 
         hCommandController.execCommand(cmd, null, function(hResult){
