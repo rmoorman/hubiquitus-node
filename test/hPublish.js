@@ -509,6 +509,15 @@ describe('hPublish', function(){
         });
     })
 
+    it('should return hResult OK without relevance if nothing specified in msg or headers', function(done){
+        delete cmd.params.relevance;
+        hCommandController.execCommand(cmd, null, function(hResult){
+            hResult.should.have.property('status', status.OK);
+            hResult.result.should.not.have.property('relevance');
+            done();
+        });
+    })
+
     it('should return hResult OK with relevance set to hServer published time + header', function(done){
         var offset = 50000;
         cmd.params.headers= {RELEVANCE_OFFSET: offset};
