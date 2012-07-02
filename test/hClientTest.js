@@ -476,6 +476,39 @@ describe('hClient XMPP Connection', function(){
             });
         })
 
+        it('should return null if relevant set and msg does not have relevance attribute', function(done){
+            cmd.params.relevant = true;
+            delete hMsg.relevance;
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                should.not.exist(hClient.filterMessage(hMsg));
+                done();
+            });
+        })
+
+        it('should return null if relevant set and msg is not relevant anymore', function(done){
+            cmd.params.relevant = true;
+            hMsg.relevance = new Date( new Date().getTime() - 15000);
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                should.not.exist(hClient.filterMessage(hMsg));
+                done();
+            });
+        })
+
+        it('should return msg if relevant set and msg is relevant', function(done){
+            cmd.params.relevant = true;
+            hMsg.relevance = new Date( new Date().getTime() + 15000);
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', codes.hResultStatus.OK);
+                hClient.filterMessage(hMsg).should.be.eql(hMsg);
+                done();
+            });
+        })
+
         it('should return null if msg passes first filter but not second one', function(done){
             cmd.params.template = {priority: 5};
             hMsg.priority = 5;
