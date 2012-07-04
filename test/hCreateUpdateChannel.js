@@ -158,7 +158,7 @@ describe('hCreateUpdateChannel', function(){
     })
 
     it('should return hResult error INVALID_ATTR with invalid location format', function(done){
-        createCmd.params.location = "";
+        createCmd.params.location = "something";
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
@@ -313,7 +313,7 @@ describe('hCreateUpdateChannel', function(){
     })
 
     it('should return hResult error INVALID_ATTR if headers is not an object', function(done){
-        createCmd.params.headers= '';
+        createCmd.params.headers= 'something';
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
