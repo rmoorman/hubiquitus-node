@@ -25,6 +25,7 @@ describe('hCreateUpdateChannel', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var createCmd;
     var status = require('../lib/codes.js').hResultStatus;
+    var splitJID = require('../lib/validators.js').splitJID;
 
     before(config.beforeFN)
 
@@ -91,35 +92,35 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
+    it('should return hResult error INVALID_ATTR with chid with a different domain', function(done){
+        createCmd.params.chid = '#channel@another.domain';
+        hCommandController.execCommand(createCmd, null, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error INVALID_ATTR with using hAdminChannel as chid', function(done){
+        createCmd.params.chid = '#channel@another.domain';
+        hCommandController.execCommand(createCmd, null, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.INVALID_ATTR);
+            hResult.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
     it('should return hResult error INVALID_ATTR if chid is not string castable', function(done){
-        createCmd.params.chid = ['a@b'];
+        createCmd.params.chid = [];
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string').and.match(/chid/i);
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if system.indexes used as chid', function(done){
-        createCmd.params.chid = 'system.indexes';
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if a word starting with "h" is used as chid', function(done){
-        createCmd.params.chid = 'hSomething';
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
             done();
         });
     })
@@ -163,39 +164,6 @@ describe('hCreateUpdateChannel', function(){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
             hResult.should.have.property('status', status.INVALID_ATTR);
-            done();
-        });
-    })
-
-    it('should return hResult error MISSING_ATTR without host', function(done){
-        delete createCmd.params.host;
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.should.have.property('result').and.be.a('string').and.match(/host/i);
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if host not a string', function(done){
-        createCmd.params.host = [];
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string').and.match(/host/i);
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if host is an empty string', function(done){
-        createCmd.params.host = '';
-        hCommandController.execCommand(createCmd, null, function(hResult){
-            hResult.should.have.property('cmd', createCmd.cmd);
-            hResult.should.have.property('reqid', createCmd.reqid);
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string').and.match(/host/i);
             done();
         });
     })
@@ -344,6 +312,36 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
+    it('should return hResult OK if chid does not have domain nor #', function(done){
+        createCmd.params.chid = 'aValidChannelName';
+        hCommandController.execCommand(createCmd, null, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
+    })
+
+    it('should return hResult OK if chid does not have domain', function(done){
+        createCmd.params.chid = '#aValidChannelName';
+        hCommandController.execCommand(createCmd, null, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
+    })
+
+    it('should return hResult OK if chid is fully compliant with #chid@domain', function(done){
+        createCmd.params.chid = '#chid@' + splitJID(config.validJID)[1];
+        hCommandController.execCommand(createCmd, null, function(hResult){
+            hResult.should.have.property('cmd', createCmd.cmd);
+            hResult.should.have.property('reqid', createCmd.reqid);
+            hResult.should.have.property('status', status.OK);
+            done();
+        });
+    })
+
     it('should return hResult OK without any optional attributes', function(done){
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
@@ -357,7 +355,7 @@ describe('hCreateUpdateChannel', function(){
         createCmd.params.chdesc = 'a';
         createCmd.params.priority = 3;
         createCmd.params.location = {lng : 's'};
-        createCmd.params.headers = [{hK : 'key', hV: 'value'}];
+        createCmd.params.headers = {key: 'value'};
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
@@ -367,7 +365,7 @@ describe('hCreateUpdateChannel', function(){
     })
 
     it('should update cache after successful saving of hChannel', function(done){
-        var chid = config.db.createPk();
+        var chid = '#' + config.db.createPk() + '@' + splitJID(config.validJID)[1];
         createCmd.params.chid = chid;
         createCmd.params.priority = 3;
         hCommandController.execCommand(createCmd, null, function(hResult){
@@ -381,7 +379,7 @@ describe('hCreateUpdateChannel', function(){
 
     describe('#Update Channel', function(){
         //Channel that will be created and updated
-        var existingCHID = '' + Math.floor(Math.random()*10000);
+        var existingCHID = '#' + config.db.createPk() + '@' + splitJID(config.validJID)[1];
 
         before(function(done){
             config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
