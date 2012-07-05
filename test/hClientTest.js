@@ -72,7 +72,7 @@ describe('hClient XMPP Connection', function(){
 
     describe('#filterMessage()', function(){
         var cmd, hMsg;
-        var activeChan = config.db.createPk();
+        var activeChan = config.getNewCHID();
         var filterName = config.db.createPk();
         var filterName2 = config.db.createPk();
 

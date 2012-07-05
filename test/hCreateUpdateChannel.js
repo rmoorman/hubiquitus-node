@@ -181,7 +181,6 @@ describe('hCreateUpdateChannel', function(){
 
     it('should return hResult error INVALID_ATTR if owner is an empty string', function(done){
         createCmd.params.owner = '';
-        createCmd.sender = '';
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
@@ -192,8 +191,7 @@ describe('hCreateUpdateChannel', function(){
     })
 
     it('should return hResult error INVALID_ATTR if owner JID is not bare', function(done){
-        createCmd.params.owner = 'a@b/resource';
-        createCmd.sender = 'a@b/resource';
+        createCmd.params.owner = createCmd.sender + '/resource';
         hCommandController.execCommand(createCmd, null, function(hResult){
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);

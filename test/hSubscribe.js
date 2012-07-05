@@ -91,7 +91,7 @@ describe('hSubscribe', function(){
 
     it('should return hResult error NOT_AUTHORIZED if not in participants list', function(done){
         cmd.params = {chid: existingCHID};
-        cmd.sender = 'not in list';
+        cmd.sender = 'not_in_list@' + config.validDomain;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);

@@ -105,7 +105,7 @@ describe('hGetThread', function(){
     })
 
     it('should return hResult error NOT_AUTHORIZED if the sender is not a participant', function(done){
-        cmd.sender = 'not@a.participant';
+        cmd.sender = 'not_a_participant@' + config.validDomain;
         cmdController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
             hResult.should.have.property('result').and.be.a('string');

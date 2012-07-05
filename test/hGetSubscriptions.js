@@ -25,8 +25,8 @@ describe('hGetSubscriptions', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var chid = config.db.createPk();
-    var chidInactive = config.db.createPk();
+    var chid = config.getNewCHID();
+    var chidInactive = config.getNewCHID();
 
 
     before(config.beforeFN)

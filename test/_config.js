@@ -31,7 +31,13 @@ var xmppConnectionParams = {
  DO NOT TOUCH BELOW THIS LINE
  */
 
+exports.validators = require('../lib/validators.js');
+
 exports.validJID = validJID;
+
+exports.validDomain = exports.validators.getDomainJID(validJID);
+
+exports.getNewCHID = function(){ return '#' + exports.db.createPk() + '@' + exports.validDomain; };
 
 exports.cmdParams = cmdControllerParams;
 
@@ -154,7 +160,7 @@ exports.publishMessage = function(sender, chid, type, payload, published, transi
         done();
     });
 
-}
+};
 
 var winston = require('winston');
 winston.remove(winston.transports.Console);

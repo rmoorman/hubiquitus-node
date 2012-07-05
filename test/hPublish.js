@@ -444,7 +444,6 @@ describe('hPublish', function(){
 
     it('should return hResult error NOT_AUTHORIZED if publisher != sender', function(done){
         cmd.params.publisher = 'a@b.com';
-        cmd.sender = 'a@c.com';
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', status.NOT_AUTHORIZED);
             hResult.should.have.property('result').and.be.a('string');
@@ -550,7 +549,6 @@ describe('hPublish', function(){
 
     it('should return hResult error if sender != publisher', function(done){
         cmd.params.publisher = 'a@b.com';
-        cmd.sender = 'a@c.com';
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);

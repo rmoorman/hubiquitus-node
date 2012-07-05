@@ -132,7 +132,7 @@ describe('#Database', function(){
 
         beforeEach(function(){
             validChannel = {
-                _id: db.createPk(),
+                _id: config.getNewCHID(),
                 host: 'domain.com',
                 owner: config.validJID,
                 participants: [config.validJID],

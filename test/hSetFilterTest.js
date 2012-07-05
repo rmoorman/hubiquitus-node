@@ -27,7 +27,7 @@ describe('hSetFilter', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
 
     var cmd = {};
-    var activeChan = config.db.createPk();
+    var activeChan = config.getNewCHID();
     var inactiveChan = config.db.createPk();
     var filterName = config.db.createPk();
 
@@ -84,7 +84,7 @@ describe('hSetFilter', function(){
     })
 
     it('should return hResult NOT_AUTHORIZED if the client is not in participants list', function(done){
-        cmd.sender = 'not in part@domain.com';
+        cmd.sender = 'not_in_part@' + config.validDomain;
         hCommandController.execCommand(cmd, null, function(hResult){
             hResult.should.have.property('status', hResultStatus.NOT_AUTHORIZED);
             hResult.result.should.be.a('string');

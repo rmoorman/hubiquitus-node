@@ -132,7 +132,7 @@ describe('hGetLastMessages', function(){
         })
 
         it('should return hResult error NOT_AUTHORIZED if publisher not in participants list', function(done){
-            cmd.sender = 'not in list';
+            cmd.sender = 'someone@' + config.validDomain;
             hCommandController.execCommand(cmd, null, function(hResult){
                 hResult.should.have.property('cmd', cmd.cmd);
                 hResult.should.have.property('reqid', cmd.reqid);
