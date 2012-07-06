@@ -342,8 +342,8 @@ describe('#Database', function(){
         })
 
         it('should call onSave functions when succeeds even if it does not have cb', function(done){
-            db.get('hMessages').onSave.push(function(result){
-                db.get('hMessages').onSave.pop();
+            db.get('VirtualHMessages').onSave.push(function(result){
+                db.get('VirtualHMessages').onSave.pop();
                 done();
             });
 
@@ -352,8 +352,8 @@ describe('#Database', function(){
 
         it('should call onSave functions when succeeds and then call cb', function(done){
             var counter = 0;
-            db.get('hMessages').onSave.push(function(result){
-                db.get('hMessages').onSave.pop();
+            db.get('VirtualHMessages').onSave.push(function(result){
+                db.get('VirtualHMessages').onSave.pop();
                 if(++counter == 2)
                     done();
             });
@@ -363,6 +363,32 @@ describe('#Database', function(){
                 should.exist(result);
                 if(++counter == 2)
                     done();
+            });
+        })
+
+        it('should save to hMessages collection when chid is not a channel', function(done){
+            db.saveHMessage({chid: config.validJID, _id: db.createPk()}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                db.get('hMessages').findOne({_id: result._id}, function(err, doc){
+                    should.not.exist(err);
+                    should.exist(doc);
+                    doc.should.have.property('_id', result._id);
+                    done();
+                })
+            });
+        })
+
+        it('should save to channel collection when chid is a channel', function(done){
+            db.saveHMessage({chid: config.getNewCHID(), _id: db.createPk()}, function(err, result){
+                should.not.exist(err);
+                should.exist(result);
+                db.get(result.chid).findOne({_id: result._id}, function(err, doc){
+                    should.not.exist(err);
+                    should.exist(doc);
+                    doc.should.have.property('_id', result._id);
+                    done();
+                })
             });
         })
 

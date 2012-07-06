@@ -69,7 +69,7 @@ describe('hPublish', function(){
         cmd= {
             reqid  : 'hCommandTest123',
             sender : config.validJID,
-            sid : 'fake sid',
+            entity : 'hnode@' + config.validDomain,
             sent : new Date(),
             cmd : 'hPublish',
             params : {
@@ -579,6 +579,58 @@ describe('hPublish', function(){
             hResult.should.have.property('status', status.OK);
             done();
         });
+    })
+
+    describe('direct sending', function(){
+        var hClientConst = require('../lib/hClient.js').hClient;
+        var hClient = new hClientConst(config.cmdParams);
+
+        before(function(done){
+            hClient.once('connect', done);
+            hClient.connect(config.logins[0]);
+        })
+
+        after(function(done){
+            hClient.once('disconnect', done);
+            hClient.disconnect();
+        })
+
+        it('should receive sent message if chid was a user', function(done){
+            cmd.params.chid = config.validJID;
+
+            hClient.once('hMessage', function(hMessage){
+                hMessage.should.have.property('chid', config.validJID);
+                done();
+            });
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', status.OK);
+            });
+        })
+
+        it('should save in mongo the message if persistent and sent message if chid was a user', function(done){
+            cmd.params.chid = config.validJID;
+            cmd.params.transient = false;
+            var counter = 0;
+
+            hClient.on('hMessage', function(hMessage){
+                hMessage.should.have.property('chid', config.validJID);
+                if(++counter == 2)
+                    done();
+            });
+
+            hClient.command(cmd, function(hResult){
+                hResult.should.have.property('status', status.OK);
+                config.db.get('hMessages').findOne({_id: hResult.result.msgid}, function(err, doc){
+                    should.not.exist(err);
+                    doc.should.have.property('_id', hResult.result.msgid);
+
+                    if(++counter == 2)
+                        done();
+                })
+            });
+        })
+
     })
 
 })
