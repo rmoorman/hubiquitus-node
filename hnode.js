@@ -43,12 +43,12 @@ function main(){
     }
 
     //For each port of bosh start a new process
-    /*for(var i = 0; i < opts.options['bosh.ports'].length; i++){
+    for(var i = 0; i < opts.options['bosh.ports'].length; i++){
         opts.boshConnector.port = opts.options['bosh.ports'][i];
         child = fork(__dirname + '/lib/worker.js');
         child.send({module: boshModule, args: opts.boshConnector});
         children.push(child);
-    }    */
+    }
 
     //Set listeners for exiting events and properly kill children
     var exitEvents = ['exit', 'SIGINT'];
