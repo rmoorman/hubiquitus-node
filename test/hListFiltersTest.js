@@ -36,10 +36,12 @@ describe('hListFilters', function(){
     after(config.afterFN)
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(activeChan, [config.validJID], config.validJID, true, done);
     })
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(activeChan2, [config.validJID], config.validJID, true, done);
     })
 
@@ -55,101 +57,115 @@ describe('hListFilters', function(){
 
     beforeEach(function(){
         cmd = {
-            reqid: 'testCmd',
-            entity: 'hnode@' + hClient.domain,
-            sender: config.logins[0].jid,
-            cmd: 'hListFilters'
+            msgid : 'testCmd',
+            actor : 'hnode@' + hClient.domain,
+            type : 'hCommand',
+            priority : 0,
+            publisher : config.logins[0].jid,
+            published : new Date(),
+            payload : {
+                cmd : 'hListFilters'
+            }
         };
     })
 
     it('should return hResult OK with an empty array as result if no filter exists', function(done){
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
             done();
         });
     })
 
-    it('should return hResult OK with an empty array as result if chid does not contain filters', function(done){
-        cmd.params = {chid: 'i do not have filters'};
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
+    it('should return hResult OK with an empty array as result if actor does not contain filters', function(done){
+        cmd.payload.params = {actor: 'i do not have filters'};
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
             done();
         });
     })
 
     it('should return hResult OK with an array having newly added filter as part of result', function(done){
-        hClient.command({
-            reqid: 'testCmd',
-            entity: 'hnode@' + hClient.domain,
-            sender: config.logins[0].jid,
-            cmd: 'hSetFilter',
-            params: {
-                chid: activeChan,
-                name: filterName,
-                relevant: true
+        var filterCmd = {
+            msgid : 'testCmd',
+            actor : 'hnode@' + hClient.domain,
+            type : 'hCommand',
+            priority : 0,
+            publisher : config.logins[0].jid,
+            published : new Date(),
+            payload : {
+                cmd : 'hSetFilter',
+                params : {
+                    actor: activeChan,
+                    name: filterName,
+                    relevant: true
+                }
             }
-        }, function(hResult){
+        };
+        hClient.processMsgInternal(filterCmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.OK);
+            hClient.processMsgInternal(cmd, function(hMessage){
 
-            hResult.should.have.property('status', status.OK);
-            hClient.command(cmd, function(hResult){
+                hMessage.payload.should.have.property('status', status.OK);
+                hMessage.payload.should.have.property('result');
 
-                hResult.should.have.property('status', status.OK);
-                hResult.should.have.property('result');
-
-                for(var i = 0; i < hResult.result.length; i++)
-                    if(hResult.result[i].name == filterName)
+                for(var i = 0; i < hMessage.payload.result.length; i++)
+                    if(hMessage.payload.result[i].name == filterName)
                         done();
             })
         });
-
     })
 
     it('should return hResult OK with an array having only filters for specified channel', function(done){
-        cmd.params = {chid: activeChan2};
+        cmd.payload.params = {actor: activeChan2};
 
-        hClient.command({
-            reqid: 'testCmd',
-            entity: 'hnode@' + hClient.domain,
-            sender: config.logins[0].jid,
-            cmd: 'hSetFilter',
-            params: {
-                chid: activeChan2,
-                name: filterName,
-                relevant: true
+        var filterCmd = {
+            msgid : 'testCmd',
+            actor : 'hnode@' + hClient.domain,
+            type : 'hCommand',
+            priority : 0,
+            publisher : config.logins[0].jid,
+            published : new Date(),
+            payload : {
+                cmd : 'hSetFilter',
+                params : {
+                    actor: activeChan2,
+                    name: filterName,
+                    relevant: true
+                }
             }
-        }, function(hResult){
+        };
+        hClient.processMsgInternal(filterCmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.OK);
+            hClient.processMsgInternal(cmd, function(hMessage){
 
-            hResult.should.have.property('status', status.OK);
-            hClient.command(cmd, function(hResult){
+                hMessage.payload.should.have.property('status', status.OK);
+                hMessage.payload.should.have.property('result');
 
-                hResult.should.have.property('status', status.OK);
-                hResult.should.have.property('result');
+                hMessage.payload.result.should.have.length(1);
 
-                hResult.result.should.have.length(1);
-
-                for(var i = 0; i < hResult.result.length; i++)
-                    if(hResult.result[i].name == filterName)
+                for(var i = 0; i < hMessage.payload.result.length; i++)
+                    if(hMessage.payload.result[i].name == filterName)
                         done();
             })
         });
-
     })
 
     it('should return hResult OK with an array having filters for different channels if nothing specified', function(done){
-        delete cmd.params;
+        delete cmd.payload.params;
 
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.should.have.property('result');
 
-        hClient.command(cmd, function(hResult){
-
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result');
-
-            hResult.result.should.have.length(2);
+            hMessage.payload.result.should.have.length(2);
             done();
-        })
-
+        });
     })
 
 })

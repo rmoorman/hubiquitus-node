@@ -35,6 +35,7 @@ describe('hUnsubscribe', function(){
 
     //Create active channel
     before(function(done){
+        this.timeout(5000);
         config.createChannel(existingCHID, [config.validJID], config.validJID, true, done);
     })
 
@@ -45,6 +46,7 @@ describe('hUnsubscribe', function(){
 
     //Create active channel to be inactive
     before(function(done){
+        this.timeout(5000);
         config.createChannel(inactiveCHID, [config.validJID], config.validJID, true, done);
     })
 
@@ -55,82 +57,90 @@ describe('hUnsubscribe', function(){
 
     //Make channel inactive
     before(function(done){
+        this.timeout(5000);
         config.createChannel(inactiveCHID, [config.validJID], config.validJID, false, done);
     })
 
     after(config.afterFN)
 
     beforeEach(function(){
-        cmd= {
-            reqid  : 'hCommandTest123',
-            sender : config.validJID,
-            sid : 'fake sid',
-            sent : new Date(),
-            cmd : 'hUnsubscribe',
-            params : {chid: config.db.createPk()}
+        cmd = {
+            msgid : 'hCommandTest123',
+            actor : 'session',
+            type : 'hCommand',
+            publisher : config.validJID,
+            published : new Date(),
+            payload : {
+                cmd : 'hUnsubscribe',
+                params : {
+                    actor: config.db.createPk()
+                }
+            }
         };
     })
 
     it('should return hResult error MISSING_ATTR when missing params', function(done){
-        delete cmd['params'];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        delete cmd.payload['params'];
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.MISSING_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED when chid doesnt exist', function(done){
-        cmd.params = {chid: 'this CHID does not exist'};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error NOT_AUTHORIZED when actor doesnt exist', function(done){
+        cmd.payload.params = {actor: 'this CHID does not exist'};
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult NOT_AUTHORIZED if not subscribed and no subscriptions', function(done){
-        cmd.sender = 'a@jid.com';
-        cmd.params = {chid: existingCHID};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+        cmd.publisher = 'a@jid.com';
+        cmd.payload.params = {actor: existingCHID};
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error NOT_AUTHORIZED if not subscribed', function(done){
-        cmd.params = {chid: 'this CHID does not exist'};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+        cmd.payload.params = {actor: 'this CHID does not exist'};
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED when chid is inactive', function(done){
-        cmd.params = {chid: inactiveCHID};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error NOT_AUTHORIZED when actor is inactive', function(done){
+        cmd.payload.params = {actor: inactiveCHID};
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK when correct', function(done){
-        cmd.params = {chid: existingCHID};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.OK);
+        cmd.payload.params = {actor: existingCHID};
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })

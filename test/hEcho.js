@@ -28,13 +28,18 @@ describe('hEcho', function(){
 
     beforeEach(function(done){
         echoCmd = {
-            reqid  : 'hCommandTest123',
-            sender : 'fake jid',
-            sid : 'fake sid',
-            sent : new Date(),
-            cmd : 'hEcho',
-            params : {hello : 'world'}
+            msgid : 'hCommandTest123',
+            actor : 'session',
+            type : 'hCommand',
+            priority : 0,
+            publisher : 'fake jid',
+            published : new Date(),
+            payload : {
+                cmd : 'hEcho',
+                params : {hello: 'world'}
+            }
         };
+
         hEcho = new hEchoModule();
         done();
     })
@@ -45,7 +50,7 @@ describe('hEcho', function(){
                 should.exist(statusValue);
                 should.exist(resultValue);
                 statusValue.should.be.equal(status.OK);
-                resultValue.should.be.equal(echoCmd.params);
+                resultValue.should.be.equal(echoCmd.payload.params);
                 done();
             });
         })

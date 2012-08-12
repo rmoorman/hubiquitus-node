@@ -133,7 +133,6 @@ describe('#Database', function(){
         beforeEach(function(){
             validChannel = {
                 _id: config.getNewCHID(),
-                host: 'domain.com',
                 owner: config.validJID,
                 participants: [config.validJID],
                 active: true
@@ -168,7 +167,7 @@ describe('#Database', function(){
             });
         })
 
-        it('should do nothing with hChannel without chid and no cb', function(){
+        it('should do nothing with hChannel without actor and no cb', function(){
             delete validChannel._id;
             db.saveHChannel(validChannel);
         })
@@ -211,111 +210,6 @@ describe('#Database', function(){
 
     })
 
-    describe('#saveHCommand()', function(){
-        before(function(done){
-            db.once('connect', done);
-            db.connect(validURI);
-        })
-
-        it('should allow to save without callback', function(done){
-            var cmd = db.createPk();
-
-            db.saveHCommand({cmd: cmd});
-
-            db.get('hCommands').findOne({cmd: cmd}, function(err, doc){
-                should.not.exist(err);
-                should.exist(doc);
-                done();
-            })
-        })
-
-        it('should call cb without error using valid hCommand', function(done){
-            db.saveHCommand({cmd: 'commandName'}, function(err, result){
-                should.not.exist(err);
-                should.exist(result);
-                done();
-            });
-        })
-
-        it('should call onSave functions when succeeds even if it does not have cb', function(done){
-            db.get('hCommands').onSave.push(function(result){
-                db.get('hCommands').onSave.pop();
-                done();
-            });
-
-            db.saveHCommand({cmd: 'a cmd'});
-        })
-
-        it('should call onSave functions when succeeds and then call cb', function(done){
-            var counter = 0;
-            db.get('hCommands').onSave.push(function(result){
-                db.get('hCommands').onSave.pop();
-                if(++counter == 2)
-                    done();
-            });
-
-            db.saveHCommand({cmd: 'a cmd'}, function(err, result){
-                should.not.exist(err);
-                should.exist(result);
-                if(++counter == 2)
-                    done();
-            });
-        })
-
-    })
-
-    describe('#saveHResult()', function(){
-        before(function(done){
-            db.once('connect', done);
-            db.connect(validURI);
-        })
-
-        it('should allow to save without callback', function(done){
-            var cmd = db.createPk();
-            db.saveHResult({cmd: cmd});
-
-            db.get('hResults').findOne({cmd: cmd}, function(err, doc){
-                should.not.exist(err);
-                should.exist(doc);
-                done();
-            })
-        })
-
-        it('should call cb without error using valid hResult', function(done){
-            db.saveHResult({cmd: 'commandName'}, function(err, result){
-                should.not.exist(err);
-                should.exist(result);
-                done();
-            });
-        })
-
-        it('should call onSave functions when succeeds even if it does not have cb', function(done){
-            db.get('hResults').onSave.push(function(result){
-                db.get('hResults').onSave.pop();
-                done();
-            });
-
-            db.saveHResult({cmd: 'a cmd'});
-        })
-
-        it('should call onSave functions when succeeds and then call cb', function(done){
-            var counter = 0;
-            db.get('hResults').onSave.push(function(result){
-                db.get('hResults').onSave.pop();
-                if(++counter == 2)
-                    done();
-            });
-
-            db.saveHResult({cmd: 'a cmd'}, function(err, result){
-                should.not.exist(err);
-                should.exist(result);
-                if(++counter == 2)
-                    done();
-            });
-        })
-
-    })
-
     describe('#saveHMessage()', function(){
         before(function(done){
             db.once('connect', done);
@@ -323,10 +217,10 @@ describe('#Database', function(){
         })
 
         it('should allow to save without callback', function(done){
-            var chid = '' + db.createPk();
-            db.saveHMessage({chid: chid});
+            var actor = '' + db.createPk();
+            db.saveHMessage({actor: actor});
 
-            db.get(chid).findOne({chid: chid}, function(err, doc){
+            db.get(actor).findOne({actor: actor}, function(err, doc){
                 should.not.exist(err);
                 should.exist(doc);
                 done();
@@ -334,7 +228,7 @@ describe('#Database', function(){
         })
 
         it('should call cb without error using valid hMessage', function(done){
-            db.saveHMessage({chid: 'chid'}, function(err, result){
+            db.saveHMessage({actor: 'actor'}, function(err, result){
                 should.not.exist(err);
                 should.exist(result);
                 done();
@@ -347,7 +241,7 @@ describe('#Database', function(){
                 done();
             });
 
-            db.saveHMessage({chid: 'a chid'});
+            db.saveHMessage({actor: 'a actor'});
         })
 
         it('should call onSave functions when succeeds and then call cb', function(done){
@@ -358,7 +252,7 @@ describe('#Database', function(){
                     done();
             });
 
-            db.saveHMessage({chid: 'a chid'}, function(err, result){
+            db.saveHMessage({actor: 'a actor'}, function(err, result){
                 should.not.exist(err);
                 should.exist(result);
                 if(++counter == 2)
@@ -366,8 +260,8 @@ describe('#Database', function(){
             });
         })
 
-        it('should save to hMessages collection when chid is not a channel', function(done){
-            db.saveHMessage({chid: config.validJID, _id: db.createPk()}, function(err, result){
+        it('should save to hMessages collection when actor is not a channel', function(done){
+            db.saveHMessage({actor: config.validJID, _id: db.createPk()}, function(err, result){
                 should.not.exist(err);
                 should.exist(result);
                 db.get('hMessages').findOne({_id: result._id}, function(err, doc){
@@ -379,11 +273,11 @@ describe('#Database', function(){
             });
         })
 
-        it('should save to channel collection when chid is a channel', function(done){
-            db.saveHMessage({chid: config.getNewCHID(), _id: db.createPk()}, function(err, result){
+        it('should save to channel collection when actor is a channel', function(done){
+            db.saveHMessage({actor: config.getNewCHID(), _id: db.createPk()}, function(err, result){
                 should.not.exist(err);
                 should.exist(result);
-                db.get(result.chid).findOne({_id: result._id}, function(err, doc){
+                db.get(result.actor).findOne({_id: result._id}, function(err, doc){
                     should.not.exist(err);
                     should.exist(doc);
                     doc.should.have.property('_id', result._id);

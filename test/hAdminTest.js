@@ -81,8 +81,7 @@ describe('hAdmin XMPP Connection', function(){
     describe('#publishHChannel()', function(){
 
         var hChannel = {
-            chid: 'a channel',
-            host: 'domain.com',
+            actor: 'a channel',
             owner: config.validJID,
             participants: [config.validJID],
             active: true
@@ -108,10 +107,11 @@ describe('hAdmin XMPP Connection', function(){
 
         it('should return hResult error NOT_CONNECTED if not connected and cb', function(done){
             hAdmin.once('disconnect', function(){
-                hAdmin.publishHChannel(hChannel, function(hResult){
-                    should.exist(hResult);
-                    hResult.status.should.be.eql(hResultStatus.NOT_CONNECTED);
-                    hResult.result.should.be.a('string');
+                hAdmin.publishHChannel(hChannel, function(hMessage){
+                    should.exist(hMessage);
+                    hMessage.type.should.be.eql('hResult');
+                    hMessage.payload.status.should.be.eql(hResultStatus.NOT_CONNECTED);
+                    hMessage.payload.result.should.be.a('string');
                     done();
                 });
             });
@@ -124,12 +124,14 @@ describe('hAdmin XMPP Connection', function(){
 
 
         it('should return hResult OK if correctly executed', function(done){
-            hAdmin.publishHChannel(hChannel, function(hResult){
-                should.exist(hResult);
-                hResult.status.should.be.eql(hResultStatus.OK);
+            hAdmin.publishHChannel(hChannel, function(hMessage){
+                should.exist(hMessage);
+                hMessage.type.should.be.eql('hResult');
+                hMessage.payload.status.should.be.eql(hResultStatus.OK);
                 done();
             });
         })
 
     })
+
 })
