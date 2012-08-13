@@ -247,7 +247,7 @@ describe('hGetThread', function(){
         before(function(done){
             var filterCmd = {
                 msgid : 'testCmd',
-                actor : 'hnode@' + hClient.domain,
+                actor : 'hnode@' + hClient.serverDomain,
                 type : 'hCommand',
                 priority : 0,
                 publisher : config.logins[0].jid,
@@ -269,7 +269,7 @@ describe('hGetThread', function(){
 
 
         it('should not return msgs if a msg OTHER than the first one pass the filter', function(done){
-            cmd.actor = 'hnode@' + hClient.domain;
+            cmd.actor = 'hnode@' + hClient.serverDomain;
             hClient.processMsgInternal(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -280,7 +280,7 @@ describe('hGetThread', function(){
         })
 
         it('should return ALL convid msgs if the first one complies with the filter', function(done){
-            cmd.actor = 'hnode@' + hClient.domain;
+            cmd.actor = 'hnode@' + hClient.serverDomain;
             cmd.payload.params.convid = convid2;
             hClient.processMsgInternal(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);

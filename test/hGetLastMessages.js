@@ -285,7 +285,7 @@ describe('hGetLastMessages', function(){
         before(function(done){
             var filterCmd = {
                 msgid : 'hCommandTest123',
-                actor : 'hnode@' + hClient.domain,
+                actor : 'hnode@' + hClient.serverDomain,
                 type : 'hCommand',
                 priority : 0,
                 publisher : config.logins[0].jid,

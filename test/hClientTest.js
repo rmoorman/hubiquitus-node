@@ -97,7 +97,7 @@ describe('hClient XMPP Connection', function(){
             cmdMsg = {
                 msgid : 'testCmd',
                 convid : 'testCmd',
-                actor : 'hnode@' + hClient.domain,
+                actor : 'hnode@' + hClient.serverDomain,
                 type : 'hCommand',
                 priority : 0,
                 publisher : config.logins[0].jid,
@@ -614,7 +614,7 @@ describe('hClient XMPP Connection', function(){
             cmdMsg = {
                 msgid : 'testCmd',
                 convid : 'testCmd',
-                actor : 'hnode@' + hClient.domain,
+                actor : 'hnode@' + hClient.serverDomain,
                 type : 'hCommand',
                 priority : 0,
                 publisher : config.logins[1].jid,

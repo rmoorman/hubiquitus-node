@@ -87,7 +87,7 @@ describe('hRelevantMessages', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'hCommandTest123',
-            actor : 'hnode@' + hClient.domain,
+            actor : 'hnode@' + hClient.serverDomain,
             type : 'hCommand',
             priority : 0,
             publisher : config.logins[0].jid,

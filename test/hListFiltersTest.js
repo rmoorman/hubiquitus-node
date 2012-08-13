@@ -58,7 +58,7 @@ describe('hListFilters', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'testCmd',
-            actor : 'hnode@' + hClient.domain,
+            actor : 'hnode@' + hClient.serverDomain,
             type : 'hCommand',
             priority : 0,
             publisher : config.logins[0].jid,
@@ -93,7 +93,7 @@ describe('hListFilters', function(){
     it('should return hResult OK with an array having newly added filter as part of result', function(done){
         var filterCmd = {
             msgid : 'testCmd',
-            actor : 'hnode@' + hClient.domain,
+            actor : 'hnode@' + hClient.serverDomain,
             type : 'hCommand',
             priority : 0,
             publisher : config.logins[0].jid,
@@ -126,7 +126,7 @@ describe('hListFilters', function(){
 
         var filterCmd = {
             msgid : 'testCmd',
-            actor : 'hnode@' + hClient.domain,
+            actor : 'hnode@' + hClient.serverDomain,
             type : 'hCommand',
             priority : 0,
             publisher : config.logins[0].jid,
