@@ -257,7 +257,7 @@ describe('hGetThread', function(){
         before(function(done){
             hClient.command({
                 reqid: 'testCmd',
-                entity: 'hnode@' + hClient.domain,
+                entity: 'hnode@' + hClient.xmppdomain,
                 sender: config.logins[0].jid,
                 cmd: 'hSetFilter',
                 params: {
@@ -273,7 +273,7 @@ describe('hGetThread', function(){
 
 
         it('should not return msgs if a msg OTHER than the first one pass the filter', function(done){
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', status.OK);
                 hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
@@ -282,7 +282,7 @@ describe('hGetThread', function(){
         })
 
         it('should return ALL convid msgs if the first one complies with the filter', function(done){
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             cmd.params.convid = convid2;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', status.OK);

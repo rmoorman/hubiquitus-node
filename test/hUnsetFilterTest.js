@@ -158,7 +158,7 @@ describe('hUnsetFilter', function(){
 
             hClient.command({
                 reqid: 'testCmd',
-                entity: 'hnode@' + hClient.domain,
+                entity: 'hnode@' + hClient.xmppdomain,
                 sender: config.logins[0].jid,
                 cmd: 'hSetFilter',
                 params: {
@@ -173,7 +173,7 @@ describe('hUnsetFilter', function(){
         })
 
         it('should remove filter from the hClient', function(done){
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             cmd.params.name = filterName2;
             hClient.filtersOrder[activeChan].should.have.lengthOf(1);
             should.exist(hClient.filters[activeChan][hClient.filtersOrder[activeChan][0]]);

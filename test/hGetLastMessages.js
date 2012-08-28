@@ -271,7 +271,7 @@ describe('hGetLastMessages', function(){
         before(function(done){
             hClient.command({
                 reqid: 'testCmd',
-                entity: 'hnode@' + hClient.domain,
+                entity: 'hnode@' + hClient.xmppdomain,
                 sender: config.logins[0].jid,
                 cmd: 'hSetFilter',
                 params: {
@@ -288,7 +288,7 @@ describe('hGetLastMessages', function(){
 
         it('should return only filtered messages with right quantity', function(done){
             cmd.params.nbLastMsg = 3;
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             hClient.command(cmd, function(hResult){
                 hResult.status.should.be.eql(status.OK);
                 hResult.result.should.have.length(3);
@@ -300,7 +300,7 @@ describe('hGetLastMessages', function(){
 
         it('should return only filtered messages with less quantity if demanded does not exist.', function(done){
             cmd.params.nbLastMsg = 1000;
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             hClient.command(cmd, function(hResult){
                 hResult.status.should.be.eql(status.OK);
                 hResult.result.should.have.length(5);

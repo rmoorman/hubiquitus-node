@@ -83,7 +83,7 @@ describe('hRelevantMessages', function(){
     beforeEach(function(){
         cmd = {
             reqid: 'testCmd',
-            entity: 'hnode@' + hClient.domain,
+            entity: 'hnode@' + hClient.xmppdomain,
             sender: config.logins[0].jid,
             cmd: 'hRelevantMessages',
             params: { chid: activeChan }

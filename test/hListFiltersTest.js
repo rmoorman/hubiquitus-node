@@ -56,7 +56,7 @@ describe('hListFilters', function(){
     beforeEach(function(){
         cmd = {
             reqid: 'testCmd',
-            entity: 'hnode@' + hClient.domain,
+            entity: 'hnode@' + hClient.xmppdomain,
             sender: config.logins[0].jid,
             cmd: 'hListFilters'
         };
@@ -82,7 +82,7 @@ describe('hListFilters', function(){
     it('should return hResult OK with an array having newly added filter as part of result', function(done){
         hClient.command({
             reqid: 'testCmd',
-            entity: 'hnode@' + hClient.domain,
+            entity: 'hnode@' + hClient.xmppdomain,
             sender: config.logins[0].jid,
             cmd: 'hSetFilter',
             params: {
@@ -111,7 +111,7 @@ describe('hListFilters', function(){
 
         hClient.command({
             reqid: 'testCmd',
-            entity: 'hnode@' + hClient.domain,
+            entity: 'hnode@' + hClient.xmppdomain,
             sender: config.logins[0].jid,
             cmd: 'hSetFilter',
             params: {

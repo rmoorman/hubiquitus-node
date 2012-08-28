@@ -237,7 +237,7 @@ describe('hGetThreads', function(){
         before(function(done){
             hClient.command({
                 reqid: 'testCmd',
-                entity: 'hnode@' + hClient.domain,
+                entity: 'hnode@' + hClient.xmppdomain,
                 sender: config.logins[0].jid,
                 cmd: 'hSetFilter',
                 params: {
@@ -252,7 +252,7 @@ describe('hGetThreads', function(){
         })
 
         it('should only return convids of filtered conversations', function(done){
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', status.OK);
                 hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(1);

@@ -260,7 +260,7 @@ describe('hSetFilter', function(){
 
         it('should add filters and add it to list of filtersOrder', function(done){
             cmd.params.template = {publisher: 'someone@someone.com'};
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             cmd.params.name = filterName;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', hResultStatus.OK);
@@ -272,7 +272,7 @@ describe('hSetFilter', function(){
 
         it('should add a second filter after first one in filterOrder', function(done){
             cmd.params.template = {publisher: 'another@someone.com'};
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             cmd.params.name = config.db.createPk();
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', hResultStatus.OK);
@@ -283,7 +283,7 @@ describe('hSetFilter', function(){
 
         it('should update filter without altering filterOrder', function(done){
             cmd.params.template = {publisher: 'another@someone.com'};
-            cmd.entity = 'hnode@' + hClient.domain;
+            cmd.entity = 'hnode@' + hClient.xmppdomain;
             hClient.command(cmd, function(hResult){
                 hResult.should.have.property('status', hResultStatus.OK);
                 hClient.filtersOrder[activeChan][0].should.be.eql(filterName);
