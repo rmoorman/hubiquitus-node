@@ -25,46 +25,50 @@ describe('hGetChannels', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var chid = config.getNewCHID();
+    var actor = config.getNewCHID();
 
     before(config.beforeFN)
 
     after(config.afterFN)
 
     before(function(done){
-        config.createChannel(chid, [config.validJID], config.validJID, true, done);
+        this.timeout(5000);
+        config.createChannel(actor, [config.validJID], config.validJID, true, done);
     })
 
     beforeEach(function(){
-        cmd= {
-            reqid  : 'hCommandTest123',
-            sender : config.validJID,
-            sid : 'fake sid',
-            sent : new Date(),
-            cmd : 'hGetChannels'
+        cmd = {
+            msgid : 'hCommandTest123',
+            actor : 'session',
+            type : 'hCommand',
+            publisher : config.validJID,
+            published : new Date(),
+            payload : {
+                cmd : 'hGetChannels'
+            }
         };
     })
 
     it('should return hResult OK with an array as result', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result');
-            hResult.result.should.be.an.instanceof(Array);
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.should.have.property('result');
+            hMessage.payload.result.should.be.an.instanceof(Array);
             done();
         });
     })
 
     it('should return hResult OK with an array having newly created channel as part of result', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result');
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.should.have.property('result');
 
-            for(var i = 0; i < hResult.result.length; i++)
-                if(hResult.result[i].chid == chid)
+            for(var i = 0; i < hMessage.payload.result.length; i++)
+                if(hMessage.payload.result[i].actor == actor)
                     done();
         });
     })

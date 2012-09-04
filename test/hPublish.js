@@ -23,252 +23,258 @@ var config = require('./_config.js');
 describe('hPublish', function(){
 
     var hCommandController = new config.cmdController(config.cmdParams);
-    var cmd;
+    var msg;
     var status = require('../lib/codes.js').hResultStatus;
     var inactiveChan = config.db.createPk();
     var poorChannel = config.db.createPk();
     var richChannel = config.db.createPk();
     var channelPriority = 2;
     var channelLocation = {lat: '1234'};
+    var hClientConst = require('../lib/hClient.js').hClient;
+    var hClient = new hClientConst(config.cmdParams);
 
     before(config.beforeFN)
 
     after(config.afterFN)
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(poorChannel, [config.validJID], config.validJID, true, done);
     })
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(inactiveChan, [config.validJID], config.validJID, false, done);
     })
 
     before(function(done){
+        hClient.once('connect', done);
+        hClient.connect(config.logins[0]);
+    })
+
+    after(function(done){
+        hClient.once('disconnect', done);
+        hClient.disconnect();
+    })
+
+    before(function(done){
         hCommandController.execCommand({
-            reqid  : 'hCommandTest123',
-            sender : config.validJID,
-            sid : 'fake sid',
-            sent : new Date(),
-            cmd : 'hCreateUpdateChannel',
-            params : {
-                chid : richChannel,
-                active : true,
-                host : '' + new Date(),
-                owner : config.validJID,
-                participants : [config.validJID],
-                location : channelLocation,
-                priority : channelPriority
+            msgid : 'hCommandTest123',
+            convid : 'hCommandTest123',
+            actor : 'session',
+            type : 'hCommand',
+            priority : 0,
+            publisher : config.validJID,
+            published : new Date(),
+            payload : {
+                cmd : 'hCreateUpdateChannel',
+                params : {
+                    actor : richChannel,
+                    active : true,
+                    owner : config.validJID,
+                    participants : [config.validJID],
+                    location : channelLocation,
+                    priority : channelPriority
+                }
             }
-        }, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            done();});
-    })
-
-    beforeEach(function(){
-        var id = config.db.createPk();
-        cmd= {
-            reqid  : 'hCommandTest123',
-            sender : config.validJID,
-            entity : 'hnode@' + config.validDomain,
-            sent : new Date(),
-            cmd : 'hPublish',
-            params : {
-                msgid: id,
-                convid: id,
-                chid: poorChannel,
-                publisher: config.validJID
-            }
-        };
-    })
-
-    it('should return hResult error MISSING_ATTR when missing params', function(done){
-        delete cmd['params'];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        }, function(hMessage){
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
 
+    beforeEach(function(){
+        var id = config.db.createPk();
+        msg = {
+            msgid : id,
+            convid : id,
+            actor : poorChannel,
+            publisher : config.validJID,
+            published : new Date()
+        };
+    })
+
     it('should return hResult OK with new msgid = convid when msgid and convid are not specified', function(done){
-        delete cmd.params.msgid;
-        delete cmd.params.convid;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.have.property('convid');
-            hResult.result.should.have.property('msgid', hResult.result.convid);
+        delete msg.msgid;
+        delete msg.convid;
+
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('convid');
+            hMessage.payload.result.should.have.property('msgid', hMessage.payload.result.convid);
             done();
         });
     })
 
     it('should return hResult OK with new msgid and specified convid when msgid is not sent and convid is', function(done){
-        delete cmd.params.msgid;
-        cmd.params.convid = config.db.createPk();
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.have.property('msgid');
-            hResult.result.should.have.property('convid', cmd.params.convid);
+        delete msg.msgid;
+        msg.convid = config.db.createPk();
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('msgid');
+            hMessage.payload.result.should.have.property('convid', msg.convid);
             done();
         });
     })
 
     it('should return hResult OK with new msgid and convid equal if only msgid was sent', function(done){
-        delete cmd.params.convid;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.have.property('msgid');
-            hResult.result.should.have.property('convid', hResult.result.msgid);
+        delete msg.convid;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('msgid');
+            hMessage.payload.result.should.have.property('convid', hMessage.payload.result.msgid);
             done();
         });
     })
 
     it('should return hResult OK with new msgid and convid equal if both were sent and were equal', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.have.property('msgid');
-            hResult.result.should.have.property('convid', hResult.result.msgid);
+        var msgid = msg.msgid;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('msgid');
+            hMessage.payload.result.should.have.property('convid', msgid);
             done();
         });
     })
 
     it('should return hResult OK with new msgid and same convid if both were sent and different', function(done){
-        cmd.params.convid = config.db.createPk();
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.have.property('msgid');
-            hResult.result.should.have.property('convid', cmd.params.convid);
+        msg.convid = config.db.createPk();
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('msgid');
+            hMessage.payload.result.should.have.property('convid', msg.convid);
             done();
         });
     })
 
-    it('should return hResult error MISSING_ATTR when chid is not present', function(done){
-        delete cmd.params.chid;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.MISSING_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error MISSING_ATTR when actor is not present', function(done){
+        delete msg.actor;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.MISSING_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error INVALID_ATTR when chid is not string castable', function(done){
-        cmd.params.chid = [];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error INVALID_ATTR when actor is not string castable', function(done){
+        msg.actor = [];
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error when chid does not exist', function(done){
-        cmd.params.chid = 'this CHID does not exist';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.NOT_AVAILABLE);
-            hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error when actor does not exist', function(done){
+        msg.actor = 'this CHID does not exist';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED when chid is inactive', function(done){
-        cmd.params.chid = inactiveChan;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error NOT_AUTHORIZED when actor is inactive', function(done){
+        msg.actor = inactiveChan;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR when type is not string castable', function(done){
-        cmd.params.type = [];
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.type = [];
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if priority not number castable', function(done){
-        cmd.params.priority = 'this is not a number';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.priority = 'this is not a number';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if priority set and > 5', function(done){
-        cmd.params.priority = 6;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.priority = 6;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if priority set and < 0', function(done){
-        cmd.params.priority = -1;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.priority = -1;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK with priority = hMessage if specified', function(done){
-        cmd.params.priority = 3;
-        cmd.params.chid = poorChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('priority', 3);
+        msg.priority = 3;
+        msg.actor = poorChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('priority', 3);
             done();
         });
     })
 
     it('should return hResult OK with priority = hMessage if specified even if existing in channel', function(done){
-        cmd.params.priority = 3;
-        cmd.params.chid = richChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('priority', 3);
+        msg.priority = 3;
+        msg.actor = richChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('priority', 3);
             done();
         });
     })
 
     it('should return hResult OK with priority = hChannel if not specified but existing in channel', function(done){
-        delete cmd.params.priority;
-        cmd.params.chid = richChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('priority', channelPriority);
+        delete msg.priority;
+        msg.actor = richChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('priority', channelPriority);
             done();
         });
     })
 
     it('should return hResult OK with priority = 1 if not specified not existing in channel', function(done){
-        delete cmd.params.priority;
-        cmd.params.chid = poorChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('priority', 1);
+        delete msg.priority;
+        msg.actor = poorChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('priority', 1);
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if relevance specified and not a date', function(done){
-        cmd.params.relevance = 'this is not a date';
-        cmd.params.chid = poorChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.relevance = 'this is not a date';
+        msg.actor = poorChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK with relevance set if no headers specified', function(done){
         var relevance = new Date( new Date().getTime() - 50000000 );
-        cmd.params.relevance = relevance;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.relevance.getTime().should.be.eql(relevance.getTime());
+        msg.relevance = relevance;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.relevance.getTime().should.be.eql(relevance.getTime());
             done();
         });
     })
@@ -276,11 +282,11 @@ describe('hPublish', function(){
     it('should return hResult OK with hServer published time + header if bigger than relevance set', function(done){
         var offset = 50000;
         var relevance = new Date( new Date().getTime() - 50000000 );
-        cmd.params.headers= {RELEVANCE_OFFSET: offset};
-        cmd.params.relevance = relevance;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.relevance.getTime().should.be.eql(hResult.result.published.getTime() + offset);
+        msg.headers= {RELEVANCE_OFFSET: offset};
+        msg.relevance = relevance;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.relevance.getTime().should.be.eql(hMessage.payload.result.published.getTime() + offset);
             done();
         });
     })
@@ -288,11 +294,11 @@ describe('hPublish', function(){
     it('should return hResult OK with relevance set if relevance_offset set but older', function(done){
         var offset = 50000;
         var relevance = new Date( new Date().getTime() + 50000000 );
-        cmd.params.relevance = relevance;
-        cmd.params.headers= {RELEVANCE_OFFSET: offset};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.relevance.getTime().should.be.eql(relevance.getTime());
+        msg.relevance = relevance;
+        msg.headers= {RELEVANCE_OFFSET: offset};
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.relevance.getTime().should.be.eql(relevance.getTime());
             done();
         });
     })
@@ -300,12 +306,12 @@ describe('hPublish', function(){
     it('should return hResult OK with user set published time + header if bigger than relevance set', function(done){
         var offset = 50000;
         var published = new Date( new Date().getTime() - 100000 );
-        cmd.params.relevance = new Date( new Date().getTime() - 50000000 );
-        cmd.params.headers= {RELEVANCE_OFFSET: offset};
-        cmd.params.published = published;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.relevance.getTime().should.be.eql(published.getTime() + offset);
+        msg.relevance = new Date( new Date().getTime() - 50000000 );
+        msg.headers= {RELEVANCE_OFFSET: offset};
+        msg.published = published;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.relevance.getTime().should.be.eql(published.getTime() + offset);
             done();
         });
     })
@@ -314,31 +320,31 @@ describe('hPublish', function(){
         var offset = 50000;
         var relevance = new Date( new Date().getTime() + 50000000 );
         var published = new Date( new Date().getTime() - 100000 );
-        cmd.params.relevance = relevance;
-        cmd.params.headers= {RELEVANCE_OFFSET: offset};
-        cmd.params.published = published;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.relevance.getTime().should.be.eql(relevance.getTime());
+        msg.relevance = relevance;
+        msg.headers= {RELEVANCE_OFFSET: offset};
+        msg.published = published;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.relevance.getTime().should.be.eql(relevance.getTime());
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if transient is not boolean', function(done){
-        cmd.params.transient = 'this is not a boolean';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.transient = 'this is not a boolean';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK if correct and do not store it in mongo transient not specified', function(done){
-        delete cmd.params.transient;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
+        delete msg.transient;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
 
-            config.db.get(cmd.params.chid).findOne({_id: hResult.result.msgid}, function(err, msg){
+            config.db.get(msg.actor).findOne({_id: hMessage.payload.result.msgid}, function(err, msg){
                 should.not.exist(err);
                 should.not.exist(msg);
                 done();
@@ -348,150 +354,150 @@ describe('hPublish', function(){
     })
 
     it('should return hResult OK if correct and store it in mongo if not transient', function(done){
-        cmd.params.transient = false;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            config.db.get(cmd.params.chid).findOne({_id: hResult.result.msgid}, function(err, msg){
+        msg.transient = false;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            config.db.get(msg.actor).findOne({_id: hMessage.payload.result.msgid}, function(err, msgRes){
                 should.not.exist(err);
-                should.exist(msg);
-                msg.should.have.property('convid', hResult.result.convid);
+                should.exist(msgRes);
+                msgRes.should.have.property('convid', hMessage.payload.result.convid);
                 done();
             });
         });
     })
 
     it('should return hResult error INVALID_ATTR if location set and not an object', function(done){
-        cmd.params.location = 1;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.location = 1;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK with location = hMessage if specified', function(done){
-        cmd.params.location = { lng: '12345' };
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('location', cmd.params.location);
+        msg.location = { lng: '12345' };
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('location', msg.location);
             done();
         });
     })
 
     it('should return hResult OK with location = hMessage if specified even if existing in channel', function(done){
-        cmd.params.location = { lng: '12345' };
-        cmd.params.chid = richChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('location', cmd.params.location);
+        msg.location = { lng: '12345' };
+        msg.actor = richChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('location', msg.location);
             done();
         });
     })
 
     it('should return hResult OK with location = hChannel if not set but existing in channel', function(done){
-        delete cmd.params.location;
-        cmd.params.chid = richChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.location.should.be.eql(channelLocation);
+        delete msg.location;
+        msg.actor = richChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.location.should.be.eql(channelLocation);
             done();
         });
     })
 
     it('should return hResult OK without location if not set and not existing in channel', function(done){
-        delete cmd.params.location;
-        cmd.params.chid = poorChannel;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.not.have.property('location');
+        delete msg.location;
+        msg.actor = poorChannel;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.not.have.property('location');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if author set and not a JID', function(done){
-        cmd.params.author = 'this is not a jid';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.author = 'this is not a jid';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK using a bare JID as author', function(done){
-        cmd.params.author = 'a@b';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
+        msg.author = 'a@b';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
 
     it('should return hResult OK using a full JID as author', function(done){
-        cmd.params.author = 'a@b/resource';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
+        msg.author = 'a@b/resource';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
 
     it('should return hResult error MISSING_ATTR if publisher is not set', function(done){
-        delete cmd.params.publisher;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.MISSING_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        delete msg.publisher;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.MISSING_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error NOT_AUTHORIZED if publisher != sender', function(done){
-        cmd.params.publisher = 'a@b.com';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.publisher = 'a@b.com';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if published specified and not a date', function(done){
-        cmd.params.published = 'this is not a date';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.published = 'this is not a date';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK without published set and have a set published time by server', function(done){
-        delete cmd.params.published;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('published').and.be.an.instanceof(Date);
+        delete msg.published;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('published').and.be.an.instanceof(Date);
             done();
         });
     })
 
     it('should return hResult OK with set published time if specified ', function(done){
-        cmd.params.published = new Date();
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status').and.equal(status.OK);
-            hResult.result.should.have.property('published', cmd.params.published);
+        msg.published = new Date();
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.have.property('published', msg.published);
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if headers is not an object', function(done){
-        cmd.params.headers= 'aaa';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.headers= 'aaa';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if RELEVANCE_OFFSET header is not a number', function(done){
-        cmd.params.headers= {RELEVANCE_OFFSET: 'a string'};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.result.should.match(/RELEVANCE_OFFSET/);
+        msg.headers= {RELEVANCE_OFFSET: 'a string'};
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.result.should.match(/RELEVANCE_OFFSET/);
             done();
         });
     })
@@ -499,84 +505,84 @@ describe('hPublish', function(){
     it('should return hResult OK with relevance set to published time + header', function(done){
         var published = new Date(),
             offset = 50000;
-        cmd.params.headers= {RELEVANCE_OFFSET: offset};
-        cmd.params.published = published;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.relevance.getTime().should.be.eql(published.getTime() + offset);
+        msg.headers= {RELEVANCE_OFFSET: offset};
+        msg.published = published;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.relevance.getTime().should.be.eql(published.getTime() + offset);
             done();
         });
     })
 
     it('should return hResult OK without relevance if nothing specified in msg or headers', function(done){
-        delete cmd.params.relevance;
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.not.have.property('relevance');
+        delete msg.relevance;
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.not.have.property('relevance');
             done();
         });
     })
 
     it('should return hResult OK with relevance set to hServer published time + header', function(done){
         var offset = 50000;
-        cmd.params.headers= {RELEVANCE_OFFSET: offset};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.relevance.getTime().should.be.eql(hResult.result.published.getTime() + offset);
+        msg.headers= {RELEVANCE_OFFSET: offset};
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.relevance.getTime().should.be.eql(hMessage.payload.result.published.getTime() + offset);
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR if MAX_MSG_RETRIEVAL header is not a number', function(done){
-        cmd.params.headers= {MAX_MSG_RETRIEVAL: 'a string'};
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.result.should.match(/MAX_MSG_RETRIEVAL/);
+        msg.headers= {MAX_MSG_RETRIEVAL: 'a string'};
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.result.should.match(/MAX_MSG_RETRIEVAL/);
             done();
         });
     })
 
     it('should return hResult error if not in participants list', function(done){
-        cmd.params.publisher = 'not@in.list';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.publisher = 'not@in.list';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('cmd', 'send');
+            hMessage.should.have.property('ref', msg.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error if sender != publisher', function(done){
-        cmd.params.publisher = 'a@b.com';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+        msg.publisher = 'a@b.com';
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('cmd', 'send');
+            hMessage.should.have.property('ref', msg.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK when published without any optional attr', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
 
     it('should return hResult OK with every field correct', function(done){
-        cmd.params.type = 'a type';
-        cmd.params.priority = 3;
-        cmd.params.relevance = new Date();
-        cmd.params.transient = true;
-        cmd.params.location = {lng: '123123'};
-        cmd.params.author = 'a@b.com';
-        cmd.params.headers = { MAX_MSG_RETRIEVAL: 3, RELEVANCE_OFFSET: 5450};
-        cmd.params.payload = {};
+        msg.type = 'a type';
+        msg.priority = 3;
+        msg.relevance = new Date();
+        msg.transient = true;
+        msg.location = {lng: '123123'};
+        msg.author = 'a@b.com';
+        msg.headers = { MAX_MSG_RETRIEVAL: 3, RELEVANCE_OFFSET: 5450};
+        msg.payload = {};
 
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
+        hClient.processMsgInternal(msg, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
@@ -595,40 +601,36 @@ describe('hPublish', function(){
             hClient.disconnect();
         })
 
-        it('should receive sent message if chid was a user', function(done){
-            cmd.params.chid = config.validJID;
+        it('should receive sent message if actor was a user', function(done){
+            msg.actor = config.validJID;
 
             hClient.once('hMessage', function(hMessage){
-                hMessage.should.have.property('chid', config.validJID);
+                hMessage.should.have.property('actor', config.validJID);
                 done();
             });
 
-            hClient.command(cmd, function(hResult){
-                hResult.should.have.property('status', status.OK);
+            hClient.processMsgInternal(msg, function(hMessage){
+                hMessage.payload.should.have.property('status', status.OK);
             });
         })
 
-        it('should save in mongo the message if persistent and sent message if chid was a user', function(done){
-            cmd.params.chid = config.validJID;
-            cmd.params.transient = false;
+        it('should save in mongo the message if persistent and sent message if actor was a user', function(done){
+            this.timeout(5000);
+            msg.actor = config.logins[0].jid;
+            msg.transient = false;
             var counter = 0;
 
             hClient.on('hMessage', function(hMessage){
-                hMessage.should.have.property('chid', config.validJID);
-                if(++counter == 2)
-                    done();
-            });
-
-            hClient.command(cmd, function(hResult){
-                hResult.should.have.property('status', status.OK);
-                config.db.get('hMessages').findOne({_id: hResult.result.msgid}, function(err, doc){
+                hMessage.should.have.property('actor', config.logins[0].jid);
+                config.db.get('hMessages').findOne({_id: msg.msgid}, function(err, doc){
                     should.not.exist(err);
-                    doc.should.have.property('_id', hResult.result.msgid);
+                    doc.should.have.property('_id', msg.msgid);
 
-                    if(++counter == 2)
-                        done();
+                    done();
                 })
             });
+
+            hClient.processMsgInternal(msg, function(hMessage) {});
         })
 
     })
