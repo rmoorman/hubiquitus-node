@@ -127,8 +127,30 @@ describe('hGetLastMessages', function(){
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
-                hMessage.payload.should.have.property('status', status.MISSING_ATTR);
+                hMessage.payload.should.have.property('status', status.INVALID_ATTR);
                 hMessage.payload.should.have.property('result').and.be.a('string');
+                done();
+            });
+        })
+
+        it('should return hResult error INVALID_ATTR with params not an object', function(done){
+            cmd.payload.params = 'string';
+            hCommandController.execCommand(cmd, function(hMessage){
+                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+                hMessage.should.have.property('ref', cmd.msgid);
+                hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+                hMessage.payload.should.have.property('result').and.be.a('string');
+                done();
+            });
+        })
+
+        it('should return hResult error INVALID_ATTR with actor not a string', function(done){
+            cmd.payload.params.actor = [];
+            hCommandController.execCommand(cmd, function(hMessage){
+                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+                hMessage.should.have.property('ref', cmd.msgid);
+                hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+                hMessage.payload.should.have.property('result').and.match(/actor/);
                 done();
             });
         })

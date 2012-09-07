@@ -84,8 +84,41 @@ describe('hUnsubscribe', function(){
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error INVALID_ATTR with params not an object', function(done){
+        cmd.payload.params = 'string';
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error MISSING_ATTR when actor is not part of params', function(done){
+        cmd.payload.params = {};
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
+            done();
+        });
+    })
+
+    it('should return hResult error INVALID_ATTR with actor not a string', function(done){
+        cmd.payload.params.actor = [];
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.match(/actor/);
             done();
         });
     })
@@ -95,7 +128,7 @@ describe('hUnsubscribe', function(){
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
-            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
             hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
@@ -107,18 +140,7 @@ describe('hUnsubscribe', function(){
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
-            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
-            hMessage.payload.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error NOT_AUTHORIZED if not subscribed', function(done){
-        cmd.payload.params = {actor: 'this CHID does not exist'};
-        hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
-            hMessage.should.have.property('ref', cmd.msgid);
-            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
             hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
