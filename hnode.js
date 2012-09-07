@@ -1,4 +1,4 @@
-#!/usr/bin/env /usr/local/bin/node
+#!/usr/bin/env /usr/bin/node
 /*
  * Copyright (c) Novedia Group 2012.
  *
