@@ -654,8 +654,8 @@ describe('hClient XMPP Connection', function(){
             });
         })
 
-        it('should save hCommand and hResult with same _id when transient=false without msgid and transient', function(done){
-            cmdMsg.transient = false;
+        it('should save hCommand and hResult with same _id when persistent=true without msgid and persistent', function(done){
+            cmdMsg.persistent = true;
             cmdMsg.payload.cmd = 'hEcho';
             cmdMsg.payload.params = {};
             cmdMsg.payload.params.randomValue = '' + config.db.createPk();
@@ -667,7 +667,7 @@ describe('hClient XMPP Connection', function(){
                 should.exist(item);
                 item.should.have.property('type', 'hResult');
                 item.payload.should.have.property('cmd', cmdMsg.payload.cmd);
-                item.should.not.have.property('transient');
+                item.should.not.have.property('persistent');
                 item.should.not.have.property('msgid');
 
                 config.db.get('hMessages').findOne({ _id: item._id}, testResult);
@@ -679,7 +679,7 @@ describe('hClient XMPP Connection', function(){
              should.exist(item2);
              item2.should.have.property('type', 'hResult');
              item2.payload.should.have.property('cmd', cmdMsg.cmd);
-             item2.should.not.have.property('transient');
+             item2.should.not.have.property('persistent');
              item2.should.not.have.property('msgid');
              done();
              };

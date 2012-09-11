@@ -330,8 +330,8 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR if transient is not boolean', function(done){
-        msg.transient = 'this is not a boolean';
+    it('should return hResult error INVALID_ATTR if persistent is not boolean', function(done){
+        msg.persistent = 'this is not a boolean';
         hClient.processMsgInternal(msg, function(hMessage) {
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -339,8 +339,8 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult OK if correct and do not store it in mongo transient not specified', function(done){
-        delete msg.transient;
+    it('should return hResult OK if correct and do not store it in mongo persistent not specified', function(done){
+        delete msg.persistent;
         hClient.processMsgInternal(msg, function(hMessage) {
             hMessage.payload.should.have.property('status', status.OK);
 
@@ -353,8 +353,8 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult OK if correct and store it in mongo if not transient', function(done){
-        msg.transient = false;
+    it('should return hResult OK if correct and store it in mongo if persistent', function(done){
+        msg.persistent = true;
         hClient.processMsgInternal(msg, function(hMessage) {
             hMessage.payload.should.have.property('status', status.OK);
             config.db.get(msg.actor).findOne({_id: hMessage.payload.result.msgid}, function(err, msgRes){
@@ -575,7 +575,7 @@ describe('hPublish', function(){
         msg.type = 'a type';
         msg.priority = 3;
         msg.relevance = new Date();
-        msg.transient = true;
+        msg.persistent = false;
         msg.location = {lng: '123123'};
         msg.author = 'a@b.com';
         msg.headers = { MAX_MSG_RETRIEVAL: 3, RELEVANCE_OFFSET: 5450};
@@ -617,7 +617,7 @@ describe('hPublish', function(){
         it('should save in mongo the message if persistent and sent message if actor was a user', function(done){
             this.timeout(5000);
             msg.actor = config.logins[0].jid;
-            msg.transient = false;
+            msg.persistent = true;
             var counter = 0;
 
             hClient.on('hMessage', function(hMessage){

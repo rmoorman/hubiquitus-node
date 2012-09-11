@@ -44,19 +44,19 @@ describe('hRelevantMessages', function(){
 
     for(var i = 0; i < nbMsgs; i++)
         before(function(done){
-            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, false, {
+            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, true, {
                 relevance: new Date( new Date().getTime() + 100000 ) }, done);
         })
 
     for(var i = 0; i < nbMsgs; i++)
         before(function(done){
-            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, false, {
+            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, true, {
                 relevance: new Date( new Date().getTime() - 100000 ) }, done);
         })
 
     for(var i = 0; i < nbMsgs; i++)
         before(function(done){
-            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, false, done);
+            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, true, done);
         })
 
     before(function(done){

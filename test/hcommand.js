@@ -26,20 +26,12 @@ describe('hCommand', function(){
     var cmdMsg;
     var status = require('../lib/codes.js').hResultStatus;
     var params = JSON.parse(JSON.stringify(config.cmdParams));
+    params.modulePath = 'test/aux';
+    params.timeout = 1000;
 
-    before(function(done){
-        config.db.on('connect', done);
-        config.db.connect(config.mongoURI);
+    before(config.beforeFN)
 
-        params.modulePath = 'test/aux';
-        params.timeout = 1000;
-    })
-
-    after(function(done){
-        config.db.on('disconnect', done);
-        config.db.disconnect();
-    })
-
+    after(config.afterFN)
 
     beforeEach(function(){
         cmdMsg = {
@@ -116,8 +108,8 @@ describe('hCommand', function(){
         });
     })
 
-    it('should return same msgid even if when transient=false msgid changes in mongodb', function(done){
-        cmdMsg.transient = false;
+    it('should return same msgid even if when persistent=true msgid changes in mongodb', function(done){
+        cmdMsg.persistent = true;
         cmdMsg.payload.params.randomValue = '' + config.db.createPk();
 
         hCommandController.execCommand(cmdMsg, function(hMessage){

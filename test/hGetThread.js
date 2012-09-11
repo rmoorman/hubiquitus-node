@@ -47,7 +47,7 @@ describe('hGetThread', function(){
 
     //Publish first message to get a valid convid and following ones with same convid
     before(function(done){
-        config.publishMessageWithResult(config.validJID, activeChannel, undefined, undefined, new Date(), false, function(hMessage) {
+        config.publishMessageWithResult(config.validJID, activeChannel, undefined, undefined, new Date(), true, function(hMessage) {
             hMessage.payload.should.have.property('status', status.OK);
             publishedMessages++;
             convid = hMessage.payload.result.convid;
@@ -59,7 +59,7 @@ describe('hGetThread', function(){
         before(function(done){
             var opts = {};
             opts.convid = convid;
-            config.publishMessageWithResult(config.validJID, activeChannel, undefined, undefined, new Date(), false, opts, function(hMessage) {
+            config.publishMessageWithResult(config.validJID, activeChannel, undefined, undefined, new Date(), true, opts, function(hMessage) {
                 hMessage.payload.should.have.property('status', status.OK);
                 publishedMessages++;
                 done();
@@ -215,7 +215,7 @@ describe('hGetThread', function(){
         before(function(done){
             var opts = {};
             opts.convid = convid;
-            config.publishMessageWithResult(config.validJID, activeChannel, 'a type', undefined, new Date(), false, opts, function(hMessage) {
+            config.publishMessageWithResult(config.validJID, activeChannel, 'a type', undefined, new Date(), true, opts, function(hMessage) {
                 hMessage.payload.should.have.property('status', status.OK);
                 publishedMessages++;
                 done();
@@ -226,7 +226,7 @@ describe('hGetThread', function(){
             before(function(done){
                 var opts = {};
                 opts.convid = convid2;
-                config.publishMessageWithResult(config.validJID, activeChannel, 'a type', undefined, new Date(), false, opts, function(hMessage) {
+                config.publishMessageWithResult(config.validJID, activeChannel, 'a type', undefined, new Date(), true, opts, function(hMessage) {
                     hMessage.payload.should.have.property('status', status.OK);
                     filterMessagesPublished++;
                     done();
@@ -237,7 +237,7 @@ describe('hGetThread', function(){
             before(function(done){
                 var opts = {};
                 opts.convid = convid2;
-                config.publishMessageWithResult(config.validJID, activeChannel, 'another type', undefined, new Date, false, opts, function(hMessage) {
+                config.publishMessageWithResult(config.validJID, activeChannel, 'another type', undefined, new Date, true, opts, function(hMessage) {
                     hMessage.payload.should.have.property('status', status.OK);
                     filterMessagesPublished++;
                     done();
