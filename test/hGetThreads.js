@@ -48,7 +48,7 @@ describe('hGetThreads', function(){
     //Root messages with different status
     for(var i = 0; i < 2; i++)
         before(function(done){
-            config.publishMessageWithResult(config.validJID, activeChannel, 'hConvState', {status: config.db.createPk()}, new Date(), false, function(hMessage) {
+            config.publishMessageWithResult(config.validJID, activeChannel, 'hConvState', {status: config.db.createPk()}, new Date(), true, function(hMessage) {
                 hMessage.payload.should.have.property('status', status.OK);
                 shouldNotAppearConvids.push(hMessage.payload.result.convid);
                 done();
@@ -60,7 +60,7 @@ describe('hGetThreads', function(){
         var opts = {};
         opts.priority = 3;
         opts.convid = shouldNotAppearConvids.pop();
-        config.publishMessageWithResult(config.validJID, activeChannel, 'hConvState', {status: correctStatus}, new Date(), false, opts, function(hMessage) {
+        config.publishMessageWithResult(config.validJID, activeChannel, 'hConvState', {status: correctStatus}, new Date(), true, opts, function(hMessage) {
             hMessage.payload.should.have.property('status', status.OK);
             convids.push(hMessage.payload.result.convid);
             done();
@@ -71,7 +71,7 @@ describe('hGetThreads', function(){
     before(function(done){
         var opts = {};
         opts.priority = 3;
-        config.publishMessageWithResult(config.validJID, activeChannel, 'hConvState', {status: correctStatus}, new Date(), false, opts, function(hMessage) {
+        config.publishMessageWithResult(config.validJID, activeChannel, 'hConvState', {status: correctStatus}, new Date(), true, opts, function(hMessage) {
             hMessage.payload.should.have.property('status', status.OK);
             convids.push(hMessage.payload.result.convid);
             done();

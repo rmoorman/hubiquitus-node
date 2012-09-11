@@ -69,7 +69,7 @@ describe('hGetLastMessages', function(){
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.payload.status.should.be.eql(status.OK);
             for(var i = 0; i < 11; i++)
-                config.publishMessage(config.validJID, chanWithHeader, undefined, undefined, undefined, false, function() {
+                config.publishMessage(config.validJID, chanWithHeader, undefined, undefined, undefined, true, function() {
                     nbOfPublish += 1;
                     if(nbOfPublish == 10)
                         done();
@@ -116,7 +116,7 @@ describe('hGetLastMessages', function(){
             var date = new Date(100000 + i * 100000);
             DateTab.push(date);
             before(function(done){
-                config.publishMessage(config.validJID, existingCHID, undefined, undefined,DateTab[count], false, done);
+                config.publishMessage(config.validJID, existingCHID, undefined, undefined,DateTab[count], true, done);
                 count++;
             })
 
@@ -300,7 +300,7 @@ describe('hGetLastMessages', function(){
         for(var i = 0; i < 5; i++) {
             before(function(done){
                 this.timeout(5000);
-                config.publishMessage(config.validJID, existingCHID, 'a type', undefined, undefined, false, done);
+                config.publishMessage(config.validJID, existingCHID, 'a type', undefined, undefined, true, done);
             })
         }
 

@@ -34,7 +34,6 @@ describe('hSetFilter', function(){
     var hClientConst = require('../lib/hClient.js').hClient;
     var hClient = new hClientConst(config.cmdParams);
 
-
     before(config.beforeFN)
 
     after(config.afterFN)
@@ -77,7 +76,7 @@ describe('hSetFilter', function(){
         });
     })
 
-    it('should return hResult NOT_AUTHORIZED if the actor is inactive', function(done){
+    it('should return hResult NOT_AUTHORIZED if the channel is inactive', function(done){
         cmd.payload.params.actor = inactiveChan;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
@@ -154,13 +153,13 @@ describe('hSetFilter', function(){
         });
     })
 
-    it('should return hResult INVALID_ATTR if transient is specified', function(done){
-        cmd.payload.params.template = {transient: true };
+    it('should return hResult INVALID_ATTR if persistent is specified', function(done){
+        cmd.payload.params.template = {persistent: false};
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
-            hMessage.payload.result.should.be.a('string').and.match(/transient/);
+            hMessage.payload.result.should.be.a('string').and.match(/persistent/);
             done();
         });
     })
