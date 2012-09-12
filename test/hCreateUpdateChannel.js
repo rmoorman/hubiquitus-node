@@ -46,7 +46,7 @@ describe('hCreateUpdateChannel', function(){
             payload : {
                 cmd : 'hCreateUpdateChannel',
                 params : {
-                    actor: config.db.createPk(),
+                    actor: config.getNewCHID(),
                     active : true,
                     owner : config.validJID,
                     participants : [config.validJID]
@@ -311,27 +311,6 @@ describe('hCreateUpdateChannel', function(){
         this.timeout(5000);
         createCmd.publisher = config.validJID + '/resource';
         createCmd.payload.params.owner = config.validJID;
-        hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
-            hMessage.should.have.property('ref', createCmd.msgid);
-            hMessage.payload.should.have.property('status', status.OK);
-            done();
-        });
-    })
-
-    it('should return hResult OK if actor does not have domain nor #', function(done){
-        createCmd.payload.params.actor = 'aValidChannelName';
-        hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
-            hMessage.should.have.property('ref', createCmd.msgid);
-            hMessage.payload.should.have.property('status', status.OK);
-            done();
-        });
-    })
-
-    it('should return hResult OK if actor does not have domain', function(done){
-        this.timeout(5000);
-        createCmd.payload.params.actor = '#aValidChannelName';
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);

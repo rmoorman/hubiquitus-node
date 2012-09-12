@@ -22,8 +22,8 @@ var config = require('./_config.js');
 
 describe('hGetThreads', function(){
 
-    var activeChannel = config.db.createPk(),
-        inactiveChannel = config.db.createPk(),
+    var activeChannel = config.getNewCHID(),
+        inactiveChannel = config.getNewCHID(),
         hCommandController = new config.cmdController(config.cmdParams),
         status = require('../lib/codes.js').hResultStatus,
         correctStatus = config.db.createPk(),

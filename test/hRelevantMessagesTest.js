@@ -27,10 +27,10 @@ describe('hRelevantMessages', function(){
     var status = require('../lib/codes.js').hResultStatus;
     var cmd;
     var nbMsgs = 10;
-    var activeChan = config.db.createPk();
-    var notInPart = config.db.createPk();
-    var inactiveChan = config.db.createPk();
-    var emptyChannel = config.db.createPk();
+    var activeChan = config.getNewCHID();
+    var notInPart = config.getNewCHID();
+    var inactiveChan = config.getNewCHID();
+    var emptyChannel = config.getNewCHID();
 
 
     before(config.beforeFN)

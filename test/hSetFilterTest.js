@@ -28,7 +28,7 @@ describe('hSetFilter', function(){
 
     var cmd = {};
     var activeChan = config.getNewCHID();
-    var inactiveChan = config.db.createPk();
+    var inactiveChan = config.getNewCHID();
     var filterName = config.db.createPk();
 
     var hClientConst = require('../lib/hClient.js').hClient;

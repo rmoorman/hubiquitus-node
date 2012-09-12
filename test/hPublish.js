@@ -25,9 +25,9 @@ describe('hPublish', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var msg;
     var status = require('../lib/codes.js').hResultStatus;
-    var inactiveChan = config.db.createPk();
-    var poorChannel = config.db.createPk();
-    var richChannel = config.db.createPk();
+    var inactiveChan = config.getNewCHID();
+    var poorChannel = config.getNewCHID();
+    var richChannel = config.getNewCHID();
     var channelPriority = 2;
     var channelLocation = {lat: '1234'};
     var hClientConst = require('../lib/hClient.js').hClient;
@@ -166,7 +166,7 @@ describe('hPublish', function(){
     })
 
     it('should return hResult error when actor does not exist', function(done){
-        msg.actor = 'this CHID does not exist';
+        msg.actor = '#this channel does not exist@localhost';
         hClient.processMsgInternal(msg, function(hMessage) {
             hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
             hMessage.payload.should.have.property('result').and.be.a('string');

@@ -25,9 +25,9 @@ describe('hGetLastMessages', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = config.db.createPk();
-    var chanWithHeader = config.db.createPk();
-    var inactiveChan = config.db.createPk();
+    var existingCHID = config.getNewCHID();
+    var chanWithHeader = config.getNewCHID();
+    var inactiveChan = config.getNewCHID();
     var DateTab = [];
 
     var maxMsgRetrieval = 6;

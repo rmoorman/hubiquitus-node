@@ -28,8 +28,8 @@ describe('hUnsubscribe', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = config.db.createPk();
-    var inactiveCHID = config.db.createPk();
+    var existingCHID = config.getNewCHID();
+    var inactiveCHID = config.getNewCHID();
 
     before(config.beforeFN)
 
@@ -73,7 +73,7 @@ describe('hUnsubscribe', function(){
             payload : {
                 cmd : 'hUnsubscribe',
                 params : {
-                    actor: config.db.createPk()
+                    actor: config.getNewCHID()
                 }
             }
         };
@@ -124,7 +124,7 @@ describe('hUnsubscribe', function(){
     })
 
     it('should return hResult error NOT_AUTHORIZED when actor doesnt exist', function(done){
-        cmd.payload.params = {actor: 'this CHID does not exist'};
+        cmd.payload.params = {actor: '#this channel does not exist@localhost'};
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -140,7 +140,7 @@ describe('hUnsubscribe', function(){
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
-            hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });

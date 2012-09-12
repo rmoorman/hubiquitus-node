@@ -25,9 +25,9 @@ describe('hSubscribe', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = config.db.createPk();
-    var existingCHID2 = config.db.createPk();
-    var inactiveChannel = config.db.createPk();
+    var existingCHID = config.getNewCHID();
+    var existingCHID2 = config.getNewCHID();
+    var inactiveChannel = config.getNewCHID();
 
     before(config.beforeFN)
 
@@ -109,7 +109,7 @@ describe('hSubscribe', function(){
     })
 
     it('should return hResult error NOT_AVAILABLE when actor doesnt exist', function(done){
-        cmd.payload.params = {actor: 'this CHID does not exist'};
+        cmd.payload.params = {actor: '#this channel does not exist@localhost'};
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
