@@ -146,7 +146,7 @@ describe('hRelevantMessages', function(){
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED if not in participants list', function(done){
+    it('should return hResult error NOT_AUTHORIZED if not in subscribers list', function(done){
         cmd.payload.params.actor = notInPart;
         hClient.processMsgInternal(cmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);

@@ -72,7 +72,7 @@ describe('hPublish', function(){
                     actor : richChannel,
                     active : true,
                     owner : config.validJID,
-                    participants : [config.validJID],
+                    subscribers : [config.validJID],
                     location : channelLocation,
                     priority : channelPriority
                 }
@@ -542,7 +542,7 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult error if not in participants list', function(done){
+    it('should return hResult error if not in subscribers list', function(done){
         msg.publisher = 'not@in.list';
         hClient.processMsgInternal(msg, function(hMessage) {
             hMessage.payload.should.have.property('cmd', 'send');

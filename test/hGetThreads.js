@@ -111,8 +111,8 @@ describe('hGetThreads', function(){
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED if the publisher is not a participant', function(done){
-        cmd.publisher = 'not_a_participant@' + config.validDomain;
+    it('should return hResult error NOT_AUTHORIZED if the publisher is not a subscriber', function(done){
+        cmd.publisher = 'not_a_subscriber@' + config.validDomain;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);

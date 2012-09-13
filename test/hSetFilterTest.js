@@ -98,7 +98,7 @@ describe('hSetFilter', function(){
         });
     })
 
-    it('should return hResult NOT_AUTHORIZED if the client is not in participants list', function(done){
+    it('should return hResult NOT_AUTHORIZED if the client is not in subscribers list', function(done){
         cmd.publisher = 'not_in_part@' + config.validDomain;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);

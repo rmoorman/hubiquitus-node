@@ -49,7 +49,7 @@ describe('hCreateUpdateChannel', function(){
                     actor: config.getNewCHID(),
                     active : true,
                     owner : config.validJID,
-                    participants : [config.validJID]
+                    subscribers : [config.validJID]
                 }
             }
         };
@@ -209,57 +209,57 @@ describe('hCreateUpdateChannel', function(){
         });
     })
 
-    it('should return hResult error MISSING_ATTR if participants is missing', function(done){
-        delete createCmd.payload.params.participants;
+    it('should return hResult error MISSING_ATTR if subscribers is missing', function(done){
+        delete createCmd.payload.params.subscribers;
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/participant/i);
+            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
             done();
         });
     })
 
-    it('should return hResult error INVALID_ATTR if participants is not an array', function(done){
-        createCmd.payload.params.participants = '';
+    it('should return hResult error INVALID_ATTR if subscribers is not an array', function(done){
+        createCmd.payload.params.subscribers = '';
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/participant/i);
+            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
             done();
         });
     })
 
-    it('should return hResult error INVALID_ATTR if participants has an element that is not a string', function(done){
-        createCmd.payload.params.participants = [{not: 'a string'}];
+    it('should return hResult error INVALID_ATTR if subscribers has an element that is not a string', function(done){
+        createCmd.payload.params.subscribers = [{not: 'a string'}];
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/participant/i);
+            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
             done();
         });
     })
 
-    it('should return hResult error INVALID_ATTR if participants has an element that is not a JID', function(done){
-        createCmd.payload.params.participants = ['a@b', 'this is not a JID'];
+    it('should return hResult error INVALID_ATTR if subscribers has an element that is not a JID', function(done){
+        createCmd.payload.params.subscribers = ['a@b', 'this is not a JID'];
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/participant/i);
+            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
             done();
         });
     })
 
-    it('should return hResult error INVALID_ATTR if participants has an element that is not a bare JID', function(done){
-        createCmd.payload.params.participants = ['a@b', 'a@b/resource'];
+    it('should return hResult error INVALID_ATTR if subscribers has an element that is not a bare JID', function(done){
+        createCmd.payload.params.subscribers = ['a@b', 'a@b/resource'];
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/participant/i);
+            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
             done();
         });
     })
@@ -382,20 +382,20 @@ describe('hCreateUpdateChannel', function(){
         it('should return hResult ok if actor exists updating', function(done){
             this.timeout(5000);
             createCmd.payload.params.actor = existingCHID;
-            createCmd.payload.params.participants = ['u2@another'];
+            createCmd.payload.params.subscribers = ['u2@another'];
             hCommandController.execCommand(createCmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
                 hMessage.should.have.property('ref', createCmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
-                config.db.cache.hChannels[existingCHID].participants.should.be.eql(createCmd.payload.params.participants);
+                config.db.cache.hChannels[existingCHID].subscribers.should.be.eql(createCmd.payload.params.subscribers);
                 done();
             });
         })
 
-        it('should return hResult OK if a new participant is added', function(done){
+        it('should return hResult OK if a new subscriber is added', function(done){
             this.timeout(5000);
             createCmd.payload.params.actor = existingCHID;
-            createCmd.payload.params.participants = [config.validJID, 'u2@another2'];
+            createCmd.payload.params.subscribers = [config.validJID, 'u2@another2'];
             hCommandController.execCommand(createCmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
                 hMessage.should.have.property('ref', createCmd.msgid);
@@ -404,10 +404,10 @@ describe('hCreateUpdateChannel', function(){
             });
         })
 
-        it('should return hResult OK if an old participant is removed', function(done){
+        it('should return hResult OK if an old subscriber is removed', function(done){
             this.timeout(5000);
             createCmd.payload.params.actor = existingCHID;
-            createCmd.payload.params.participants = ['u2@another2'];
+            createCmd.payload.params.subscribers = ['u2@another2'];
             hCommandController.execCommand(createCmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
                 hMessage.should.have.property('ref', createCmd.msgid);

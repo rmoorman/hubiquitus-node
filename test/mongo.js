@@ -46,7 +46,7 @@ describe('#Database', function(){
             });
             db.connect('localhost/dbName');
         })
-
+        
         it('should return invalid URI if URI missing db', function(done){
             db.once('error', function(error){
                 should.exist(error);
@@ -134,7 +134,7 @@ describe('#Database', function(){
             validChannel = {
                 _id: config.getNewCHID(),
                 owner: config.validJID,
-                participants: [config.validJID],
+                subscribers: [config.validJID],
                 active: true
             };
         })

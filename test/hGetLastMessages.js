@@ -59,7 +59,7 @@ describe('hGetLastMessages', function(){
                     actor: chanWithHeader,
                     active : true,
                     owner : config.validJID,
-                    participants : [config.validJID, config.logins[0].jid],
+                    subscribers : [config.validJID, config.logins[0].jid],
                     headers : {'MAX_MSG_RETRIEVAL': ''+maxMsgRetrieval}
                 }
             }
@@ -166,7 +166,7 @@ describe('hGetLastMessages', function(){
             });
         })
 
-        it('should return hResult error NOT_AUTHORIZED if publisher not in participants list', function(done){
+        it('should return hResult error NOT_AUTHORIZED if publisher not in subscribers list', function(done){
             cmd.publisher = 'someone@' + config.validDomain;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);

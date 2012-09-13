@@ -119,7 +119,7 @@ describe('hSubscribe', function(){
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED if not in participants list', function(done){
+    it('should return hResult error NOT_AUTHORIZED if not in subscribers list', function(done){
         cmd.payload.params = {actor: existingCHID};
         cmd.publisher = 'not_in_list@' + config.validDomain;
         hCommandController.execCommand(cmd, function(hMessage){
