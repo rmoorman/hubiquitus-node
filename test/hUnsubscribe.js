@@ -66,7 +66,7 @@ describe('hUnsubscribe', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'hCommandTest123',
-            actor : 'session',
+            actor : existingCHID,
             type : 'hCommand',
             publisher : config.validJID,
             published : new Date(),
@@ -79,30 +79,8 @@ describe('hUnsubscribe', function(){
         };
     })
 
-    it('should return hResult error MISSING_ATTR when missing params', function(done){
-        delete cmd.payload['params'];
-        hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
-            hMessage.should.have.property('ref', cmd.msgid);
-            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR with params not an object', function(done){
-        cmd.payload.params = 'string';
-        hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
-            hMessage.should.have.property('ref', cmd.msgid);
-            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error MISSING_ATTR when actor is not part of params', function(done){
-        cmd.payload.params = {};
+    it('should return hResult error MISSING_ATTR when actor is missing', function(done){
+        cmd.actor = '';
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -112,8 +90,8 @@ describe('hUnsubscribe', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR with actor not a string', function(done){
-        cmd.payload.params.actor = [];
+    it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
+        cmd.actor = 'not a channel@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -123,8 +101,8 @@ describe('hUnsubscribe', function(){
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED when actor doesnt exist', function(done){
-        cmd.payload.params = {actor: '#this channel does not exist@localhost'};
+    it('should return hResult error NOT_AVAILABLE when actor doesnt exist', function(done){
+        cmd.actor = '#this channel does not exist@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -136,7 +114,7 @@ describe('hUnsubscribe', function(){
 
     it('should return hResult NOT_AUTHORIZED if not subscribed and no subscriptions', function(done){
         cmd.publisher = 'a@jid.com';
-        cmd.payload.params = {actor: existingCHID};
+        cmd.actor = existingCHID;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -147,7 +125,7 @@ describe('hUnsubscribe', function(){
     })
 
     it('should return hResult error NOT_AUTHORIZED when actor is inactive', function(done){
-        cmd.payload.params = {actor: inactiveCHID};
+        cmd.actor = inactiveCHID;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -158,7 +136,7 @@ describe('hUnsubscribe', function(){
     })
 
     it('should return hResult OK when correct', function(done){
-        cmd.payload.params = {actor: existingCHID};
+        cmd.actor = existingCHID;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);

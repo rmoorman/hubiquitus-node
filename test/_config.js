@@ -118,6 +118,7 @@ exports.makeHMessage = function(actor, publisher, type, payload) {
 };
 
 exports.makeHCommand = function(actor, publisher, cmd, params) {
+    params = params || {}
     var hCommand = exports.makeHMessage(actor, publisher, 'hCommand', {cmd: cmd, params: params});
     return hCommand;
 }
@@ -159,7 +160,7 @@ exports.createChannel = function(actor, subscribers, owner, active, done) {
 exports.subscribeToChannel = function(publisher, actor, done) {
     var hCommandController = new exports.cmdController(exports.cmdParams);
 
-    var command = exports.makeHCommand(exports.hnode.jid, publisher, 'hSubscribe', {actor: actor});
+    var command = exports.makeHCommand(actor, publisher, 'hSubscribe');
 
     hCommandController.execCommand(command, function(hMessage){
         exports.checkOkResultMsg(hMessage, command);

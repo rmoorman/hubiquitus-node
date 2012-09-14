@@ -67,11 +67,18 @@ describe('hGetThread', function(){
         })
 
     beforeEach(function(){
-        cmd = JSON.parse(JSON.stringify(config.genericCmdMsg));
-        cmd.payload.cmd = 'hGetThread';
-        cmd.payload.params = {
-            actor: activeChannel,
-            convid: convid
+        cmd = {
+            msgid : 'testCmd',
+            actor : activeChannel,
+            type : 'hCommand',
+            publisher : config.validJID,
+            published : new Date(),
+            payload : {
+                cmd : 'hGetThread',
+                params : {
+                    convid: convid
+                }
+            }
         };
     })
 
@@ -109,7 +116,7 @@ describe('hGetThread', function(){
     })
 
     it('should return hResult error NOT_AUTHORIZED if the channel is inactive', function(done){
-        cmd.payload.params.actor = inactiveChannel;
+        cmd.actor = inactiveChannel;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -120,7 +127,7 @@ describe('hGetThread', function(){
     })
 
     it('should return hResult error MISSING_ATTR if actor is not provided', function(done){
-        delete cmd.payload.params.actor;
+        delete cmd.actor;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -130,8 +137,8 @@ describe('hGetThread', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR with actor not a string', function(done){
-        cmd.payload.params.actor = [];
+    it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
+        cmd.actor = 'not a channel@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -165,7 +172,7 @@ describe('hGetThread', function(){
     })
 
     it('should return hResult error NOT_AVAILABLE if the channel does not exist', function(done){
-        cmd.payload.params.actor = 'inexistent channel';
+        cmd.actor = '#this channel does not exist@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -247,7 +254,7 @@ describe('hGetThread', function(){
         before(function(done){
             var filterCmd = {
                 msgid : 'testCmd',
-                actor : 'hnode@' + hClient.serverDomain,
+                actor : activeChannel,
                 type : 'hCommand',
                 priority : 0,
                 publisher : config.logins[0].jid,
@@ -269,7 +276,6 @@ describe('hGetThread', function(){
 
 
         it('should not return msgs if a msg OTHER than the first one pass the filter', function(done){
-            cmd.actor = 'hnode@' + hClient.serverDomain;
             hClient.processMsgInternal(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -280,7 +286,6 @@ describe('hGetThread', function(){
         })
 
         it('should return ALL convid msgs if the first one complies with the filter', function(done){
-            cmd.actor = 'hnode@' + hClient.serverDomain;
             cmd.payload.params.convid = convid2;
             hClient.processMsgInternal(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
