@@ -27,8 +27,8 @@ describe('hListFilters', function(){
     var status = require('../lib/codes.js').hResultStatus;
     var cmd;
     var filterName = 'a filter';
-    var activeChan = config.db.createPk();
-    var activeChan2 = config.db.createPk();
+    var activeChan = config.getNewCHID();
+    var activeChan2 = config.getNewCHID();
 
 
     before(config.beforeFN)

@@ -118,6 +118,7 @@ exports.makeHMessage = function(actor, publisher, type, payload) {
 };
 
 exports.makeHCommand = function(actor, publisher, cmd, params) {
+    params = params || {}
     var hCommand = exports.makeHMessage(actor, publisher, 'hCommand', {cmd: cmd, params: params});
     return hCommand;
 }
@@ -139,14 +140,14 @@ exports.checkOkResultMsg = function(resultMsg, msg) {
     resultMsg.payload.should.have.property('status', exports.codes.hResultStatus.OK);
 }
 
-exports.createChannel = function(actor, participants, owner, active, done) {
+exports.createChannel = function(actor, subscribers, owner, active, done) {
     var hCommandController = new exports.cmdController(exports.cmdParams);
 
     var params = {
         actor : actor,
         active : active,
         owner : owner,
-        participants : participants
+        subscribers : subscribers
     }
     var command = exports.makeHCommand(exports.hnode.jid, owner, 'hCreateUpdateChannel', params);
 
@@ -159,7 +160,7 @@ exports.createChannel = function(actor, participants, owner, active, done) {
 exports.subscribeToChannel = function(publisher, actor, done) {
     var hCommandController = new exports.cmdController(exports.cmdParams);
 
-    var command = exports.makeHCommand(exports.hnode.jid, publisher, 'hSubscribe', {actor: actor});
+    var command = exports.makeHCommand(actor, publisher, 'hSubscribe');
 
     hCommandController.execCommand(command, function(hMessage){
         exports.checkOkResultMsg(hMessage, command);

@@ -22,8 +22,8 @@ var config = require('./_config.js');
 
 describe('hGetThreads', function(){
 
-    var activeChannel = config.db.createPk(),
-        inactiveChannel = config.db.createPk(),
+    var activeChannel = config.getNewCHID(),
+        inactiveChannel = config.getNewCHID(),
         hCommandController = new config.cmdController(config.cmdParams),
         status = require('../lib/codes.js').hResultStatus,
         correctStatus = config.db.createPk(),
@@ -81,11 +81,18 @@ describe('hGetThreads', function(){
 
 
     beforeEach(function(){
-        cmd = JSON.parse(JSON.stringify(config.genericCmdMsg));
-        cmd.payload.cmd = 'hGetThreads';
-        cmd.payload.params = {
-            actor: activeChannel,
-            status: correctStatus
+        cmd = {
+            msgid : 'testCmd',
+            actor : activeChannel,
+            type : 'hCommand',
+            publisher : config.validJID,
+            published : new Date(),
+            payload : {
+                cmd : 'hGetThreads',
+                params : {
+                    status: correctStatus
+                }
+            }
         };
     })
 
@@ -111,8 +118,8 @@ describe('hGetThreads', function(){
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED if the publisher is not a participant', function(done){
-        cmd.publisher = 'not_a_participant@' + config.validDomain;
+    it('should return hResult error NOT_AUTHORIZED if the publisher is not a subscriber', function(done){
+        cmd.publisher = 'not_a_subscriber@' + config.validDomain;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -123,7 +130,7 @@ describe('hGetThreads', function(){
     })
 
     it('should return hResult error NOT_AUTHORIZED if the channel is inactive', function(done){
-        cmd.payload.params.actor = inactiveChannel;
+        cmd.actor = inactiveChannel;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -134,7 +141,7 @@ describe('hGetThreads', function(){
     })
 
     it('should return hResult error MISSING_ATTR if actor is not provided', function(done){
-        delete cmd.payload.params.actor;
+        delete cmd.actor;
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -144,8 +151,8 @@ describe('hGetThreads', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR with actor not a string', function(done){
-        cmd.payload.params.actor = [];
+    it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
+        cmd.actor = 'not a channel@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -179,7 +186,7 @@ describe('hGetThreads', function(){
     })
 
     it('should return hResult error NOT_AVAILABLE if the channel does not exist', function(done){
-        cmd.payload.params.actor = 'inexistent channel';
+        cmd.actor = '#this channel does not exist@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
@@ -259,7 +266,6 @@ describe('hGetThreads', function(){
         })
 
         it('should only return convids of filtered conversations', function(done){
-            cmd.actor = 'hnode@' + hClient.serverDomain;
             hClient.processMsgInternal(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);

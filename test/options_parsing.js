@@ -35,8 +35,6 @@ describe('Options Parsing', function(){
         options.should.have.property('socket.io.namespace', '');
         options.should.have.property('socket.io.disctimeout', 15000);
         options.should.have.property('socket.io.ridwindow', 5);
-        options.should.have.property('bosh.ports').with.lengthOf(1);
-        options.should.have.property('bosh.pidgin_compatible', true);
         done();
     })
 

@@ -49,6 +49,8 @@ describe('hClient XMPP Connection', function(){
 
         it('should emit an hStatus when wrong authentication', function(done){
             xmppOptions.password = 'another password';
+            xmppOptions.host='titi';
+            xmppOptions.port='1212';
             hClient.once('hStatus', function(hStatus){
                 should.exist(hStatus);
                 hStatus.status.should.be.eql(codes.statuses.DISCONNECTED);

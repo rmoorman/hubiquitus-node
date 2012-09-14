@@ -83,7 +83,7 @@ describe('hAdmin XMPP Connection', function(){
         var hChannel = {
             actor: 'a channel',
             owner: config.validJID,
-            participants: [config.validJID],
+            subscribers: [config.validJID],
             active: true
         };
 

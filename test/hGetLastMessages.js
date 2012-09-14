@@ -25,9 +25,9 @@ describe('hGetLastMessages', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var existingCHID = config.db.createPk();
-    var chanWithHeader = config.db.createPk();
-    var inactiveChan = config.db.createPk();
+    var existingCHID = config.getNewCHID();
+    var chanWithHeader = config.getNewCHID();
+    var inactiveChan = config.getNewCHID();
     var DateTab = [];
 
     var maxMsgRetrieval = 6;
@@ -59,7 +59,7 @@ describe('hGetLastMessages', function(){
                     actor: chanWithHeader,
                     active : true,
                     owner : config.validJID,
-                    participants : [config.validJID, config.logins[0].jid],
+                    subscribers : [config.validJID, config.logins[0].jid],
                     headers : {'MAX_MSG_RETRIEVAL': ''+maxMsgRetrieval}
                 }
             }
@@ -83,7 +83,7 @@ describe('hGetLastMessages', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'hCommandTest123',
-            actor : 'session',
+            actor : existingCHID,
             type : 'hCommand',
             priority : 0,
             publisher : config.validJID,
@@ -91,7 +91,6 @@ describe('hGetLastMessages', function(){
             payload : {
                 cmd : 'hGetLastMessages',
                 params : {
-                    actor: existingCHID,
                     nbLastMsg: 5
                 }
             }
@@ -122,30 +121,8 @@ describe('hGetLastMessages', function(){
 
         }
 
-        it('should return hResult error MISSING_ATTR if no params is passed', function(done){
-            delete cmd.payload.params;
-            hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
-                hMessage.should.have.property('ref', cmd.msgid);
-                hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-                hMessage.payload.should.have.property('result').and.be.a('string');
-                done();
-            });
-        })
-
-        it('should return hResult error INVALID_ATTR with params not an object', function(done){
-            cmd.payload.params = 'string';
-            hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
-                hMessage.should.have.property('ref', cmd.msgid);
-                hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-                hMessage.payload.should.have.property('result').and.be.a('string');
-                done();
-            });
-        })
-
-        it('should return hResult error INVALID_ATTR with actor not a string', function(done){
-            cmd.payload.params.actor = [];
+        it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
+            cmd.actor = 'not a channel@localhost';
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -156,7 +133,7 @@ describe('hGetLastMessages', function(){
         })
 
         it('should return hResult error MISSING_ATTR if no channel is passed', function(done){
-            delete cmd.payload.params.actor;
+            delete cmd.actor;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -166,7 +143,7 @@ describe('hGetLastMessages', function(){
             });
         })
 
-        it('should return hResult error NOT_AUTHORIZED if publisher not in participants list', function(done){
+        it('should return hResult error NOT_AUTHORIZED if publisher not in subscribers list', function(done){
             cmd.publisher = 'someone@' + config.validDomain;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
@@ -178,7 +155,7 @@ describe('hGetLastMessages', function(){
         })
 
         it('should return hResult error NOT_AVAILABLE if channel does not exist', function(done){
-            cmd.payload.params.actor = 'this channel does not exist';
+            cmd.actor = '#this channel does not exist@localhost';
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -189,7 +166,7 @@ describe('hGetLastMessages', function(){
         })
 
         it('should return hResult error NOT_AUTHORIZED if channel inactive', function(done){
-            cmd.payload.params.actor = inactiveChan;
+            cmd.actor = inactiveChan;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -201,7 +178,7 @@ describe('hGetLastMessages', function(){
 
         it('should return hResult ok with 10 msgs if not header in chan and cmd quant not a number', function(done){
             cmd.payload.params.nbLastMsg = 'not a number';
-            cmd.payload.params.actor = existingCHID;
+            cmd.actor = existingCHID;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -213,7 +190,7 @@ describe('hGetLastMessages', function(){
 
         it('should return hResult ok with 10 messages if not default in channel or cmd', function(done){
             delete cmd.payload.params.nbLastMsg;
-            cmd.payload.params.actor = existingCHID;
+            cmd.actor = existingCHID;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -225,7 +202,7 @@ describe('hGetLastMessages', function(){
 
         it('should return hResult ok with 10 last messages', function(done){
             delete cmd.payload.params.nbLastMsg;
-            cmd.payload.params.actor = existingCHID;
+            cmd.actor = existingCHID;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -247,7 +224,7 @@ describe('hGetLastMessages', function(){
 
         it('should return hResult ok with default messages of channel if not specified', function(done){
             delete cmd.payload.params.nbLastMsg;
-            cmd.payload.params.actor = chanWithHeader;
+            cmd.actor = chanWithHeader;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
@@ -272,7 +249,7 @@ describe('hGetLastMessages', function(){
         it('should return hResult ok with nb of msgs in cmd if specified if header specified', function(done){
             var length = 4;
             cmd.payload.params.nbLastMsg = length;
-            cmd.payload.params.actor = chanWithHeader;
+            cmd.actor = chanWithHeader;
             hCommandController.execCommand(cmd, function(hMessage){
                 hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);

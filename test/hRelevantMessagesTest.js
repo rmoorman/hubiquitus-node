@@ -22,15 +22,16 @@ var config = require('./_config.js');
 
 describe('hRelevantMessages', function(){
 
+    var hCommandController = new config.cmdController(config.cmdParams);
     var hClientConst = require('../lib/hClient.js').hClient;
     var hClient = new hClientConst(config.cmdParams);
     var status = require('../lib/codes.js').hResultStatus;
     var cmd;
     var nbMsgs = 10;
-    var activeChan = config.db.createPk();
-    var notInPart = config.db.createPk();
-    var inactiveChan = config.db.createPk();
-    var emptyChannel = config.db.createPk();
+    var activeChan = config.getNewCHID();
+    var notInPart = config.getNewCHID();
+    var inactiveChan = config.getNewCHID();
+    var emptyChannel = config.getNewCHID();
 
 
     before(config.beforeFN)
@@ -87,40 +88,20 @@ describe('hRelevantMessages', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'hCommandTest123',
-            actor : 'hnode@' + hClient.serverDomain,
+            actor : activeChan,
             type : 'hCommand',
             priority : 0,
             publisher : config.logins[0].jid,
             published : new Date(),
             payload : {
                 cmd : 'hRelevantMessages',
-                params : {
-                    actor: activeChan
-                }
+                params : {}
             }
         };
     })
 
-    it('should return hResult error INVALID_ATTR if no param object sent', function(done){
-        delete cmd.payload.params;
-        hClient.processMsgInternal(cmd, function(hMessage){
-            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.result.should.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if param is not an object', function(done){
-        cmd.payload.params = 'this is not an object';
-        hClient.processMsgInternal(cmd, function(hMessage){
-            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.result.should.be.a('string');
-            done();
-        });
-    })
-
     it('should return hResult error MISSING_ATTR if actor is missing', function(done){
-        delete cmd.payload.params.actor;
+        delete cmd.actor;
         hClient.processMsgInternal(cmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.result.should.match(/actor/);
@@ -128,17 +109,19 @@ describe('hRelevantMessages', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR if actor is not a string', function(done){
-        cmd.payload.params.actor = [];
-        hClient.processMsgInternal(cmd, function(hMessage){
+    it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
+        cmd.actor = 'not a channel@localhost';
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+            hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.result.should.match(/actor/);
+            hMessage.payload.should.have.property('result').and.match(/actor/);
             done();
         });
     })
 
     it('should return hResult error NOT_AVAILABLE if channel was not found', function(done){
-        cmd.payload.params.actor = 'this channel does not exist';
+        cmd.actor = '#this channel does not exist@localhost';
         hClient.processMsgInternal(cmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
             hMessage.payload.result.should.be.a('string');
@@ -146,8 +129,8 @@ describe('hRelevantMessages', function(){
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED if not in participants list', function(done){
-        cmd.payload.params.actor = notInPart;
+    it('should return hResult error NOT_AUTHORIZED if not in subscribers list', function(done){
+        cmd.actor = notInPart;
         hClient.processMsgInternal(cmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.result.should.be.a('string');
@@ -156,7 +139,7 @@ describe('hRelevantMessages', function(){
     })
 
     it('should return hResult error NOT_AUTHORIZED if channel is inactive', function(done){
-        cmd.payload.params.actor = inactiveChan;
+        cmd.actor = inactiveChan;
         hClient.processMsgInternal(cmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.result.should.be.a('string');
@@ -176,7 +159,7 @@ describe('hRelevantMessages', function(){
     })
 
     it('should return hResult OK with an empty array if no matching msgs found', function(done){
-        cmd.payload.params.actor = emptyChannel;
+        cmd.actor = emptyChannel;
         hClient.processMsgInternal(cmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.result.length.should.be.eql(0);
