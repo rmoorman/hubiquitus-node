@@ -159,7 +159,7 @@ describe('hPublish', function(){
     it('should return hResult error INVALID_ATTR when actor is not string castable', function(done){
         msg.actor = [];
         hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });

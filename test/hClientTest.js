@@ -49,8 +49,6 @@ describe('hClient XMPP Connection', function(){
 
         it('should emit an hStatus when wrong authentication', function(done){
             xmppOptions.password = 'another password';
-            xmppOptions.host='titi';
-            xmppOptions.port='1212';
             hClient.once('hStatus', function(hStatus){
                 should.exist(hStatus);
                 hStatus.status.should.be.eql(codes.statuses.DISCONNECTED);
@@ -623,6 +621,15 @@ describe('hClient XMPP Connection', function(){
                 published : new Date(),
                 payload : {}
             };
+        })
+
+        it('should return hResult error INVALID_ATTR if actor is not a valide JID', function(done){
+            cmdMsg.actor = "invalid JID";
+            hClient.processMsgInternal(cmdMsg, function(hMessage){
+                hMessage.should.have.property('type', 'hResult');
+                hMessage.payload.should.have.property('status', codes.hResultStatus.MISSING_ATTR);
+                done();
+            });
         })
 
         it('should return hResult error NOT_AUTHORIZED if user different than publisher', function(done){
