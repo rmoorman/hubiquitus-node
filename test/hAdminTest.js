@@ -134,4 +134,42 @@ describe('hAdmin XMPP Connection', function(){
 
     })
 
+    describe('#processMsgInternal()', function(){
+        var cmdMsg, hMsg;
+
+        before(function(done){
+            hAdmin.once('connect', done);
+            hAdmin.connect(config.logins[0]);
+        })
+
+        after(function(done){
+            hAdmin.once('disconnect', done);
+            hAdmin.disconnect();
+        })
+
+        beforeEach(function(){
+
+
+            cmdMsg = {
+                msgid : 'testCmd',
+                convid : 'testCmd',
+                actor : 'hnode@' + hAdmin.serverDomain,
+                type : 'hCommand',
+                priority : 0,
+                publisher : config.logins[1].jid,
+                published : new Date(),
+                payload : {}
+            };
+        })
+
+        it('should return hResult error INVALID_ATTR if actor is not a valide JID', function(done){
+            cmdMsg.actor = "invalid JID";
+            hAdmin.processMsgInternal(cmdMsg, function(hMessage){
+                hMessage.should.have.property('type', 'hResult');
+                hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
+                done();
+            });
+        })
+    })
+
 })
