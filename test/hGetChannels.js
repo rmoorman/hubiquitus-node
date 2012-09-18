@@ -37,18 +37,22 @@ describe('hGetChannels', function(){
 
     beforeEach(function(){
         cmd= {
+            /* EBR : à supprimer begin */
             reqid  : 'hCommandTest123',
             sender : config.validJID,
             sid : 'fake sid',
             sent : new Date(),
+            /* EBR à supprimer fin */
             cmd : 'hGetChannels'
         };
     })
 
     it('should return hResult OK with an array as result', function(done){
         hCommandController.execCommand(cmd, null, function(hResult){
+            /* EBR à supprimer begin */
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
+            /* EBR à supprimer fin */
             hResult.should.have.property('status', status.OK);
             hResult.should.have.property('result');
             hResult.result.should.be.an.instanceof(Array);
@@ -58,8 +62,10 @@ describe('hGetChannels', function(){
 
     it('should return hResult OK with an array having newly created channel as part of result', function(done){
         hCommandController.execCommand(cmd, null, function(hResult){
+            /* EBR à supprimer begin */
             hResult.should.have.property('cmd', cmd.cmd);
             hResult.should.have.property('reqid', cmd.reqid);
+            /* EBR à supprimer fin */
             hResult.should.have.property('status', status.OK);
             hResult.should.have.property('result');
 
