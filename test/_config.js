@@ -252,7 +252,7 @@ exports.xmppConnection = xmppConnection;
 exports.genericCmdMsg = {
     msgid : 'hCommandTest123',
     convid : 'hCommandTest123',
-    actor : 'session',
+    actor : 'hnode@localhost',
     type : 'hCommand',
     priority : 0,
     publisher : exports.validJID,

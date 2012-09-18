@@ -48,7 +48,7 @@ describe('hGetLastMessages', function(){
         this.timeout(10000);
         var createCmd = {
             msgid : 'hCommandTest123',
-            actor : 'session',
+            actor : 'hnode@localhost',
             type : 'hCommand',
             priority : 0,
             publisher : config.validJID,

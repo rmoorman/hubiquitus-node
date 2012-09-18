@@ -37,7 +37,7 @@ describe('hCommand', function(){
         cmdMsg = {
             msgid : 'testCmd',
             convid : 'testCmd',
-            actor : 'session',
+            actor : 'hnode@localhost',
             type : 'hCommand',
             priority : 0,
             publisher : config.validJID,

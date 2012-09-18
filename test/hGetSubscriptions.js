@@ -63,7 +63,7 @@ describe('hGetSubscriptions', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'hCommandTest123',
-            actor : 'session',
+            actor : 'hnode@localhost',
             type : 'hCommand',
             priority : 0,
             publisher : config.validJID,

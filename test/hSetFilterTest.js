@@ -51,7 +51,7 @@ describe('hSetFilter', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'testCmd',
-            actor : 'session',
+            actor : 'hnode@localhost',
             type : 'hCommand',
             publisher : config.logins[0].jid,
             published : new Date(),

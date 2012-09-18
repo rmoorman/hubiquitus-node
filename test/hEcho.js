@@ -29,7 +29,7 @@ describe('hEcho', function(){
     beforeEach(function(done){
         echoCmd = {
             msgid : 'hCommandTest123',
-            actor : 'session',
+            actor : 'hnode@localhost',
             type : 'hCommand',
             priority : 0,
             publisher : 'fake jid',
