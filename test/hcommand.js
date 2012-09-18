@@ -34,19 +34,12 @@ describe('hCommand', function(){
     after(config.afterFN)
 
     beforeEach(function(){
-        cmdMsg = {
-            msgid : 'testCmd',
-            convid : 'testCmd',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
+        cmdMsg = config.makeHMessage('hnode@localhost', config.validJID, 'hCommand',{});
+        cmdMsg.payload = {
                 cmd : 'dummyCommand',
                 params : {}
-            }
         };
+
 
         hCommandController = new config.cmdController(params);
     })

@@ -37,15 +37,10 @@ describe('hGetChannels', function(){
     })
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'hCommandTest123',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage('hnode@localhost', config.validJID, 'hCommand',{});
+        cmd.msgid = 'hCommandTest123';
+        cmd.payload = {
                 cmd : 'hGetChannels'
-            }
         };
     })
 

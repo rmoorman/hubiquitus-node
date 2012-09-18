@@ -86,18 +86,12 @@ describe('hRelevantMessages', function(){
     })
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'hCommandTest123',
-            actor : activeChan,
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage(activeChan, config.logins[0].jid, 'hCommand',{});
+        cmd.msgid = 'hCommandTest123';
+        cmd.payload = {
                 cmd : 'hRelevantMessages',
                 params : {}
             }
-        };
     })
 
     it('should return hResult error MISSING_ATTR if actor is missing', function(done){

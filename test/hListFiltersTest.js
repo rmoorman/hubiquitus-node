@@ -56,16 +56,10 @@ describe('hListFilters', function(){
     })
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'testCmd',
-            actor : 'hnode@' + hClient.serverDomain,
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand',{});
+        cmd.msgid = 'testCmd';
+        cmd.payload = {
                 cmd : 'hListFilters'
-            }
         };
     })
 
@@ -91,21 +85,15 @@ describe('hListFilters', function(){
     })
 
     it('should return hResult OK with an array having newly added filter as part of result', function(done){
-        var filterCmd = {
-            msgid : 'testCmd',
-            actor : 'hnode@' + hClient.serverDomain,
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
+        var filterCmd = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand',{});
+        filterCmd.msgid = 'testCmd';
+        filterCmd.payload = {
                 cmd : 'hSetFilter',
                 params : {
                     actor: activeChan,
                     name: filterName,
                     relevant: true
                 }
-            }
         };
         hClient.processMsgInternal(filterCmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.OK);
@@ -124,20 +112,14 @@ describe('hListFilters', function(){
     it('should return hResult OK with an array having only filters for specified channel', function(done){
         cmd.payload.params = {actor: activeChan2};
 
-        var filterCmd = {
-            msgid : 'testCmd',
-            actor : 'hnode@' + hClient.serverDomain,
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
-                cmd : 'hSetFilter',
-                params : {
-                    actor: activeChan2,
-                    name: filterName,
-                    relevant: true
-                }
+        var filterCmd = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand',{});
+        filterCmd.msgid = 'testCmd';
+        filterCmd.payload = {
+            cmd : 'hSetFilter',
+            params : {
+                actor: activeChan2,
+                name: filterName,
+                relevant: true
             }
         };
         hClient.processMsgInternal(filterCmd, function(hMessage){

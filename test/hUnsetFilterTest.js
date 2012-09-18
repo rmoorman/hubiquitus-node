@@ -43,20 +43,15 @@ describe('hUnsetFilter', function(){
     })
 
     before(function(done){
-        var setCmd = {
-            msgid : 'testCmd',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
+        var setCmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
+        setCmd.msgid = 'testCmd';
+        setCmd.payload = {
                 cmd : 'hSetFilter',
                 params : {
                     actor: activeChan,
                     name: filterName,
                     relevant: true
                 }
-            }
         };
 
         hCommandController.execCommand(setCmd,function(hMessage){
@@ -66,20 +61,15 @@ describe('hUnsetFilter', function(){
     })
 
     before(function(done){
-        var setCmd = {
-            msgid : 'testCmd',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
+        var setCmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
+        setCmd.msgid = 'testCmd';
+        setCmd.payload = {
                 cmd : 'hSetFilter',
                 params : {
                     actor: activeChan,
                     name: filterName2,
                     relevant: true
                 }
-            }
         };
 
         hCommandController.execCommand(setCmd,function(hMessage){
@@ -89,19 +79,14 @@ describe('hUnsetFilter', function(){
     })
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'testCmd',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
+        cmd.msgid = 'testCmd';
+        cmd.payload = {
                 cmd : 'hUnsetFilter',
                 params : {
                     actor: activeChan,
                     name: filterName
                 }
-            }
         };
     })
 
@@ -187,20 +172,15 @@ describe('hUnsetFilter', function(){
         })
 
         before(function(done){
-            var setCmd = {
-                msgid : 'testCmd',
-                actor : 'hnode@localhost',
-                type : 'hCommand',
-                publisher : config.logins[0].jid,
-                published : new Date(),
-                payload : {
+            var setCmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
+            setCmd.msgid = 'testCmd';
+            setCmd.payload = {
                     cmd : 'hSetFilter',
                     params : {
                         actor: activeChan,
                         name: filterName2,
                         relevant: true
                     }
-                }
             };
 
             hClient.processMsgInternal(setCmd,function(hMessage){

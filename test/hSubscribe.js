@@ -49,16 +49,11 @@ describe('hSubscribe', function(){
     after(config.afterFN)
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'testCmd',
-            actor : existingCHID,
-            type : 'hCommand',
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage(existingCHID, config.validJID, 'hCommand',{});
+        cmd.msgid = 'testCmd';
+        cmd.payload = {
                 cmd : 'hSubscribe',
                 params : {}
-            }
         };
     })
 

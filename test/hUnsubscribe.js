@@ -64,18 +64,13 @@ describe('hUnsubscribe', function(){
     after(config.afterFN)
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'hCommandTest123',
-            actor : existingCHID,
-            type : 'hCommand',
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage(existingCHID, config.validJID, 'hCommand',{});
+        cmd.msgid = 'hCommandTest123';
+        cmd.payload = {
                 cmd : 'hUnsubscribe',
                 params : {
                     actor: config.getNewCHID()
                 }
-            }
         };
     })
 
