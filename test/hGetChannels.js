@@ -39,7 +39,7 @@ describe('hGetChannels', function(){
     beforeEach(function(){
         cmd = {
             msgid : 'hCommandTest123',
-            actor : 'session',
+            actor : 'hnode@localhost',
             type : 'hCommand',
             publisher : config.validJID,
             published : new Date(),
