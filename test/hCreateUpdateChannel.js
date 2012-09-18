@@ -33,10 +33,12 @@ describe('hCreateUpdateChannel', function(){
 
     beforeEach(function(){
         createCmd= {
+            /* EBR à supprimer begin */
             reqid  : 'hCommandTest123',
             sender : config.validJID,
             sid : 'fake sid',
             sent : new Date(),
+            /* EBR à supprimer fin */
             cmd : 'hCreateUpdateChannel',
             params : {
                 chid : config.db.createPk(),
@@ -51,8 +53,10 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR without params', function(done){
         createCmd.params = null;
         hCommandController.execCommand(createCmd, null, function(hResult){
+            /* EBR à supprimer begin */
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
+            /* EBR à supprimer end */
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string');
             done();
@@ -62,8 +66,11 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR with params not an object', function(done){
         createCmd.params = 'string';
         hCommandController.execCommand(createCmd, null, function(hResult){
+            /* EBR à supprimer begin */
             hResult.should.have.property('cmd', createCmd.cmd);
             hResult.should.have.property('reqid', createCmd.reqid);
+            /* EBR à supprimer end */
+            /* EBR et faire pariel sur les autres tests */
             hResult.should.have.property('status', status.INVALID_ATTR);
             hResult.should.have.property('result').and.be.a('string');
             done();
