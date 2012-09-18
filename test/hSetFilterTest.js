@@ -49,19 +49,14 @@ describe('hSetFilter', function(){
     })
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'testCmd',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            publisher : config.logins[0].jid,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
+        cmd.msgid = 'testCmd';
+        cmd.payload = {
                 cmd : 'hSetFilter',
                 params : {
                     actor: activeChan,
                     name: filterName
                 }
-            }
         };
     })
 

@@ -46,22 +46,16 @@ describe('hGetLastMessages', function(){
 
     before(function(done){
         this.timeout(10000);
-        var createCmd = {
-            msgid : 'hCommandTest123',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
-                cmd : 'hCreateUpdateChannel',
-                params : {
-                    actor: chanWithHeader,
-                    active : true,
-                    owner : config.validJID,
-                    subscribers : [config.validJID, config.logins[0].jid],
-                    headers : {'MAX_MSG_RETRIEVAL': ''+maxMsgRetrieval}
-                }
+        var createCmd = config.makeHMessage('hnode@localhost', config.validJID, 'hCommand', {});
+        createCmd.msgid = 'hCommandTest123',
+        createCmd.payload = {
+            cmd : 'hCreateUpdateChannel',
+            params : {
+                actor: chanWithHeader,
+                active : true,
+                owner : config.validJID,
+                subscribers : [config.validJID, config.logins[0].jid],
+                headers : {'MAX_MSG_RETRIEVAL': ''+maxMsgRetrieval}
             }
         };
 
@@ -75,24 +69,17 @@ describe('hGetLastMessages', function(){
                         done();
                 });
         });
-
     })
 
     after(config.afterFN)
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'hCommandTest123',
-            actor : existingCHID,
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
-                cmd : 'hGetLastMessages',
-                params : {
-                    nbLastMsg: 5
-                }
+        cmd = config.makeHMessage(existingCHID, config.validJID, 'hCommand',{});
+        cmd.msgid = 'hCommandTest123';
+        cmd.payload = {
+            cmd : 'hGetLastMessages',
+            params : {
+                nbLastMsg: 5
             }
         };
     })
@@ -282,20 +269,13 @@ describe('hGetLastMessages', function(){
         }
 
         before(function(done){
-            var filterCmd = {
-                msgid : 'hCommandTest123',
-                actor : 'hnode@' + hClient.serverDomain,
-                type : 'hCommand',
-                priority : 0,
-                publisher : config.logins[0].jid,
-                published : new Date(),
-                payload : {
-                    cmd : 'hSetFilter',
-                    params : {
-                        actor: existingCHID,
-                        name: 'a filter',
-                        template: {type: 'a type'}
-                    }
+            var filterCmd = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand', {});
+            filterCmd.payload = {
+                cmd : 'hSetFilter',
+                params : {
+                    actor: existingCHID,
+                    name: 'a filter',
+                    template: {type: 'a type'}
                 }
             };
 

@@ -19,6 +19,7 @@
 
 var should = require('should');
 var hEchoModule = require('../lib/hcommands/hEcho.js').Command;
+var config = require('./_config.js');
 
 describe('hEcho', function(){
 
@@ -27,18 +28,12 @@ describe('hEcho', function(){
     var status = require('../lib/codes.js').hResultStatus;
 
     beforeEach(function(done){
-        echoCmd = {
-            msgid : 'hCommandTest123',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            priority : 0,
-            publisher : 'fake jid',
-            published : new Date(),
-            payload : {
+        echoCmd = config.makeHMessage('hnode@localhost', 'fake jid', 'hCommand',{});
+        echoCmd.msgid = 'hCommandTest123';
+        echoCmd.payload = {
                 cmd : 'hEcho',
                 params : {hello: 'world'}
-            }
-        };
+        } ;
 
         hEcho = new hEchoModule();
         done();

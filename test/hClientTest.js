@@ -93,22 +93,13 @@ describe('hClient XMPP Connection', function(){
 
         beforeEach(function(){
 
-
-            cmdMsg = {
-                msgid : 'testCmd',
-                convid : 'testCmd',
-                actor : 'hnode@' + hClient.serverDomain,
-                type : 'hCommand',
-                priority : 0,
-                publisher : config.logins[0].jid,
-                published : new Date(),
-                payload : {
+            cmdMsg = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand',{});
+            cmdMsg.payload = {
                     cmd : 'hSetFilter',
                     params : {
                         actor : activeChan,
                         name: filterName
                     }
-                }
             };
 
             hMsg = {
@@ -609,18 +600,7 @@ describe('hClient XMPP Connection', function(){
         })
 
         beforeEach(function(){
-
-
-            cmdMsg = {
-                msgid : 'testCmd',
-                convid : 'testCmd',
-                actor : 'hnode@' + hClient.serverDomain,
-                type : 'hCommand',
-                priority : 0,
-                publisher : config.logins[1].jid,
-                published : new Date(),
-                payload : {}
-            };
+            cmdMsg = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[1].jid, 'hCommand',{});
         })
 
         it('should return hResult error INVALID_ATTR if actor is not a valide JID', function(done){

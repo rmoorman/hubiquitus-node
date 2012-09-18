@@ -111,6 +111,8 @@ exports.makeHMessage = function(actor, publisher, type, payload) {
         priority : 0,
         publisher : publisher,
         published : new Date(),
+        sent : new Date(),
+        timeout : 30000,
         payload : payload
     }
 

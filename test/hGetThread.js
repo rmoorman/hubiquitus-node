@@ -67,18 +67,13 @@ describe('hGetThread', function(){
         })
 
     beforeEach(function(){
-        cmd = {
-            msgid : 'testCmd',
-            actor : activeChannel,
-            type : 'hCommand',
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
+        cmd = config.makeHMessage(activeChannel, config.validJID, 'hCommand',{});
+        cmd.msgid = 'testCmd';
+        cmd.payload = {
                 cmd : 'hGetThread',
                 params : {
                     convid: convid
                 }
-            }
         };
     })
 
@@ -252,21 +247,15 @@ describe('hGetThread', function(){
             })
 
         before(function(done){
-            var filterCmd = {
-                msgid : 'testCmd',
-                actor : activeChannel,
-                type : 'hCommand',
-                priority : 0,
-                publisher : config.logins[0].jid,
-                published : new Date(),
-                payload : {
+            var filterCmd = config.makeHMessage(activeChannel, config.logins[0].jid, 'hCommand',{});
+            filterCmd.msgid = 'testCmd';
+            filterCmd.payload = {
                     cmd : 'hSetFilter',
                     params : {
                         actor: activeChannel,
                         name: 'a filter',
                         template: {type: 'a type'}
                     }
-                }
             };
             hClient.processMsgInternal(filterCmd, function(hMessage){
                 hMessage.payload.should.have.property('status', status.OK);

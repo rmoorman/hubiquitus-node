@@ -35,15 +35,9 @@ describe('hCreateUpdateChannel', function(){
     });
 
     beforeEach(function(){
-
-        createCmd = {
-            msgid : 'hCommandTest123',
-            actor : 'hnode@localhost',
-            type : 'hCommand',
-            priority : 0,
-            publisher : config.validJID,
-            published : new Date(),
-            payload : {
+        createCmd = config.makeHMessage('hnode@localhost', config.validJID, 'hCommand',{});
+        createCmd.msgid = 'hCommandTest123',
+        createCmd.payload = {
                 cmd : 'hCreateUpdateChannel',
                 params : {
                     actor: config.getNewCHID(),
@@ -51,8 +45,7 @@ describe('hCreateUpdateChannel', function(){
                     owner : config.validJID,
                     subscribers : [config.validJID]
                 }
-            }
-        };
+        }
     })
 
     it('should return hResult error INVALID_ATTR without params', function(done){
