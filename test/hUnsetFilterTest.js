@@ -93,7 +93,6 @@ describe('hUnsetFilter', function(){
     it('should return hResult INVALID_ATTR if params is not present', function(done){
         delete cmd.payload.params;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string');
@@ -105,7 +104,6 @@ describe('hUnsetFilter', function(){
     it('should return hResult NOT_AVAILABLE if the filter is not found', function(done){
         cmd.payload.params.name = 'not a valid filter';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.NOT_AVAILABLE);
             hMessage.payload.result.should.be.a('string');
@@ -116,7 +114,6 @@ describe('hUnsetFilter', function(){
     it('should return hResult NOT_AVAILABLE if the channel does not exist or is not found', function(done){
         cmd.payload.params.actor = 'not a valid channel';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.NOT_AVAILABLE);
             hMessage.payload.result.should.be.a('string');
@@ -127,7 +124,6 @@ describe('hUnsetFilter', function(){
     it('should return hResult MISSING_ATTR if name is missing', function(done){
         delete cmd.payload.params.name;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/name/);
@@ -138,7 +134,6 @@ describe('hUnsetFilter', function(){
     it('should return hResult MISSING_ATTR if actor is missing', function(done){
         delete cmd.payload.params.actor;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/actor/);
@@ -148,7 +143,6 @@ describe('hUnsetFilter', function(){
 
     it('should return hResult OK removing a filter if everything is correct', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.OK);
             should.not.exist(hCommandController.context.hClient.filters[activeChan][filterName]);

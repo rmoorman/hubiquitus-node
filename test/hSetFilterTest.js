@@ -63,7 +63,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if params is not present', function(done){
         delete cmd.payload.params;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string');
@@ -74,7 +73,6 @@ describe('hSetFilter', function(){
     it('should return hResult NOT_AUTHORIZED if the channel is inactive', function(done){
         cmd.payload.params.actor = inactiveChan;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.NOT_AUTHORIZED);
             hMessage.payload.result.should.be.a('string');
@@ -85,7 +83,6 @@ describe('hSetFilter', function(){
     it('should return hResult NOT_AVAILABLE if the actor does not exist', function(done){
         cmd.payload.params.actor = 'not a valid actor';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.NOT_AVAILABLE);
             hMessage.payload.result.should.be.a('string');
@@ -96,7 +93,6 @@ describe('hSetFilter', function(){
     it('should return hResult NOT_AUTHORIZED if the client is not in subscribers list', function(done){
         cmd.publisher = 'not_in_part@' + config.validDomain;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.NOT_AUTHORIZED);
             hMessage.payload.result.should.be.a('string');
@@ -107,7 +103,6 @@ describe('hSetFilter', function(){
     it('should return hResult MISSING_ATTR if actor is missing', function(done){
         delete cmd.payload.params.actor;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/actor/);
@@ -118,7 +113,6 @@ describe('hSetFilter', function(){
     it('should return hResult MISSING_ATTR if name is missing', function(done){
         delete cmd.payload.params.name;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/name/);
@@ -129,7 +123,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if relevance is specified', function(done){
         cmd.payload.params.template = {relevance: new Date() };
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/relevance/);
@@ -140,7 +133,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if published is specified', function(done){
         cmd.payload.params.template = {published: new Date() };
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/published/);
@@ -151,7 +143,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if persistent is specified', function(done){
         cmd.payload.params.template = {persistent: false};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/persistent/);
@@ -162,7 +153,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if msgid is specified', function(done){
         cmd.payload.params.template = {msgid: config.db.createPk()};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/msgid/);
@@ -173,7 +163,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if actor is specified in template', function(done){
         cmd.payload.params.template = {actor: config.db.createPk()};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/actor/);
@@ -185,7 +174,6 @@ describe('hSetFilter', function(){
         cmd.payload.params.radius = 1000;
         cmd.payload.params.template = {location: {lng: Math.random()*100000 }};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/lng/);
@@ -197,7 +185,6 @@ describe('hSetFilter', function(){
         cmd.payload.params.radius = 1000;
         cmd.payload.params.template = {location: {lat: Math.random()*100000 }};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/lat/);
@@ -208,7 +195,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if lat is specified but radius is not', function(done){
         cmd.payload.params.template = {location: {lat: Math.random()*100000 }};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/lat/);
@@ -219,7 +205,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if lng is specified but radius is not', function(done){
         cmd.payload.params.template = {location: {lng: Math.random()*100000 }};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/lng/);
@@ -230,7 +215,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if lng is specified but radius is not', function(done){
         cmd.payload.params.template = {location: {lng: Math.random()*100000 }};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/lng/);
@@ -241,7 +225,6 @@ describe('hSetFilter', function(){
     it('should return hResult INVALID_ATTR if headers is specified but not an object', function(done){
         cmd.payload.params.template = {headers: 'not an object'};
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.INVALID_ATTR);
             hMessage.payload.result.should.be.a('string').and.match(/headers/);
@@ -255,7 +238,6 @@ describe('hSetFilter', function(){
         delete cmd.payload.params.template;
 
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
             hMessage.payload.result.should.be.a('string');
@@ -267,7 +249,6 @@ describe('hSetFilter', function(){
         cmd.payload.params.template = {publisher: 'someone@someone.com'};
         cmd.payload.params.name = filterName;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.OK);
             should.exist(hCommandController.context.hClient.filters[activeChan][filterName]);
@@ -279,7 +260,6 @@ describe('hSetFilter', function(){
         cmd.payload.params.template = {publisher: 'someoneElse@someone.com'};
         cmd.payload.params.name = filterName;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', hResultStatus.OK);
             should.exist(hCommandController.context.hClient.filters[activeChan][filterName]);

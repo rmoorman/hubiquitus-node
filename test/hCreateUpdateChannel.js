@@ -51,7 +51,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR without params', function(done){
         createCmd.payload.params = null;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -62,7 +61,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR with params not an object', function(done){
         createCmd.payload.params = 'string';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -73,7 +71,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error MISSING_ATTR without actor', function(done){
         delete createCmd.payload.params.actor;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/id/i);
@@ -85,7 +82,6 @@ describe('hCreateUpdateChannel', function(){
         this.timeout(5000);
         createCmd.payload.params.actor = '';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/id/i);
@@ -96,7 +92,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR with actor with a different domain', function(done){
         createCmd.payload.params.actor = '#channel@another.domain';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -107,7 +102,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error NOT_AUTHORIZED with using hAdminChannel as actor', function(done){
         createCmd.payload.params.actor = 'hAdminChannel';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -118,7 +112,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if actor is not string castable', function(done){
         createCmd.payload.params.actor = [];
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/actor/i);
@@ -129,7 +122,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if priority is not a number', function(done){
         createCmd.payload.params.priority = 'not a number';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/priority/i);
@@ -140,7 +132,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if priority >5', function(done){
         createCmd.payload.params.priority = 6;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/priority/i);
@@ -151,7 +142,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if priority <0', function(done){
         createCmd.payload.params.priority = -1;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/priority/i);
@@ -162,7 +152,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR with invalid location format', function(done){
         createCmd.payload.params.location = "something";
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             done();
@@ -172,7 +161,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error MISSING_ATTR if owner is missing', function(done){
         delete createCmd.payload.params.owner;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/owner/i);
@@ -183,7 +171,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if owner is an empty string', function(done){
         createCmd.payload.params.owner = '';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/owner/i);
@@ -194,7 +181,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if owner JID is not bare', function(done){
         createCmd.payload.params.owner = createCmd.publisher + '/resource';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/owner/i);
@@ -205,7 +191,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error MISSING_ATTR if subscribers is missing', function(done){
         delete createCmd.payload.params.subscribers;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
@@ -216,7 +201,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if subscribers is not an array', function(done){
         createCmd.payload.params.subscribers = '';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
@@ -227,7 +211,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if subscribers has an element that is not a string', function(done){
         createCmd.payload.params.subscribers = [{not: 'a string'}];
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
@@ -238,7 +221,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if subscribers has an element that is not a JID', function(done){
         createCmd.payload.params.subscribers = ['a@b', 'this is not a JID'];
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
@@ -249,7 +231,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if subscribers has an element that is not a bare JID', function(done){
         createCmd.payload.params.subscribers = ['a@b', 'a@b/resource'];
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/subscriber/i);
@@ -260,7 +241,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error MISSING_ATTR if active is missing', function(done){
         delete createCmd.payload.params.active;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/active/i);
@@ -271,7 +251,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if active is not a boolean', function(done){
         createCmd.payload.params.active = 'this is a string';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/active/i);
@@ -282,7 +261,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error INVALID_ATTR if headers is not an object', function(done){
         createCmd.payload.params.headers= 'something';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string').and.match(/header/i);
@@ -293,7 +271,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult error NOT_AUTHORIZED if owner different than sender', function(done){
         createCmd.payload.params.owner = 'another@another.jid';
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             done();
@@ -305,7 +282,6 @@ describe('hCreateUpdateChannel', function(){
         createCmd.publisher = config.validJID + '/resource';
         createCmd.payload.params.owner = config.validJID;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             done();
@@ -316,7 +292,6 @@ describe('hCreateUpdateChannel', function(){
         this.timeout(5000);
         createCmd.payload.params.actor = '#actor@' + splitJID(config.validJID)[1];
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             done();
@@ -326,7 +301,6 @@ describe('hCreateUpdateChannel', function(){
     it('should return hResult OK without any optional attributes', function(done){
         this.timeout(5000);
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             done();
@@ -340,7 +314,6 @@ describe('hCreateUpdateChannel', function(){
         createCmd.payload.params.location = {lng : 's'};
         createCmd.payload.params.headers = {key: 'value'};
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             done();
@@ -353,7 +326,6 @@ describe('hCreateUpdateChannel', function(){
         createCmd.payload.params.actor = actor;
         createCmd.payload.params.priority = 3;
         hCommandController.execCommand(createCmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             should.exist(config.db.cache.hChannels[actor]);
@@ -377,7 +349,6 @@ describe('hCreateUpdateChannel', function(){
             createCmd.payload.params.actor = existingCHID;
             createCmd.payload.params.subscribers = ['u2@another'];
             hCommandController.execCommand(createCmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
                 hMessage.should.have.property('ref', createCmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 config.db.cache.hChannels[existingCHID].subscribers.should.be.eql(createCmd.payload.params.subscribers);
@@ -390,7 +361,6 @@ describe('hCreateUpdateChannel', function(){
             createCmd.payload.params.actor = existingCHID;
             createCmd.payload.params.subscribers = [config.validJID, 'u2@another2'];
             hCommandController.execCommand(createCmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
                 hMessage.should.have.property('ref', createCmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 done();
@@ -402,7 +372,6 @@ describe('hCreateUpdateChannel', function(){
             createCmd.payload.params.actor = existingCHID;
             createCmd.payload.params.subscribers = ['u2@another2'];
             hCommandController.execCommand(createCmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
                 hMessage.should.have.property('ref', createCmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 done();
@@ -414,7 +383,6 @@ describe('hCreateUpdateChannel', function(){
             createCmd.payload.params.owner = 'a@jid.different';
             createCmd.payload.params.actor = existingCHID;
             hCommandController.execCommand(createCmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', createCmd.payload.cmd);
                 hMessage.should.have.property('ref', createCmd.msgid);
                 hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
                 done();

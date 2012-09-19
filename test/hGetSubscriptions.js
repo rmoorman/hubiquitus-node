@@ -71,7 +71,6 @@ describe('hGetSubscriptions', function(){
     it('should return hResult ok with an array as result if user doesnt have subscriptions', function(done){
         cmd.publisher = 'dontexist@a';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).and.have.lengthOf(0);
             done();
@@ -80,7 +79,6 @@ describe('hGetSubscriptions', function(){
 
     it('should return hResult ok with an array as result if user has subscriptions', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('result').and.be.an.instanceof(Array);
             done();
@@ -89,7 +87,6 @@ describe('hGetSubscriptions', function(){
 
     it('should return hResult ok with an array with a actor subscribed', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.result.should.include(actor);
             done();
@@ -98,7 +95,6 @@ describe('hGetSubscriptions', function(){
 
     it('should return hResult ok with an array without a actor subscribed if channel is currently inactive', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.result.should.not.include(actorInactive);
             done();
