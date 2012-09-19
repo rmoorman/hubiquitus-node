@@ -86,7 +86,6 @@ describe('hGetLastMessages', function(){
 
     it('should return hResult ok if there are no hMessages stored', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.should.have.property('result').and. be.an.instanceof(Array);
@@ -111,7 +110,6 @@ describe('hGetLastMessages', function(){
         it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
             cmd.actor = 'not a channel@localhost';
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.INVALID_ATTR);
                 hMessage.payload.should.have.property('result').and.match(/actor/);
@@ -122,7 +120,6 @@ describe('hGetLastMessages', function(){
         it('should return hResult error MISSING_ATTR if no channel is passed', function(done){
             delete cmd.actor;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.MISSING_ATTR);
                 hMessage.payload.should.have.property('result').and.be.a('string');
@@ -133,7 +130,6 @@ describe('hGetLastMessages', function(){
         it('should return hResult error NOT_AUTHORIZED if publisher not in subscribers list', function(done){
             cmd.publisher = 'someone@' + config.validDomain;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
                 hMessage.payload.should.have.property('result').and.be.a('string');
@@ -144,7 +140,6 @@ describe('hGetLastMessages', function(){
         it('should return hResult error NOT_AVAILABLE if channel does not exist', function(done){
             cmd.actor = '#this channel does not exist@localhost';
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
                 hMessage.payload.should.have.property('result').and.be.a('string');
@@ -155,7 +150,6 @@ describe('hGetLastMessages', function(){
         it('should return hResult error NOT_AUTHORIZED if channel inactive', function(done){
             cmd.actor = inactiveChan;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
                 hMessage.payload.should.have.property('result').and.be.a('string');
@@ -167,7 +161,6 @@ describe('hGetLastMessages', function(){
             cmd.payload.params.nbLastMsg = 'not a number';
             cmd.actor = existingCHID;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(10);;
@@ -179,7 +172,6 @@ describe('hGetLastMessages', function(){
             delete cmd.payload.params.nbLastMsg;
             cmd.actor = existingCHID;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(10);;
@@ -191,7 +183,7 @@ describe('hGetLastMessages', function(){
             delete cmd.payload.params.nbLastMsg;
             cmd.actor = existingCHID;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
+
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(10);
@@ -213,7 +205,6 @@ describe('hGetLastMessages', function(){
             delete cmd.payload.params.nbLastMsg;
             cmd.actor = chanWithHeader;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(maxMsgRetrieval);
@@ -225,7 +216,6 @@ describe('hGetLastMessages', function(){
             var length = 4;
             cmd.payload.params.nbLastMsg = length;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(length);
@@ -238,7 +228,6 @@ describe('hGetLastMessages', function(){
             cmd.payload.params.nbLastMsg = length;
             cmd.actor = chanWithHeader;
             hCommandController.execCommand(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).with.lengthOf(length);
@@ -289,7 +278,6 @@ describe('hGetLastMessages', function(){
         it('should return only filtered messages with right quantity', function(done){
             cmd.payload.params.nbLastMsg = 3;
             hClient.processMsgInternal(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.result.should.have.length(3);
@@ -302,7 +290,6 @@ describe('hGetLastMessages', function(){
         it('should return only filtered messages with less quantity if demanded does not exist.', function(done){
             cmd.payload.params.nbLastMsg = 1000;
             hClient.processMsgInternal(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.result.should.have.length(5);

@@ -85,13 +85,9 @@ describe('hPublish', function(){
 
     beforeEach(function(){
         var id = config.db.createPk();
-        msg = {
-            msgid : id,
-            convid : id,
-            actor : poorChannel,
-            publisher : config.validJID,
-            published : new Date()
-        };
+        msg = config.makeHMessage(poorChannel, config.validJID, undefined, {})
+        msg.msgid = id;
+        msg.convid = id;
     })
 
     it('should return hResult OK with new msgid = convid when msgid and convid are not specified', function(done){
@@ -279,7 +275,7 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult OK with hServer published time + header if bigger than relevance set', function(done){
+    /*it('should return hResult OK with hServer published time + header if bigger than relevance set', function(done){
         var offset = 50000;
         var relevance = new Date( new Date().getTime() - 50000000 );
         msg.headers= {RELEVANCE_OFFSET: offset};
@@ -328,7 +324,7 @@ describe('hPublish', function(){
             hMessage.payload.result.relevance.getTime().should.be.eql(relevance.getTime());
             done();
         });
-    })
+    })*/
 
     it('should return hResult error INVALID_ATTR if persistent is not boolean', function(done){
         msg.persistent = 'this is not a boolean';
@@ -493,7 +489,7 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult error INVALID_ATTR if RELEVANCE_OFFSET header is not a number', function(done){
+    /*it('should return hResult error INVALID_ATTR if RELEVANCE_OFFSET header is not a number', function(done){
         msg.headers= {RELEVANCE_OFFSET: 'a string'};
         hClient.processMsgInternal(msg, function(hMessage) {
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
@@ -512,7 +508,7 @@ describe('hPublish', function(){
             hMessage.payload.result.relevance.getTime().should.be.eql(published.getTime() + offset);
             done();
         });
-    })
+    })*/
 
     it('should return hResult OK without relevance if nothing specified in msg or headers', function(done){
         delete msg.relevance;
@@ -523,7 +519,7 @@ describe('hPublish', function(){
         });
     })
 
-    it('should return hResult OK with relevance set to hServer published time + header', function(done){
+    /*it('should return hResult OK with relevance set to hServer published time + header', function(done){
         var offset = 50000;
         msg.headers= {RELEVANCE_OFFSET: offset};
         hClient.processMsgInternal(msg, function(hMessage) {
@@ -531,7 +527,7 @@ describe('hPublish', function(){
             hMessage.payload.result.relevance.getTime().should.be.eql(hMessage.payload.result.published.getTime() + offset);
             done();
         });
-    })
+    })  */
 
     it('should return hResult error INVALID_ATTR if MAX_MSG_RETRIEVAL header is not a number', function(done){
         msg.headers= {MAX_MSG_RETRIEVAL: 'a string'};
@@ -545,7 +541,6 @@ describe('hPublish', function(){
     it('should return hResult error if not in subscribers list', function(done){
         msg.publisher = 'not@in.list';
         hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('cmd', 'send');
             hMessage.should.have.property('ref', msg.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -556,7 +551,6 @@ describe('hPublish', function(){
     it('should return hResult error if sender != publisher', function(done){
         msg.publisher = 'a@b.com';
         hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('cmd', 'send');
             hMessage.should.have.property('ref', msg.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.be.a('string');

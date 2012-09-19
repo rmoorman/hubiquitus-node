@@ -655,7 +655,6 @@ describe('hClient XMPP Connection', function(){
                 should.not.exist(err);
                 should.exist(item);
                 item.should.have.property('type', 'hResult');
-                item.payload.should.have.property('cmd', cmdMsg.payload.cmd);
                 item.should.not.have.property('persistent');
                 item.should.not.have.property('msgid');
 
@@ -667,7 +666,6 @@ describe('hClient XMPP Connection', function(){
              should.not.exist(err);
              should.exist(item2);
              item2.should.have.property('type', 'hResult');
-             item2.payload.should.have.property('cmd', cmdMsg.cmd);
              item2.should.not.have.property('persistent');
              item2.should.not.have.property('msgid');
              done();

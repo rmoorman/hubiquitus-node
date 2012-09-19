@@ -46,7 +46,6 @@ describe('hGetChannels', function(){
 
     it('should return hResult OK with an array as result', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.should.have.property('result');
@@ -57,7 +56,6 @@ describe('hGetChannels', function(){
 
     it('should return hResult OK with an array having newly created channel as part of result', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.should.have.property('result');

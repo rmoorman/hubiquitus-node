@@ -94,7 +94,6 @@ describe('hGetThreads', function(){
     it('should return hResult error INVALID_ATTR without params', function(done){
         cmd.payload.params = null;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -105,7 +104,6 @@ describe('hGetThreads', function(){
     it('should return hResult error INVALID_ATTR with params not an object', function(done){
         cmd.payload.params = 'string';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -116,7 +114,6 @@ describe('hGetThreads', function(){
     it('should return hResult error NOT_AUTHORIZED if the publisher is not a subscriber', function(done){
         cmd.publisher = 'not_a_subscriber@' + config.validDomain;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -127,7 +124,6 @@ describe('hGetThreads', function(){
     it('should return hResult error NOT_AUTHORIZED if the channel is inactive', function(done){
         cmd.actor = inactiveChannel;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.match(/inactive/);
@@ -138,7 +134,6 @@ describe('hGetThreads', function(){
     it('should return hResult error MISSING_ATTR if actor is not provided', function(done){
         delete cmd.actor;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.match(/actor/);
@@ -149,7 +144,6 @@ describe('hGetThreads', function(){
     it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
         cmd.actor = 'not a channel@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.match(/actor/);
@@ -160,7 +154,6 @@ describe('hGetThreads', function(){
     it('should return hResult error MISSING_ATTR if status is not provided', function(done){
         delete cmd.payload.params.status;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.match(/status/);
@@ -172,7 +165,6 @@ describe('hGetThreads', function(){
     it('should return hResult error INVALID_ATTR with status not a string', function(done){
         cmd.payload.params.status= [];
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.match(/status/);
@@ -183,7 +175,6 @@ describe('hGetThreads', function(){
     it('should return hResult error NOT_AVAILABLE if the channel does not exist', function(done){
         cmd.actor = '#this channel does not exist@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -194,7 +185,6 @@ describe('hGetThreads', function(){
     it('should return hResult OK with an empty [] if no messages found matching status', function(done){
         cmd.payload.params.status = config.db.createPk();
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
@@ -204,7 +194,6 @@ describe('hGetThreads', function(){
 
     it('should return hResult OK with an [] containing convids whose convstate status is equal to the sent one', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(convids.length);
@@ -214,7 +203,6 @@ describe('hGetThreads', function(){
 
     it('should return hResult OK with an [] without convid that was equal to the one sent but is not anymore', function(done){
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             for(var i = 0; i < shouldNotAppearConvids.length; i++)
@@ -256,7 +244,6 @@ describe('hGetThreads', function(){
 
         it('should only return convids of filtered conversations', function(done){
             hClient.processMsgInternal(cmd, function(hMessage){
-                hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
                 hMessage.should.have.property('ref', cmd.msgid);
                 hMessage.payload.should.have.property('status', status.OK);
                 hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(1);

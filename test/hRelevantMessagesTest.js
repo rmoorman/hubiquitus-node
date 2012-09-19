@@ -106,7 +106,6 @@ describe('hRelevantMessages', function(){
     it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
         cmd.actor = 'not a channel@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.match(/actor/);

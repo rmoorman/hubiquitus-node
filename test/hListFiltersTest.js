@@ -65,7 +65,6 @@ describe('hListFilters', function(){
 
     it('should return hResult OK with an empty array as result if no filter exists', function(done){
         hClient.processMsgInternal(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
@@ -76,7 +75,6 @@ describe('hListFilters', function(){
     it('should return hResult OK with an empty array as result if actor does not contain filters', function(done){
         cmd.payload.params = {actor: 'i do not have filters'};
         hClient.processMsgInternal(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
@@ -144,7 +142,6 @@ describe('hListFilters', function(){
         hClient.processMsgInternal(cmd, function(hMessage){
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.should.have.property('result');
-
             hMessage.payload.result.should.have.length(2);
             done();
         });

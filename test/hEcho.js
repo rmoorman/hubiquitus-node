@@ -26,9 +26,25 @@ describe('hEcho', function(){
     var echoCmd;
     var hEcho;
     var status = require('../lib/codes.js').hResultStatus;
+    var hClientConst = require('../lib/hClient.js').hClient;
+    var hClient = new hClientConst(config.cmdParams);
 
+    before(config.beforeFN)
+
+    after(config.afterFN)
+
+    before(function(done){
+        hClient.once('connect', done);
+        hClient.connect(config.logins[0]);
+    })
+
+    after(function(done){
+        hClient.once('disconnect', done);
+        hClient.disconnect();
+    })
+    console.log('ici');
     beforeEach(function(done){
-        echoCmd = config.makeHMessage('hnode@localhost', 'fake jid', 'hCommand',{});
+        echoCmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
         echoCmd.msgid = 'hCommandTest123';
         echoCmd.payload = {
                 cmd : 'hEcho',
@@ -37,6 +53,15 @@ describe('hEcho', function(){
 
         hEcho = new hEchoModule();
         done();
+    })
+
+    it('should return hResult error if the hMessage can not be treat', function(done){
+        echoCmd.payload.params.error = 'DIV0';
+        hClient.processMsgInternal(echoCmd, function(hMessage){
+            hMessage.should.have.property('ref', echoCmd.msgid);
+            hMessage.payload.should.have.property('status', status.TECH_ERROR);
+            done();
+        });
     })
 
     describe('#Execute hEcho', function(){

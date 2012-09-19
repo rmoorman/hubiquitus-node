@@ -77,7 +77,6 @@ describe('hUnsubscribe', function(){
     it('should return hResult error MISSING_ATTR when actor is missing', function(done){
         cmd.actor = '';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -88,7 +87,6 @@ describe('hUnsubscribe', function(){
     it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
         cmd.actor = 'not a channel@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
             hMessage.payload.should.have.property('result').and.match(/actor/);
@@ -99,7 +97,6 @@ describe('hUnsubscribe', function(){
     it('should return hResult error NOT_AVAILABLE when actor doesnt exist', function(done){
         cmd.actor = '#this channel does not exist@localhost';
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -111,7 +108,6 @@ describe('hUnsubscribe', function(){
         cmd.publisher = 'a@jid.com';
         cmd.actor = existingCHID;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -122,7 +118,6 @@ describe('hUnsubscribe', function(){
     it('should return hResult error NOT_AUTHORIZED when actor is inactive', function(done){
         cmd.actor = inactiveCHID;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
             hMessage.payload.should.have.property('result').and.be.a('string');
@@ -133,7 +128,6 @@ describe('hUnsubscribe', function(){
     it('should return hResult OK when correct', function(done){
         cmd.actor = existingCHID;
         hCommandController.execCommand(cmd, function(hMessage){
-            hMessage.payload.should.have.property('cmd', cmd.payload.cmd);
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             done();
