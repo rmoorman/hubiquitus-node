@@ -85,13 +85,9 @@ describe('hPublish', function(){
 
     beforeEach(function(){
         var id = config.db.createPk();
-        msg = {
-            msgid : id,
-            convid : id,
-            actor : poorChannel,
-            publisher : config.validJID,
-            published : new Date()
-        };
+        msg = config.makeHMessage(poorChannel, config.validJID, undefined, {})
+        msg.msgid = id;
+        msg.convid = id;
     })
 
     it('should return hResult OK with new msgid = convid when msgid and convid are not specified', function(done){
