@@ -146,6 +146,7 @@ exports.createChannel = function(actor, subscribers, owner, active, done) {
     var hCommandController = new exports.cmdController(exports.cmdParams);
 
     var params = {
+        type: 'channel',
         actor : actor,
         active : active,
         owner : owner,

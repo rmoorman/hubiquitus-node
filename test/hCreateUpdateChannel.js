@@ -40,6 +40,7 @@ describe('hCreateUpdateChannel', function(){
         createCmd.payload = {
                 cmd : 'hCreateUpdateChannel',
                 params : {
+                    type: 'channel',
                     actor: config.getNewCHID(),
                     active : true,
                     owner : config.validJID,
