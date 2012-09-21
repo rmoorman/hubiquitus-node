@@ -51,6 +51,7 @@ describe('hGetLastMessages', function(){
         createCmd.payload = {
             cmd : 'hCreateUpdateChannel',
             params : {
+                type: 'channel',
                 actor: chanWithHeader,
                 active : true,
                 owner : config.validJID,

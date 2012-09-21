@@ -132,6 +132,7 @@ describe('#Database', function(){
 
         beforeEach(function(){
             validChannel = {
+                type: 'channel',
                 _id: config.getNewCHID(),
                 owner: config.validJID,
                 subscribers: [config.validJID],

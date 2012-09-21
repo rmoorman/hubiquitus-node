@@ -81,7 +81,8 @@ describe('hAdmin XMPP Connection', function(){
     describe('#publishHChannel()', function(){
 
         var hChannel = {
-            actor: 'a channel',
+            type: 'channel',
+            actor: '#a channel@localhost',
             owner: config.validJID,
             subscribers: [config.validJID],
             active: true

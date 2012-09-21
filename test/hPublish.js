@@ -69,6 +69,7 @@ describe('hPublish', function(){
             payload : {
                 cmd : 'hCreateUpdateChannel',
                 params : {
+                    type: 'channel',
                     actor : richChannel,
                     active : true,
                     owner : config.validJID,
