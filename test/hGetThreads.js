@@ -210,47 +210,4 @@ describe('hGetThreads', function(){
             done();
         });
     })
-
-    describe('test filters', function(){
-        var hClientConst = require('../lib/hClient.js').hClient;
-        var hClient = new hClientConst(config.cmdParams);
-
-        before(function(done){
-            hClient.once('connect', done);
-            hClient.connect(config.logins[0]);
-        })
-
-        after(function(done){
-            hClient.once('disconnect', done);
-            hClient.disconnect();
-        })
-
-        before(function(done){
-            var filterCmd = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand',{});
-            filterCmd.msgid = 'testCmd';
-            filterCmd.payload = {
-                    cmd : 'hSetFilter',
-                    params : {
-                        actor: activeChannel,
-                        name: 'a filter',
-                        template: {priority: 3}
-                    }
-            };
-            hClient.processMsgInternal(filterCmd, function(hMessage){
-                hMessage.payload.should.have.property('status', status.OK);
-                done();
-            });
-        })
-
-        it('should only return convids of filtered conversations', function(done){
-            hClient.processMsgInternal(cmd, function(hMessage){
-                hMessage.should.have.property('ref', cmd.msgid);
-                hMessage.payload.should.have.property('status', status.OK);
-                hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(1);
-                done();
-            });
-        })
-
-    })
-
 })

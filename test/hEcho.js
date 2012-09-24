@@ -42,7 +42,7 @@ describe('hEcho', function(){
         hClient.once('disconnect', done);
         hClient.disconnect();
     })
-    console.log('ici');
+
     beforeEach(function(done){
         echoCmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
         echoCmd.msgid = 'hCommandTest123';

@@ -70,11 +70,9 @@ describe('hClient XMPP Connection', function(){
 
     })
 
-    describe('#filterMessage()', function(){
+    describe('#FilterMessage()', function(){
         var cmdMsg, hMsg;
         var activeChan = config.getNewCHID();
-        var filterName = config.db.createPk();
-        var filterName2 = config.db.createPk();
 
         before(function(done){
             hClient.once('connect', done);
@@ -92,502 +90,45 @@ describe('hClient XMPP Connection', function(){
         })
 
         beforeEach(function(){
-
             cmdMsg = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand',{});
             cmdMsg.payload = {
-                    cmd : 'hSetFilter',
-                    params : {
-                        actor : activeChan,
-                        name: filterName
+                cmd : 'hSetFilter',
+                params : {
+                    actor : activeChan,
+                    filter: {
+                        in:{
+                            publisher: ['u1@localhost']
+                        }
                     }
+                }
             };
 
-            hMsg = {
-                msgid : config.db.createPk(),
-                convid : config.db.createPk(),
-                actor : activeChan,
-                priority : 1,
-                publisher : 'someone@domain.com',
-                published : new Date()
-            };
-
+            hMsg = config.makeHMessage(activeChan, config.logins[0].jid, undefined, {})
+            hMsg.priority = 1;
         })
 
-        it('should return null if convid set in filter and do not match', function(done){
-            cmdMsg.payload.params.template = {convid: config.db.createPk()};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
+        it('should return Ok', function(done){
+            hClient.processMsgInternal(cmdMsg, function(){});
+            hClient.processMsgInternal(hMsg, function(hMessage){
                 hMessage.should.have.property('type', 'hResult');
                 hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
                 done();
             });
         })
 
-        it('should return message if convid set in filter and matches', function(done){
-            cmdMsg.payload.params.template = {convid: hMsg.msgid};
-            hMsg.convid = hMsg.msgid;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
+        it('should return INVALID_ATTR if hMessage don\'t respect filter', function(done){
+            cmdMsg.payload.params.filter.in.publisher = ['u2@localhost'];
+            hClient.processMsgInternal(cmdMsg, function(){});
+            hClient.processMsgInternal(hMsg, function(hMessage){
                 hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
+                hMessage.payload.should.have.property('status', codes.hResultStatus.INVALID_ATTR);
                 done();
             });
         })
-
-        it('should return null if type set in filter and do not match', function(done){
-            cmdMsg.payload.params.template = {type: config.db.createPk()};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return message if type set in filter and matches', function(done){
-            cmdMsg.payload.params.template = {type: 'a type'};
-            hMsg.type = 'a type';
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if priority set in filter and do not match', function(done){
-            cmdMsg.payload.params.template = {priority: 5};
-            hMsg.priority = 2;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return message if priority set in filter and matches', function(done){
-            cmdMsg.payload.params.template = {priority: 5};
-            hMsg.priority = 5;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if location in filter and msg does not have', function(done){
-            cmdMsg.payload.params.template = {location: {zip: '75006'}};
-            delete hMsg.location;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if location in filter has attr and msg does not', function(done){
-            cmdMsg.payload.params.template = {location: {zip: '75006'}};
-            hMsg.location = {};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if location in filter and same in msg but do not match', function(done){
-            cmdMsg.payload.params.template = {location: {zip: '75006'}};
-            hMsg.location = {zip: '75003'};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return message if location in filter and same in msg', function(done){
-            cmdMsg.payload.params.template = {location: {zip: '75006'}};
-            hMsg.location = {zip: '75006'};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return message if location attr in filter present and msg has also other attrs', function(done){
-            cmdMsg.payload.params.template = {location: {zip: '75006'}};
-            hMsg.location = {zip: '75006', addr: 'noway street'};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if author set in filter and do not match', function(done){
-            cmdMsg.payload.params.template = {author: 'im an author'};
-            hMsg.author = 'im not the same author';
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return message if author set in filter and matches', function(done){
-            cmdMsg.payload.params.template = {author: 'im an author'};
-            hMsg.author = 'im an author';
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if publisher set in filter and do not match', function(done){
-            cmdMsg.payload.params.template = {publisher: 'another@bites.the.dust'};
-            hMsg.publisher = 'another@one.bites.the.dust';
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return message if publisher set in filter and matches', function(done){
-            cmdMsg.payload.params.template = {publisher: 'another@bites.the.dust'};
-            hMsg.publisher = 'another@bites.the.dust';
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if headers in filter and msg does not have', function(done){
-            cmdMsg.payload.params.template = {headers: {'MAX_MSG_RETRIEVAL': 20}};
-            delete hMsg.headers;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if headers in filter has attr and msg does not', function(done){
-            cmdMsg.payload.params.template = {headers: {'MAX_MSG_RETRIEVAL': 20}};
-            hMsg.headers = {};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if headers in filter and same in msg but do not match', function(done){
-            cmdMsg.payload.params.template = {headers: {'MAX_MSG_RETRIEVAL': 20}};
-            hMsg.headers = {'MAX_MSG_RETRIEVAL': 21};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return message if headers in filter and same obj in msg', function(done){
-            cmdMsg.payload.params.template = {headers: {'MAX_MSG_RETRIEVAL': 20}};
-            hMsg.headers = {'MAX_MSG_RETRIEVAL': 20};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return message if headers attr in filter present and msg has also other attrs', function(done){
-            cmdMsg.payload.params.template = {headers: {'MAX_MSG_RETRIEVAL': 20}};
-            hMsg.headers = {'MAX_MSG_RETRIEVAL': 20, 'RELEVANCE_OFFSET': 5};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if payload in filter and msg does not have', function(done){
-            cmdMsg.payload.params.template = {payload: {something: 'is awesome'}};
-            delete hMsg.payload;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if payload in filter has attr and msg does not', function(done){
-            cmdMsg.payload.params.template = {payload: {something: 'is awesome'}};
-            hMsg.payload = {};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if payload in filter and same in msg but do not match', function(done){
-            cmdMsg.payload.params.template = {payload: {something: 'is awesome'}};
-            hMsg.payload = {something: 'is not awesome'};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if payload in filter has an object inside like in msg but do not match', function(done){
-            cmdMsg.payload.params.template = {payload: {something: {'is': 'awesome'}}};
-            hMsg.payload = {something: {'is': 'not awesome'}};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if payload in filter has an array inside like in msg but with less elements', function(done){
-            cmdMsg.payload.params.template = {payload: {something: ['is', 'awesome']}};
-            hMsg.payload = {something: ['is', 'awesome', 'not']};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if payload in filter has an array inside like in msg but in different order', function(done){
-            cmdMsg.payload.params.template = {payload: {something: ['awesome', 'is']}};
-            hMsg.payload = {something: ['is', 'awesome']};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);;
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return message if payload in filter and same obj in msg', function(done){
-            cmdMsg.payload.params.template = {payload: {something: 'is awesome'}};
-            hMsg.payload = {something: 'is awesome'};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);;
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return message if payload attr in filter present and msg has also other attrs', function(done){
-            cmdMsg.payload.params.template = {payload: {something: 'is awesome'}};
-            hMsg.payload = {something: 'is awesome', like: 'life'};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return message if payload with obj in filter and same obj in payload in msg', function(done){
-            cmdMsg.payload.params.template = {payload: {something: {'is': 'awesome'}}};
-            hMsg.payload = {something: {'is': 'awesome'}};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return msg if payload with obj in filter and same obj in payload + others in msg', function(done){
-            cmdMsg.payload.params.template = {payload: {something: {'is': 'awesome'}}};
-            hMsg.payload = {something: {'is': 'awesome', like: {maybe: 'life'}}};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return msg if payload in filter has an array inside that matches msg', function(done){
-            cmdMsg.payload.params.template = {payload: {something: ['awesome', 'is']}};
-            hMsg.payload = {something: ['awesome', 'is']};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return msg if radius set and distance is smaller than that in template', function(done){
-            cmdMsg.payload.params.template = {location: {lat: 48.832563, lng: 2.34762}};
-            cmdMsg.payload.params.radius = 5000;
-            hMsg.location= {lat: 48.842012, lng: 2.330024};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return msg if radius set and distance is smaller than that in template', function(done){
-            cmdMsg.payload.params.template = {location: {lat: 48.832563, lng: 2.34762}};
-            cmdMsg.payload.params.radius = 5000;
-            hMsg.location= {lat: 48.842012, lng: 2.330024};
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if relevant set and msg does not have relevance attribute', function(done){
-            cmdMsg.payload.params.relevant = true;
-            delete hMsg.relevance;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return null if relevant set and msg is not relevant anymore', function(done){
-            cmdMsg.payload.params.relevant = true;
-            hMsg.relevance = new Date( new Date().getTime() - 15000);
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                should.not.exist(hClient.filterMessage(hMsg));
-                done();
-            });
-        })
-
-        it('should return msg if relevant set and msg is relevant', function(done){
-            cmdMsg.payload.params.relevant = true;
-            hMsg.relevance = new Date( new Date().getTime() + 15000);
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                done();
-            });
-        })
-
-        it('should return null if msg passes first filter but not second one', function(done){
-            cmdMsg.payload.params.template = {priority: 5};
-            hMsg.priority = 5;
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-
-                cmdMsg.payload.params.name = filterName2;
-                cmdMsg.payload.params.template = {publisher: 'someone@else.com'};
-                hClient.processMsgInternal(cmdMsg, function(hMessage){
-                    hMessage.should.have.property('type', 'hResult');
-                    hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                    should.not.exist(hClient.filterMessage(hMsg));
-                    done();
-                });
-            });
-        })
-
-        it('should return msg if there are two filters and passes both', function(done){
-            cmdMsg.payload.params.template = {priority: 5};
-            hMsg.priority = 5;
-            hMsg.publisher = 'someone@else.com'
-
-            hClient.processMsgInternal(cmdMsg, function(hMessage){
-                hMessage.should.have.property('type', 'hResult');
-                hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-
-                cmdMsg.payload.params.name = filterName2;
-                cmdMsg.payload.params.template = {publisher: 'someone@else.com'};
-                hClient.processMsgInternal(cmdMsg, function(hMessage){
-                    hMessage.should.have.property('type', 'hResult');
-                    hMessage.payload.should.have.property('status', codes.hResultStatus.OK);
-                    hClient.filterMessage(hMsg).should.be.eql(hMsg);
-                    done();
-                });
-            });
-        })
-
     })
 
     describe('#processMsgInternal()', function(){
-        var cmdMsg, hMsg;
+        var cmdMsg;
 
         before(function(done){
             hClient.once('connect', done);

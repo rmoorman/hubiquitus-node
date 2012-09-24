@@ -276,57 +276,6 @@ describe('hPublish', function(){
         });
     })
 
-    /*it('should return hResult OK with hServer published time + header if bigger than relevance set', function(done){
-        var offset = 50000;
-        var relevance = new Date( new Date().getTime() - 50000000 );
-        msg.headers= {RELEVANCE_OFFSET: offset};
-        msg.relevance = relevance;
-        hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.OK);
-            hMessage.payload.result.relevance.getTime().should.be.eql(hMessage.payload.result.published.getTime() + offset);
-            done();
-        });
-    })
-
-    it('should return hResult OK with relevance set if relevance_offset set but older', function(done){
-        var offset = 50000;
-        var relevance = new Date( new Date().getTime() + 50000000 );
-        msg.relevance = relevance;
-        msg.headers= {RELEVANCE_OFFSET: offset};
-        hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.OK);
-            hMessage.payload.result.relevance.getTime().should.be.eql(relevance.getTime());
-            done();
-        });
-    })
-
-    it('should return hResult OK with user set published time + header if bigger than relevance set', function(done){
-        var offset = 50000;
-        var published = new Date( new Date().getTime() - 100000 );
-        msg.relevance = new Date( new Date().getTime() - 50000000 );
-        msg.headers= {RELEVANCE_OFFSET: offset};
-        msg.published = published;
-        hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.OK);
-            hMessage.payload.result.relevance.getTime().should.be.eql(published.getTime() + offset);
-            done();
-        });
-    })
-
-    it('should return hResult OK with relevance set if relevance_offset + user set published older', function(done){
-        var offset = 50000;
-        var relevance = new Date( new Date().getTime() + 50000000 );
-        var published = new Date( new Date().getTime() - 100000 );
-        msg.relevance = relevance;
-        msg.headers= {RELEVANCE_OFFSET: offset};
-        msg.published = published;
-        hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.OK);
-            hMessage.payload.result.relevance.getTime().should.be.eql(relevance.getTime());
-            done();
-        });
-    })*/
-
     it('should return hResult error INVALID_ATTR if persistent is not boolean', function(done){
         msg.persistent = 'this is not a boolean';
         hClient.processMsgInternal(msg, function(hMessage) {
@@ -490,27 +439,6 @@ describe('hPublish', function(){
         });
     })
 
-    /*it('should return hResult error INVALID_ATTR if RELEVANCE_OFFSET header is not a number', function(done){
-        msg.headers= {RELEVANCE_OFFSET: 'a string'};
-        hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.result.should.match(/RELEVANCE_OFFSET/);
-            done();
-        });
-    })
-
-    it('should return hResult OK with relevance set to published time + header', function(done){
-        var published = new Date(),
-            offset = 50000;
-        msg.headers= {RELEVANCE_OFFSET: offset};
-        msg.published = published;
-        hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.OK);
-            hMessage.payload.result.relevance.getTime().should.be.eql(published.getTime() + offset);
-            done();
-        });
-    })*/
-
     it('should return hResult OK without relevance if nothing specified in msg or headers', function(done){
         delete msg.relevance;
         hClient.processMsgInternal(msg, function(hMessage) {
@@ -519,16 +447,6 @@ describe('hPublish', function(){
             done();
         });
     })
-
-    /*it('should return hResult OK with relevance set to hServer published time + header', function(done){
-        var offset = 50000;
-        msg.headers= {RELEVANCE_OFFSET: offset};
-        hClient.processMsgInternal(msg, function(hMessage) {
-            hMessage.payload.should.have.property('status', status.OK);
-            hMessage.payload.result.relevance.getTime().should.be.eql(hMessage.payload.result.published.getTime() + offset);
-            done();
-        });
-    })  */
 
     it('should return hResult error INVALID_ATTR if MAX_MSG_RETRIEVAL header is not a number', function(done){
         msg.headers= {MAX_MSG_RETRIEVAL: 'a string'};

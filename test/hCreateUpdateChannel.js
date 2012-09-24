@@ -74,7 +74,7 @@ describe('hCreateUpdateChannel', function(){
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.MISSING_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/id/i);
+            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/actor/i);
             done();
         });
     })
@@ -85,7 +85,7 @@ describe('hCreateUpdateChannel', function(){
         hCommandController.execCommand(createCmd, function(hMessage){
             hMessage.should.have.property('ref', createCmd.msgid);
             hMessage.payload.should.have.property('status', status.INVALID_ATTR);
-            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/id/i);
+            hMessage.payload.should.have.property('result').and.be.a('string').and.match(/actor/i);
             done();
         });
     })
