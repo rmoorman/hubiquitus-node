@@ -45,41 +45,20 @@ describe('hGetChannels', function(){
     })
 
     it('should return hResult OK with an array as result', function(done){
-<<<<<<< HEAD
-        hCommandController.execCommand(cmd, null, function(hResult){
-            /* EBR à supprimer begin */
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            /* EBR à supprimer fin */
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result');
-            hResult.result.should.be.an.instanceof(Array);
-=======
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.should.have.property('result');
             hMessage.payload.result.should.be.an.instanceof(Array);
->>>>>>> tmp
             done();
         });
     })
 
     it('should return hResult OK with an array having newly created channel as part of result', function(done){
-<<<<<<< HEAD
-        hCommandController.execCommand(cmd, null, function(hResult){
-            /* EBR à supprimer begin */
-            hResult.should.have.property('cmd', cmd.cmd);
-            hResult.should.have.property('reqid', cmd.reqid);
-            /* EBR à supprimer fin */
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('result');
-=======
         hCommandController.execCommand(cmd, function(hMessage){
             hMessage.should.have.property('ref', cmd.msgid);
             hMessage.payload.should.have.property('status', status.OK);
             hMessage.payload.should.have.property('result');
->>>>>>> tmp
 
             for(var i = 0; i < hMessage.payload.result.length; i++)
                 if(hMessage.payload.result[i].actor == actor)
