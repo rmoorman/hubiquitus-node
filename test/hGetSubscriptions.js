@@ -25,8 +25,8 @@ describe('hGetSubscriptions', function(){
     var hCommandController = new config.cmdController(config.cmdParams);
     var cmd;
     var status = require('../lib/codes.js').hResultStatus;
-    var chid = config.getNewCHID();
-    var chidInactive = config.getNewCHID();
+    var actor = config.getNewCHID();
+    var actorInactive = config.getNewCHID();
 
 
     before(config.beforeFN)
@@ -34,64 +34,69 @@ describe('hGetSubscriptions', function(){
     after(config.afterFN)
 
     before(function(done){
-        config.createChannel(chid, [config.validJID], config.validJID, true, done);
+        this.timeout(5000);
+        config.createChannel(actor, [config.validJID], config.validJID, true, done);
     })
 
     //Subscribe to channel
     before(function(done){
-        config.subscribeToChannel(config.validJID, chid, done);
+        config.subscribeToChannel(config.validJID, actor, done);
     })
 
     //Create it active
     before(function(done){
-        config.createChannel(chidInactive, [config.validJID], config.validJID, true, done);
+        this.timeout(5000);
+        config.createChannel(actorInactive, [config.validJID], config.validJID, true, done);
     })
 
     //Subscribe to channel
     before(function(done){
-        config.subscribeToChannel(config.validJID, chidInactive, done);
+        config.subscribeToChannel(config.validJID, actorInactive, done);
     })
 
     //Make it inactive
     before(function(done){
-        config.createChannel(chidInactive, [config.validJID], config.validJID, false, done);
+        this.timeout(5000);
+        config.createChannel(actorInactive, [config.validJID], config.validJID, false, done);
     })
 
     beforeEach(function(){
-        cmd= {
-            reqid  : 'hCommandTest123',
-            sender : config.validJID,
-            sid : 'fake sid',
-            sent : new Date(),
-            cmd : 'hGetSubscriptions'
+        cmd = config.makeHMessage('hnode@localhost', config.validJID, 'hCommand',{});
+        cmd.msgid = 'hCommandTest123';
+        cmd.payload = {
+                cmd : 'hGetSubscriptions'
         };
     })
 
     it('should return hResult ok with an array as result if user doesnt have subscriptions', function(done){
-        cmd.sender = 'dontexist@a';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('result').and.be.an.instanceof(Array).and.have.lengthOf(0);
+        cmd.publisher = 'dontexist@a';
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('result').and.be.an.instanceof(Array).and.have.lengthOf(0);
             done();
         });
     })
 
     it('should return hResult ok with an array as result if user has subscriptions', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('result').and.be.an.instanceof(Array);
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('result').and.be.an.instanceof(Array);
             done();
         });
     })
 
-    it('should return hResult ok with an array with a chid subscribed', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.result.should.include(chid);
+    it('should return hResult ok with an array with a actor subscribed', function(done){
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.result.should.include(actor);
             done();
         });
     })
 
-    it('should return hResult ok with an array without a chid subscribed if channel is currently inactive', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.result.should.not.include(chidInactive);
+    it('should return hResult ok with an array without a actor subscribed if channel is currently inactive', function(done){
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.result.should.not.include(actorInactive);
             done();
         });
     })

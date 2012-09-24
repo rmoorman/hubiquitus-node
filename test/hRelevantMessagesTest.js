@@ -22,15 +22,16 @@ var config = require('./_config.js');
 
 describe('hRelevantMessages', function(){
 
+    var hCommandController = new config.cmdController(config.cmdParams);
     var hClientConst = require('../lib/hClient.js').hClient;
     var hClient = new hClientConst(config.cmdParams);
     var status = require('../lib/codes.js').hResultStatus;
     var cmd;
     var nbMsgs = 10;
-    var activeChan = config.db.createPk();
-    var notInPart = config.db.createPk();
-    var inactiveChan = config.db.createPk();
-    var emptyChannel = config.db.createPk();
+    var activeChan = config.getNewCHID();
+    var notInPart = config.getNewCHID();
+    var inactiveChan = config.getNewCHID();
+    var emptyChannel = config.getNewCHID();
 
 
     before(config.beforeFN)
@@ -38,35 +39,39 @@ describe('hRelevantMessages', function(){
     after(config.afterFN)
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(activeChan, [config.validJID], config.validJID, true, done);
     })
 
     for(var i = 0; i < nbMsgs; i++)
         before(function(done){
-            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, false, {
+            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, true, {
                 relevance: new Date( new Date().getTime() + 100000 ) }, done);
         })
 
     for(var i = 0; i < nbMsgs; i++)
         before(function(done){
-            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, false, {
+            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, true, {
                 relevance: new Date( new Date().getTime() - 100000 ) }, done);
         })
 
     for(var i = 0; i < nbMsgs; i++)
         before(function(done){
-            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, false, done);
+            config.publishMessage(config.validJID, activeChan, undefined, undefined, undefined, true, done);
         })
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(emptyChannel, [config.validJID], config.validJID, true, done);
     })
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(notInPart, ['a@b.com'], config.validJID, true, done);
     })
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(inactiveChan, [config.validJID], config.validJID, false, done);
     })
 
@@ -81,93 +86,76 @@ describe('hRelevantMessages', function(){
     })
 
     beforeEach(function(){
-        cmd = {
-            reqid: 'testCmd',
-            entity: 'hnode@' + hClient.xmppdomain,
-            sender: config.logins[0].jid,
-            cmd: 'hRelevantMessages',
-            params: { chid: activeChan }
-        };
+        cmd = config.makeHMessage(activeChan, config.logins[0].jid, 'hCommand',{});
+        cmd.msgid = 'hCommandTest123';
+        cmd.payload = {
+                cmd : 'hRelevantMessages',
+                params : {}
+            }
     })
 
-    it('should return hResult error INVALID_ATTR if no param object sent', function(done){
-        delete cmd.params;
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.result.should.be.a('string');
+    it('should return hResult error MISSING_ATTR if actor is missing', function(done){
+        delete cmd.actor;
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.MISSING_ATTR);
+            hMessage.payload.result.should.match(/actor/);
             done();
         });
     })
 
-    it('should return hResult error INVALID_ATTR if param is not an object', function(done){
-        cmd.params = 'this is not an object';
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.result.should.be.a('string');
-            done();
-        });
-    })
-
-    it('should return hResult error MISSING_ATTR if chid is missing', function(done){
-        delete cmd.params.chid;
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.result.should.match(/chid/);
-            done();
-        });
-    })
-
-    it('should return hResult error INVALID_ATTR if chid is not a string', function(done){
-        cmd.params.chid = [];
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.result.should.match(/chid/);
+    it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
+        cmd.actor = 'not a channel@localhost';
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.match(/actor/);
             done();
         });
     })
 
     it('should return hResult error NOT_AVAILABLE if channel was not found', function(done){
-        cmd.params.chid = 'this channel does not exist';
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.NOT_AVAILABLE);
-            hResult.result.should.be.a('string');
+        cmd.actor = '#this channel does not exist@localhost';
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
+            hMessage.payload.result.should.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED if not in participants list', function(done){
-        cmd.params.chid = notInPart;
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.result.should.be.a('string');
+    it('should return hResult error NOT_AUTHORIZED if not in subscribers list', function(done){
+        cmd.actor = notInPart;
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.result.should.be.a('string');
             done();
         });
     })
 
     it('should return hResult error NOT_AUTHORIZED if channel is inactive', function(done){
-        cmd.params.chid = inactiveChan;
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.result.should.be.a('string');
+        cmd.actor = inactiveChan;
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.result.should.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK with an array of valid messages and without msgs missing relevance', function(done){
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.length.should.be.eql(nbMsgs);
-            for(var i = 0; i < hResult.result.length; i++)
-                hResult.result[i].relevance.getTime().should.be.above(new Date().getTime());
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.length.should.be.eql(nbMsgs);
+
+            for(var i = 0; i < hMessage.payload.result.length; i++)
+                hMessage.payload.result[i].relevance.getTime().should.be.above(new Date().getTime());
             done();
         });
     })
 
     it('should return hResult OK with an empty array if no matching msgs found', function(done){
-        cmd.params.chid = emptyChannel;
-        hClient.command(cmd, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.length.should.be.eql(0);
+        cmd.actor = emptyChannel;
+        hClient.processMsgInternal(cmd, function(hMessage){
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.length.should.be.eql(0);
             done();
         });
     })

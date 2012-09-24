@@ -22,11 +22,11 @@ var config = require('./_config.js');
 
 describe('hGetThread', function(){
 
-    var activeChannel = config.db.createPk(),
-        inactiveChannel = config.db.createPk(),
-        cmdController = new config.cmdController(config.cmdParams),
+    var activeChannel = config.getNewCHID(),
+        inactiveChannel = config.getNewCHID(),
+        hCommandController = new config.cmdController(config.cmdParams),
         status = require('../lib/codes.js').hResultStatus,
-        cmd = JSON.parse(JSON.stringify(config.genericCmd)),
+        cmd = JSON.parse(JSON.stringify(config.genericCmdMsg)),
         convid,
         publishedMessages = 0;
 
@@ -36,261 +36,154 @@ describe('hGetThread', function(){
     after(config.afterFN)
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(activeChannel, [config.validJID], config.validJID, true, done);
     })
 
     before(function(done){
+        this.timeout(5000);
         config.createChannel(inactiveChannel, [config.validJID], config.validJID, false, done);
     })
 
     //Publish first message to get a valid convid and following ones with same convid
     before(function(done){
-        var cmd = JSON.parse(JSON.stringify(config.genericCmd));
-        cmd.cmd = 'hPublish';
-        cmd.params = {
-            chid: activeChannel,
-            transient: false,
-            publisher: config.validJID
-        };
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
+        config.publishMessageWithResult(config.validJID, activeChannel, undefined, undefined, new Date(), true, function(hMessage) {
+            hMessage.payload.should.have.property('status', status.OK);
             publishedMessages++;
-            convid = hResult.result.convid;
+            convid = hMessage.payload.result.convid;
             done();
         });
     })
 
     for(var i = 0; i < 4; i++)
         before(function(done){
-            var cmd = JSON.parse(JSON.stringify(config.genericCmd));
-            cmd.cmd = 'hPublish';
-            cmd.params = {
-                chid: activeChannel,
-                convid: convid,
-                transient: false,
-                publisher: config.validJID
-            };
-            cmdController.execCommand(cmd, null, function(hResult){
-                hResult.should.have.property('status', status.OK);
+            var opts = {};
+            opts.convid = convid;
+            config.publishMessageWithResult(config.validJID, activeChannel, undefined, undefined, new Date(), true, opts, function(hMessage) {
+                hMessage.payload.should.have.property('status', status.OK);
                 publishedMessages++;
                 done();
             });
         })
 
     beforeEach(function(){
-        cmd = JSON.parse(JSON.stringify(config.genericCmd));
-        cmd.cmd = 'hGetThread';
-        cmd.params = {
-            chid: activeChannel,
-            convid: convid
+        cmd = config.makeHMessage(activeChannel, config.validJID, 'hCommand',{});
+        cmd.msgid = 'testCmd';
+        cmd.payload = {
+                cmd : 'hGetThread',
+                params : {
+                    convid: convid
+                }
         };
     })
 
     it('should return hResult error INVALID_ATTR without params', function(done){
-        cmd.params = null;
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        cmd.payload.params = null;
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error INVALID_ATTR with params not an object', function(done){
-        cmd.params = 'string';
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.be.a('string');
+        cmd.payload.params = 'string';
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
-    it('should return hResult error NOT_AUTHORIZED if the sender is not a participant', function(done){
-        cmd.sender = 'not_a_participant@' + config.validDomain;
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.be.a('string');
+    it('should return hResult error NOT_AUTHORIZED if the sender is not a subscriber', function(done){
+        cmd.publisher = 'not_a_subscriber@' + config.validDomain;
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult error NOT_AUTHORIZED if the channel is inactive', function(done){
-        cmd.params.chid = inactiveChannel;
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            hResult.should.have.property('result').and.match(/inactive/);
+        cmd.actor = inactiveChannel;
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AUTHORIZED);
+            hMessage.payload.should.have.property('result').and.match(/inactive/);
             done();
         });
     })
 
-    it('should return hResult error MISSING_ATTR if chid is not provided', function(done){
-        delete cmd.params.chid;
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.should.have.property('result').and.match(/chid/);
+    it('should return hResult error MISSING_ATTR if actor is not provided', function(done){
+        delete cmd.actor;
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.MISSING_ATTR);
+            hMessage.payload.should.have.property('result').and.match(/actor/);
             done();
         });
     })
 
-    it('should return hResult error INVALID_ATTR with chid not a string', function(done){
-        cmd.params.chid = [];
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.match(/chid/);
+    it('should return hResult error INVALID_ATTR with actor not a channel', function(done){
+        cmd.actor = 'not a channel@localhost';
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.match(/actor/);
             done();
         });
     })
 
     it('should return hResult error MISSING_ATTR if convid is not provided', function(done){
-        delete cmd.params.convid;
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.MISSING_ATTR);
-            hResult.should.have.property('result').and.match(/convid/);
+        delete cmd.payload.params.convid;
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.MISSING_ATTR);
+            hMessage.payload.should.have.property('result').and.match(/convid/);
             done();
         });
 
     })
 
     it('should return hResult error INVALID_ATTR with convid not a string', function(done){
-        cmd.params.convid = [];
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.INVALID_ATTR);
-            hResult.should.have.property('result').and.match(/convid/);
+        cmd.payload.params.convid = [];
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.INVALID_ATTR);
+            hMessage.payload.should.have.property('result').and.match(/convid/);
             done();
         });
     })
 
     it('should return hResult error NOT_AVAILABLE if the channel does not exist', function(done){
-        cmd.params.chid = 'inexistent channel';
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.NOT_AVAILABLE);
-            hResult.should.have.property('result').and.be.a('string');
+        cmd.actor = '#this channel does not exist@localhost';
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
+            hMessage.payload.should.have.property('result').and.be.a('string');
             done();
         });
     })
 
     it('should return hResult OK with an empty [] if no messages found matching convid', function(done){
-        cmd.params.convid = config.db.createPk();
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
+        cmd.payload.params.convid = config.db.createPk();
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
             done();
         });
     })
 
     it('should return hResult OK with an [] containing all messages with same convid', function(done){
-        cmdController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(publishedMessages);
+        hCommandController.execCommand(cmd, function(hMessage){
+            hMessage.should.have.property('ref', cmd.msgid);
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.payload.result.should.be.an.instanceof(Array).and.have.lengthOf(publishedMessages);
             done();
         });
     })
-
-    describe('test filters', function(){
-        var hClientConst = require('../lib/hClient.js').hClient;
-        var hClient = new hClientConst(config.cmdParams);
-        var filterMessagesPublished = 0;
-        var convid2 = config.db.createPk();
-
-        before(function(done){
-            hClient.once('connect', done);
-            hClient.connect(config.logins[0]);
-        })
-
-        after(function(done){
-            hClient.once('disconnect', done);
-            hClient.disconnect();
-        })
-
-        before(function(done){
-            var cmd = JSON.parse(JSON.stringify(config.genericCmd));
-            cmd.cmd = 'hPublish';
-            cmd.params = {
-                chid: activeChannel,
-                convid: convid,
-                type: 'a type',
-                transient: false,
-                publisher: config.validJID
-            };
-            cmdController.execCommand(cmd, null, function(hResult){
-                hResult.should.have.property('status', status.OK);
-                publishedMessages++;
-                done();
-            });
-        })
-
-        for(var i = 0; i < 3; i++)
-            before(function(done){
-                var cmd = JSON.parse(JSON.stringify(config.genericCmd));
-                cmd.cmd = 'hPublish';
-                cmd.params = {
-                    chid: activeChannel,
-                    convid: convid2,
-                    type: 'a type',
-                    transient: false,
-                    publisher: config.validJID
-                };
-                cmdController.execCommand(cmd, null, function(hResult){
-                    hResult.should.have.property('status', status.OK);
-                    filterMessagesPublished++;
-                    done();
-                });
-            })
-
-        for(var i = 0; i < 3; i++)
-            before(function(done){
-                var cmd = JSON.parse(JSON.stringify(config.genericCmd));
-                cmd.cmd = 'hPublish';
-                cmd.params = {
-                    chid: activeChannel,
-                    convid: convid2,
-                    type: 'another type',
-                    transient: false,
-                    publisher: config.validJID
-                };
-                cmdController.execCommand(cmd, null, function(hResult){
-                    hResult.should.have.property('status', status.OK);
-                    filterMessagesPublished++;
-                    done();
-                });
-            })
-
-        before(function(done){
-            hClient.command({
-                reqid: 'testCmd',
-                entity: 'hnode@' + hClient.xmppdomain,
-                sender: config.logins[0].jid,
-                cmd: 'hSetFilter',
-                params: {
-                    chid: activeChannel,
-                    name: 'a filter',
-                    template: {type: 'a type'}
-                }
-            }, function(hResult){
-                hResult.should.have.property('status', status.OK);
-                done();
-            });
-        })
-
-
-        it('should not return msgs if a msg OTHER than the first one pass the filter', function(done){
-            cmd.entity = 'hnode@' + hClient.xmppdomain;
-            hClient.command(cmd, function(hResult){
-                hResult.should.have.property('status', status.OK);
-                hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(0);
-                done();
-            });
-        })
-
-        it('should return ALL convid msgs if the first one complies with the filter', function(done){
-            cmd.entity = 'hnode@' + hClient.xmppdomain;
-            cmd.params.convid = convid2;
-            hClient.command(cmd, function(hResult){
-                hResult.should.have.property('status', status.OK);
-                hResult.result.should.be.an.instanceof(Array).and.have.lengthOf(filterMessagesPublished);
-                done();
-            });
-        })
-
-    })
-
 })

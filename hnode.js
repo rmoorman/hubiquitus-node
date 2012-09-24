@@ -30,7 +30,6 @@ function main(){
     var opts = require('./lib/options.js');
 
     var sioModule = __dirname + '/lib/client_connectors/socketio_connector.js';
-    var boshModule = __dirname + '/lib/client_connectors/bosh_connector.js';
 
     var children = [];
     var child;
@@ -39,14 +38,6 @@ function main(){
         opts.sioConnector.port = opts.options['socket.io.ports'][i];
         child = fork(__dirname + '/lib/worker.js');
         child.send({module: sioModule, args: opts.sioConnector});
-        children.push(child);
-    }
-
-    //For each port of bosh start a new process
-    for(var i = 0; i < opts.options['bosh.ports'].length; i++){
-        opts.boshConnector.port = opts.options['bosh.ports'][i];
-        child = fork(__dirname + '/lib/worker.js');
-        child.send({module: boshModule, args: opts.boshConnector});
         children.push(child);
     }
 

@@ -23,86 +23,58 @@ var config = require('./_config.js');
 describe('hCommand', function(){
 
     var hCommandController;
-    var cmd;
+    var cmdMsg;
     var status = require('../lib/codes.js').hResultStatus;
     var params = JSON.parse(JSON.stringify(config.cmdParams));
+    params.modulePath = 'test/aux';
+    params.timeout = 1000;
 
-    before(function(done){
-        config.db.on('connect', done);
-        config.db.connect(config.mongoURI);
+    before(config.beforeFN)
 
-        params.modulePath = 'test/aux';
-        params.timeout = 1000;
-    })
-
-    after(function(done){
-        config.db.on('disconnect', done);
-        config.db.disconnect();
-    })
-
+    after(config.afterFN)
 
     beforeEach(function(){
-        cmd = {
-            reqid  : 'hCommandTest123',
-            sender : config.validJID,
-            sid : 'fake sid',
-            sent : new Date(),
-            cmd : 'dummyCommand',
-            params: {}
+        cmdMsg = config.makeHMessage('hnode@localhost', config.validJID, 'hCommand',{});
+        cmdMsg.payload = {
+                cmd : 'dummyCommand',
+                params : {}
         };
+
 
         hCommandController = new config.cmdController(params);
     })
 
     it('should call module when module exists', function(done){
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
+        hCommandController.execCommand(cmdMsg, function(hMessage){
+            hMessage.should.have.property('type', 'hResult');
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
 
     it('should call module when cmd with different case', function(done){
-        cmd.cmd = 'dummycommand';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            done();
-        });
-    })
-
-    it('should return hResult error NOT_AUTHORIZED if user different than sender', function(done){
-        hCommandController.execCommand(cmd, 'another@jid', function(hResult){
-            hResult.should.have.property('status', status.NOT_AUTHORIZED);
-            done();
-        });
-    })
-
-    it('should allow to execute a command if user has resource and sender doesnt', function(done){
-        hCommandController.execCommand(cmd, config.validJID + '/resource', function(hResult){
-            hResult.should.have.property('status', status.OK);
-            done();
-        });
-    })
-
-    it('should allow to execute a command if sender has resource and user doesnt', function(done){
-        cmd.sender = config.validJID + '/resource';
-        hCommandController.execCommand(cmd, config.validJID, function(hResult){
-            hResult.should.have.property('status', status.OK);
+        cmdMsg.payload.cmd = 'dummycommand';
+        hCommandController.execCommand(cmdMsg, function(hMessage){
+            hMessage.should.have.property('type', 'hResult');
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
 
     it('should return hResult error NOT_AVAILABLE when command not found', function(done){
-        cmd.cmd = 'inexistent command';
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.NOT_AVAILABLE);
+        cmdMsg.payload.cmd = 'inexistent command';
+        hCommandController.execCommand(cmdMsg, function(hMessage){
+            hMessage.should.have.property('type', 'hResult');
+            hMessage.payload.should.have.property('status', status.NOT_AVAILABLE);
             done();
         });
     })
 
     it('should return hResult error EXEC_TIMEOUT when command timeout', function(done){
-        cmd.cmd = 'nothingCommand'; //Does nothing, forces timeout
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.EXEC_TIMEOUT);
+        cmdMsg.payload.cmd = 'nothingCommand'; //Does nothing, forces timeout
+        hCommandController.execCommand(cmdMsg, function(hMessage){
+            hMessage.should.have.property('type', 'hResult');
+            hMessage.payload.should.have.property('status', status.EXEC_TIMEOUT);
             done();
         });
     })
@@ -110,9 +82,10 @@ describe('hCommand', function(){
     it('should not allow command to call cb if after timeout', function(done){
         this.timeout(3000);
 
-        cmd.cmd = 'lateFinisher'; //Calls callback at 2seg
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.EXEC_TIMEOUT);
+        cmdMsg.payload.cmd = 'lateFinisher'; //Calls callback at 2seg
+        hCommandController.execCommand(cmdMsg, function(hMessage){
+            hMessage.should.have.property('type', 'hResult');
+            hMessage.payload.should.have.property('status', status.EXEC_TIMEOUT);
             done();
         });
     })
@@ -120,56 +93,21 @@ describe('hCommand', function(){
     it('should allow command to change timeout', function(done){
         this.timeout(4000);
 
-        cmd.cmd = 'timeoutChanger'; //Calls callback at 2seg
-        hCommandController.execCommand(cmd, null, function(hResult){
-            hResult.should.have.property('status', status.OK);
+        cmdMsg.payload.cmd = 'timeoutChanger'; //Calls callback at 2seg
+        hCommandController.execCommand(cmdMsg, function(hMessage){
+            hMessage.should.have.property('type', 'hResult');
+            hMessage.payload.should.have.property('status', status.OK);
             done();
         });
     })
 
-    it('should save hCommand and hResult with same _id when transient=false without reqid and transient', function(done){
-        cmd.transient = false;
-        cmd.params.randomValue = '' + config.db.createPk();
+    it('should return same msgid even if when persistent=true msgid changes in mongodb', function(done){
+        cmdMsg.persistent = true;
+        cmdMsg.payload.params.randomValue = '' + config.db.createPk();
 
-        //Sequence: execCommand, testCommand, testResult
-
-        var testCommand = function(err, item){
-            should.not.exist(err);
-            should.exist(item);
-            item.should.have.property('cmd', cmd.cmd);
-            item.should.not.have.property('transient');
-            item.should.not.have.property('reqid');
-
-            config.db.get('hResults').findOne({ _id: item._id}, testResult);
-        };
-
-        //Called by testCommand
-        var testResult = function(err, item2) {
-            should.not.exist(err);
-            should.exist(item2);
-            item2.should.have.property('cmd', cmd.cmd);
-            item2.should.not.have.property('transient');
-            item2.should.not.have.property('reqid');
-            done();
-        };
-
-        hCommandController.execCommand(cmd, config.validJID, function(hResult){
-            hResult.should.have.property('status', status.OK);
-
-            config.db.get('hCommands').findOne({params: {
-                randomValue: cmd.params.randomValue
-            }}, testCommand);
-
-        });
-    })
-
-    it('should return same reqid even if when transient=false reqid changes in mongodb', function(done){
-        cmd.transient = false;
-        cmd.params.randomValue = '' + config.db.createPk();
-
-        hCommandController.execCommand(cmd, config.validJID, function(hResult){
-            hResult.should.have.property('status', status.OK);
-            hResult.should.have.property('reqid', cmd.reqid);
+        hCommandController.execCommand(cmdMsg, function(hMessage){
+            hMessage.payload.should.have.property('status', status.OK);
+            hMessage.should.have.property('ref', cmdMsg.msgid);
             done();
         });
     })
