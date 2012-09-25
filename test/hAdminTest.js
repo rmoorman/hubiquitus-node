@@ -81,10 +81,10 @@ describe('hAdmin XMPP Connection', function(){
     describe('#publishHChannel()', function(){
 
         var hChannel = {
-            chid: 'a channel',
-            host: 'domain.com',
+            type: 'channel',
+            actor: '#a channel@localhost',
             owner: config.validJID,
-            participants: [config.validJID],
+            subscribers: [config.validJID],
             active: true
         };
 
@@ -108,10 +108,11 @@ describe('hAdmin XMPP Connection', function(){
 
         it('should return hResult error NOT_CONNECTED if not connected and cb', function(done){
             hAdmin.once('disconnect', function(){
-                hAdmin.publishHChannel(hChannel, function(hResult){
-                    should.exist(hResult);
-                    hResult.status.should.be.eql(hResultStatus.NOT_CONNECTED);
-                    hResult.result.should.be.a('string');
+                hAdmin.publishHChannel(hChannel, function(hMessage){
+                    should.exist(hMessage);
+                    hMessage.type.should.be.eql('hResult');
+                    hMessage.payload.status.should.be.eql(hResultStatus.NOT_CONNECTED);
+                    hMessage.payload.result.should.be.a('string');
                     done();
                 });
             });
@@ -124,12 +125,44 @@ describe('hAdmin XMPP Connection', function(){
 
 
         it('should return hResult OK if correctly executed', function(done){
-            hAdmin.publishHChannel(hChannel, function(hResult){
-                should.exist(hResult);
-                hResult.status.should.be.eql(hResultStatus.OK);
+            hAdmin.publishHChannel(hChannel, function(hMessage){
+                should.exist(hMessage);
+                hMessage.type.should.be.eql('hResult');
+                hMessage.payload.status.should.be.eql(hResultStatus.OK);
                 done();
             });
         })
 
     })
+
+    describe('#processMsgInternal()', function(){
+        var cmdMsg, hMsg;
+
+        before(function(done){
+            hAdmin.once('connect', done);
+            hAdmin.connect(config.logins[0]);
+        })
+
+        after(function(done){
+            hAdmin.once('disconnect', done);
+            hAdmin.disconnect();
+        })
+
+        beforeEach(function(){
+
+            cmdMsg = config.makeHMessage('hnode@' + hAdmin.serverDomain, config.logins[1].jid, 'hCommand', {});
+            cmdMsg.msgid = 'testCmd';
+            cmdMsg.convid = 'testCmd';
+        })
+
+        it('should return hResult error INVALID_ATTR if actor is not a valide JID', function(done){
+            cmdMsg.actor = "invalid JID";
+            hAdmin.processMsgInternal(cmdMsg, function(hMessage){
+                hMessage.should.have.property('type', 'hResult');
+                hMessage.payload.should.have.property('status', hResultStatus.MISSING_ATTR);
+                done();
+            });
+        })
+    })
+
 })

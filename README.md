@@ -2,14 +2,14 @@
 
 Hubiquitus-node is a Node.JS project that links a client that wants to perform
 Publish-Subscribe operations to a XMPP Server. It allows the client to use 
-WebSockets or BOSH to connect and lets him abstract the underlying structure
+WebSockets to connect and lets him abstract the underlying structure
 used by XMPP by only requiring the essential information to perform each action.
 
 ## Features
 
 * Can be run separately from the XMPP Server, allowing more flexibility.
 
-* Clients can connect using WebSockets or BOSH, allowing to use the best 
+* Clients can connect using WebSockets, allowing to use the best
 transport for the client type.
 
 * By using **HubiquitusJS** you can simplify the treatment of messages sent
@@ -26,9 +26,6 @@ To use **Hubiquitus-Node**, you need Node.JS, NPM and an XMPP Server.
 To make it function correctly, the XMPP Server needs to have a `Component connection`
 configured.
 
-```
-Note: Because hnode works as a bosh endpoint using the default port,
-you will need to change the bosh port in the XMPP Server configuration.
 ``` 
 
 ###Installation

@@ -33,10 +33,6 @@ describe('Options Parsing', function(){
         options.should.have.property('global.loglevel', 'WARN');
         options.should.have.property('socket.io.ports').with.lengthOf(1);
         options.should.have.property('socket.io.namespace', '');
-        options.should.have.property('socket.io.disctimeout', 15000);
-        options.should.have.property('socket.io.ridwindow', 5);
-        options.should.have.property('bosh.ports').with.lengthOf(1);
-        options.should.have.property('bosh.pidgin_compatible', true);
         done();
     })
 
@@ -62,17 +58,6 @@ describe('Options Parsing', function(){
         options.should.be.a('object');
         options.should.have.property('socket.io.ports').with.lengthOf(2);
         options.should.have.property('socket.io.ports').and.eql([3214,1241]);
-        done();
-    })
-
-    it('should convert overrided option to int when needed', function(done){
-        var i = 2;
-        process.argv[i++] = '--socket.io.disctimeout';
-        process.argv[i++] = '1111';
-
-        var options = require('../lib/options.js').createOptions()
-        options.should.be.a('object');
-        options.should.have.property('socket.io.disctimeout').and.be.a('number');
         done();
     })
 
