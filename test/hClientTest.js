@@ -20,6 +20,7 @@
 var should = require('should');
 var config = require('./_config.js');
 var codes = require('../lib/codes.js');
+var validators = require('../lib/validators.js');
 
 describe('hClient XMPP Connection', function(){
 
@@ -68,6 +69,17 @@ describe('hClient XMPP Connection', function(){
             hClient.connect(xmppOptions);
         })
 
+        it('should emit an hStatus when invalid domain', function(done){
+            var user = validators.splitJID(xmppOptions.jid)
+            xmppOptions.jid = user[0] + '@anotherDomain';
+            hClient.once('hStatus', function(hStatus){
+                should.exist(hStatus);
+                hStatus.status.should.be.eql(codes.statuses.DISCONNECTED);
+                hStatus.errorCode.should.be.eql(codes.errors.AUTH_FAILED);
+                done();
+            });
+            hClient.connect(xmppOptions);
+        })
     })
 
     describe('#FilterMessage()', function(){
