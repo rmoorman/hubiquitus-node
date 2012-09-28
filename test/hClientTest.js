@@ -104,15 +104,18 @@ describe('hClient XMPP Connection', function(){
         beforeEach(function(){
             cmdMsg = config.makeHMessage('hnode@' + hClient.serverDomain, config.logins[0].jid, 'hCommand',{});
             cmdMsg.payload = {
-                cmd : 'hSetFilter',
+                cmd : 'hCreateUpdateChannel',
                 params : {
+                    type: 'channel',
                     actor : activeChan,
+                    active : true,
+                    owner : config.logins[0].jid,
+                    subscribers : [config.logins[0].jid],
                     filter: {
                         in:{
                             publisher: ['u1@localhost']
                         }
                     }
-
                 }
             };
 

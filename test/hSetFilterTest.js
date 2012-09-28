@@ -51,15 +51,19 @@ describe('hSetFilter', function(){
         cmd = config.makeHMessage('hnode@localhost', config.logins[0].jid, 'hCommand',{});
         cmd.msgid = 'testCmd';
         cmd.payload = {
-                cmd : 'hSetFilter',
-                params : {
-                    actor: activeChan,
-                    filter: {
-                        in:{
-                            publisher: ['u1@locahost']
-                        }
+            cmd : 'hCreateUpdateChannel',
+            params : {
+                type: 'channel',
+                actor : activeChan,
+                active : true,
+                owner : config.logins[0].jid,
+                subscribers : [config.logins[0].jid],
+                filter: {
+                    in:{
+                        publisher: ['u1@localhost']
                     }
                 }
+            }
         };
     })
 
